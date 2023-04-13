@@ -5,7 +5,46 @@
   font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
   /* font-family: Tahoma; */
 
+  .triangle1 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+    background-image: url(triangle1-background.svg);
+  }
 
+  .triangle2 {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+    background-image: url(triangle2-background.svg);
+  }
+  
+  .booking-free {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+    background-color: #1fff8f60;
+  }
+  
+  .booking-reserved {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+    background-color: #fca77d60;
+  }
+  
   table {
     border-width: 1px;
     border-spacing: 2px;
@@ -25,15 +64,16 @@
 
     th {
       border-width: 1px;
-      padding: 2px 3px;
+      /*padding: 2px 3px;*/
       border-style: solid solid solid solid;
       border-color: #BFBFBF;
       background-color: #F0F5F7;
       text-align: center;
       color: #666666;
 
-      width: 14px;
-      height: 14px;
+      padding: 0;
+      width: 19px;
+      height: 18px;
 
       &.wkend {
         background-color: #D6DBEA;
@@ -50,13 +90,14 @@
 
     td {
       border-width: 1px;
-      padding: 1px 4px;
+      /*padding: 1px 4px;*/
       border-style: solid solid solid solid;
       border-color: #BFBFBF;
       background-color: white;
 
-      width: 14px;
-      height: 14px;
+      padding: 0;
+      width: 19px;
+      height: 18px;
 
       &.wkend {
         background-color: #EAF0F0;
@@ -67,7 +108,7 @@
       }
 
       &.today {
-        background-color: #FAEAC9;
+        background-color: #ffea70;
       }
 
       &:hover {
@@ -90,6 +131,24 @@
       }
     }
 
+    div.cellc {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    div.linkc {
+      position:absolute;
+      width: 100%;
+      height: 100%;
+      top: 0px;
+      left: 0px;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     a.link1 {
       border-bottom: 0 !important;
       color: #238fcd !important;
@@ -98,7 +157,7 @@
 
     a.link2 {
       border-bottom: 0 !important;
-      color: #fca77d !important;
+      color: #ff894e !important;
       text-decoration: none;
     }
   }

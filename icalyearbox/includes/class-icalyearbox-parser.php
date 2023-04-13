@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 }
 
 /*
-Copyright (c) 2020 Kai Thoene
+Copyright (c) 2023 Kai Thoene
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ SOFTWARE.
 /**
  * Parser plugin class.
  */
-class Recursive_Shortcode_Parser
+class Icalyearbox_Parser
 {
 	/**
 	 * The debug trigger.
@@ -78,7 +78,7 @@ class Recursive_Shortcode_Parser
 		}
 		return
 			'<div style="unicode-bidi: embed; font-family: monospace; font-size:12px; color:black; background-color:#E0E0E0;">' .
-			'[recursive-shortcode]:ERROR -- ' . $msg . ($sc_pos === NULL ? '' : ' POSITION=' . $sc_pos) . ($sc === NULL ? '' : ' SHORTCODE="' . $sc . '"') . "\n" .
+			'[icalyearbox]:ERROR -- ' . $msg . ($sc_pos === NULL ? '' : ' POSITION=' . $sc_pos) . ($sc === NULL ? '' : ' SHORTCODE="' . $sc . '"') . "\n" .
 			($cn === NULL ? '' : 'CONTENT="' . $cn . '"') .
 			'</div>';
 	}  // _error
@@ -276,4 +276,4 @@ class Recursive_Shortcode_Parser
 		return $content;
 	}  // parse
 
-}  // class Recursive_Shortcode_Parser
+}  // class Icalyearbox_Parser

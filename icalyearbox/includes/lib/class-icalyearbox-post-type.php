@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright (c) 2020 Kai Thoene
+Copyright (c) 2023 Kai Thoene
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Post type declaration class.
  */
-class Recursive_Shortcode_Post_Type {
+class Icalyearbox_Post_Type {
 
 	/**
 	 * The name for the custom post type.
@@ -122,15 +122,15 @@ class Recursive_Shortcode_Post_Type {
 			'name'               => $this->plural,
 			'singular_name'      => $this->single,
 			'name_admin_bar'     => $this->single,
-			'add_new'            => _x( 'Add New', $this->post_type, 'recursive-shortcode' ),
-			'add_new_item'       => sprintf( __( 'Add New %s', 'recursive-shortcode' ), $this->single ),
-			'edit_item'          => sprintf( __( 'Edit %s', 'recursive-shortcode' ), $this->single ),
-			'new_item'           => sprintf( __( 'New %s', 'recursive-shortcode' ), $this->single ),
-			'all_items'          => sprintf( __( 'All %s', 'recursive-shortcode' ), $this->plural ),
-			'view_item'          => sprintf( __( 'View %s', 'recursive-shortcode' ), $this->single ),
-			'search_items'       => sprintf( __( 'Search %s', 'recursive-shortcode' ), $this->plural ),
-			'not_found'          => sprintf( __( 'No %s Found', 'recursive-shortcode' ), $this->plural ),
-			'not_found_in_trash' => sprintf( __( 'No %s Found In Trash', 'recursive-shortcode' ), $this->plural ),
+			'add_new'            => _x( 'Add New', $this->post_type, 'icalyearbox' ),
+			'add_new_item'       => sprintf( __( 'Add New %s', 'icalyearbox' ), $this->single ),
+			'edit_item'          => sprintf( __( 'Edit %s', 'icalyearbox' ), $this->single ),
+			'new_item'           => sprintf( __( 'New %s', 'icalyearbox' ), $this->single ),
+			'all_items'          => sprintf( __( 'All %s', 'icalyearbox' ), $this->plural ),
+			'view_item'          => sprintf( __( 'View %s', 'icalyearbox' ), $this->single ),
+			'search_items'       => sprintf( __( 'Search %s', 'icalyearbox' ), $this->plural ),
+			'not_found'          => sprintf( __( 'No %s Found', 'icalyearbox' ), $this->plural ),
+			'not_found_in_trash' => sprintf( __( 'No %s Found In Trash', 'icalyearbox' ), $this->plural ),
 			'parent_item_colon'  => sprintf( __( 'Parent %s' ), $this->single ),
 			'menu_name'          => $this->plural,
 		);
@@ -175,16 +175,16 @@ class Recursive_Shortcode_Post_Type {
 		//phpcs:disable
 		$messages[ $this->post_type ] = array(
 			0  => '',
-			1  => sprintf( __( '%1$s updated. %2$sView %3$s%4$s.', 'recursive-shortcode' ), $this->single, '<a href="' . esc_url( get_permalink( $post_ID ) ) . '">', $this->single, '</a>' ),
-			2  => __( 'Custom field updated.', 'recursive-shortcode' ),
-			3  => __( 'Custom field deleted.', 'recursive-shortcode' ),
-			4  => sprintf( __( '%1$s updated.', 'recursive-shortcode' ), $this->single ),
-			5  => isset( $_GET['revision'] ) and sanitize_text_field(wp_unslash($_GET['revision'])) ? sprintf( __( '%1$s restored to revision from %2$s.', 'recursive-shortcode' ), $this->single, wp_post_revision_title( (int) sanitize_text_field(wp_unslash($_GET['revision'])), false ) ) : false,
-			6  => sprintf( __( '%1$s published. %2$sView %3$s%4s.', 'recursive-shortcode' ), $this->single, '<a href="' . esc_url( get_permalink( $post_ID ) ) . '">', $this->single, '</a>' ),
-			7  => sprintf( __( '%1$s saved.', 'recursive-shortcode' ), $this->single ),
-			8  => sprintf( __( '%1$s submitted. %2$sPreview post%3$s%4$s.', 'recursive-shortcode' ), $this->single, '<a target="_blank" href="' . esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) . '">', $this->single, '</a>' ),
-			9  => sprintf( __( '%1$s scheduled for: %2$s. %3$sPreview %4$s%5$s.', 'recursive-shortcode' ), $this->single, '<strong>' . date_i18n( __( 'M j, Y @ G:i', 'recursive-shortcode' ), strtotime( $post->post_date ) ) . '</strong>', '<a target="_blank" href="' . esc_url( get_permalink( $post_ID ) ) . '">', $this->single, '</a>' ),
-			10 => sprintf( __( '%1$s draft updated. %2$sPreview %3$s%4$s.', 'recursive-shortcode' ), $this->single, '<a target="_blank" href="' . esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) . '">', $this->single, '</a>' ),
+			1  => sprintf( __( '%1$s updated. %2$sView %3$s%4$s.', 'icalyearbox' ), $this->single, '<a href="' . esc_url( get_permalink( $post_ID ) ) . '">', $this->single, '</a>' ),
+			2  => __( 'Custom field updated.', 'icalyearbox' ),
+			3  => __( 'Custom field deleted.', 'icalyearbox' ),
+			4  => sprintf( __( '%1$s updated.', 'icalyearbox' ), $this->single ),
+			5  => isset( $_GET['revision'] ) and sanitize_text_field(wp_unslash($_GET['revision'])) ? sprintf( __( '%1$s restored to revision from %2$s.', 'icalyearbox' ), $this->single, wp_post_revision_title( (int) sanitize_text_field(wp_unslash($_GET['revision'])), false ) ) : false,
+			6  => sprintf( __( '%1$s published. %2$sView %3$s%4s.', 'icalyearbox' ), $this->single, '<a href="' . esc_url( get_permalink( $post_ID ) ) . '">', $this->single, '</a>' ),
+			7  => sprintf( __( '%1$s saved.', 'icalyearbox' ), $this->single ),
+			8  => sprintf( __( '%1$s submitted. %2$sPreview post%3$s%4$s.', 'icalyearbox' ), $this->single, '<a target="_blank" href="' . esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) . '">', $this->single, '</a>' ),
+			9  => sprintf( __( '%1$s scheduled for: %2$s. %3$sPreview %4$s%5$s.', 'icalyearbox' ), $this->single, '<strong>' . date_i18n( __( 'M j, Y @ G:i', 'icalyearbox' ), strtotime( $post->post_date ) ) . '</strong>', '<a target="_blank" href="' . esc_url( get_permalink( $post_ID ) ) . '">', $this->single, '</a>' ),
+			10 => sprintf( __( '%1$s draft updated. %2$sPreview %3$s%4$s.', 'icalyearbox' ), $this->single, '<a target="_blank" href="' . esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) . '">', $this->single, '</a>' ),
 		);
 		//phpcs:enable
 
@@ -202,11 +202,11 @@ class Recursive_Shortcode_Post_Type {
 
 		//phpcs:disable
 		$bulk_messages[ $this->post_type ] = array(
-			'updated'   => sprintf( _n( '%1$s %2$s updated.', '%1$s %3$s updated.', $bulk_counts['updated'], 'recursive-shortcode' ), $bulk_counts['updated'], $this->single, $this->plural ),
-			'locked'    => sprintf( _n( '%1$s %2$s not updated, somebody is editing it.', '%1$s %3$s not updated, somebody is editing them.', $bulk_counts['locked'], 'recursive-shortcode' ), $bulk_counts['locked'], $this->single, $this->plural ),
-			'deleted'   => sprintf( _n( '%1$s %2$s permanently deleted.', '%1$s %3$s permanently deleted.', $bulk_counts['deleted'], 'recursive-shortcode' ), $bulk_counts['deleted'], $this->single, $this->plural ),
-			'trashed'   => sprintf( _n( '%1$s %2$s moved to the Trash.', '%1$s %3$s moved to the Trash.', $bulk_counts['trashed'], 'recursive-shortcode' ), $bulk_counts['trashed'], $this->single, $this->plural ),
-			'untrashed' => sprintf( _n( '%1$s %2$s restored from the Trash.', '%1$s %3$s restored from the Trash.', $bulk_counts['untrashed'], 'recursive-shortcode' ), $bulk_counts['untrashed'], $this->single, $this->plural ),
+			'updated'   => sprintf( _n( '%1$s %2$s updated.', '%1$s %3$s updated.', $bulk_counts['updated'], 'icalyearbox' ), $bulk_counts['updated'], $this->single, $this->plural ),
+			'locked'    => sprintf( _n( '%1$s %2$s not updated, somebody is editing it.', '%1$s %3$s not updated, somebody is editing them.', $bulk_counts['locked'], 'icalyearbox' ), $bulk_counts['locked'], $this->single, $this->plural ),
+			'deleted'   => sprintf( _n( '%1$s %2$s permanently deleted.', '%1$s %3$s permanently deleted.', $bulk_counts['deleted'], 'icalyearbox' ), $bulk_counts['deleted'], $this->single, $this->plural ),
+			'trashed'   => sprintf( _n( '%1$s %2$s moved to the Trash.', '%1$s %3$s moved to the Trash.', $bulk_counts['trashed'], 'icalyearbox' ), $bulk_counts['trashed'], $this->single, $this->plural ),
+			'untrashed' => sprintf( _n( '%1$s %2$s restored from the Trash.', '%1$s %3$s restored from the Trash.', $bulk_counts['untrashed'], 'icalyearbox' ), $bulk_counts['untrashed'], $this->single, $this->plural ),
 		);
 		//phpcs:enable
 

@@ -5,18 +5,15 @@ if (!defined('ABSPATH')) {
 }
 
 /*
-Copyright (c) 2020 Kai Thoene
-
+Copyright (c) 2023 Kai Thoene
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,18 +31,17 @@ SOFTWARE.
 
 /*
 if (!defined('ABSPATH')) {
-	exit;
+exit;
 }
 */
 
 /**
  * Main plugin class.
  */
-class Recursive_Shortcode
-{
+class Icalyearbox {
 
 	/**
-	 * The single instance of Recursive_Shortcode.
+	 * The single instance of Icalyearbox.
 	 *
 	 * @var     object
 	 * @access  private
@@ -72,9 +68,9 @@ class Recursive_Shortcode
 	private static $_enable_debugging = false; //phpcs:ignore
 
 	/**
-	 * Local instance of Recursive_Shortcode_Admin_API
+	 * Local instance of Icalyearbox_Admin_API
 	 *
-	 * @var Recursive_Shortcode_Admin_API|null
+	 * @var Icalyearbox_Admin_API|null
 	 */
 	public $admin = null;
 
@@ -153,8 +149,7 @@ class Recursive_Shortcode
 	/* ---------------------------------------------------------------------
 	 * Add log function.
 	 */
-	private static function _write_log($log = NULL)
-	{
+	private static function _write_log($log = NULL) {
 		if (self::$_enable_debugging) {
 			$bn = basename(__FILE__);
 			$msg = '[' . $bn . ':' . __LINE__ . '] ' . ((is_array($log) || is_object($log)) ? print_r($log, true) : $log);
@@ -163,7 +158,7 @@ class Recursive_Shortcode
 				fwrite(STDERR, $msg . PHP_EOL);
 			}
 		}
-	}  // self::_write_log
+	} // self::_write_log
 
 	/**
 	 * Constructor funtion.
@@ -171,14 +166,13 @@ class Recursive_Shortcode
 	 * @param string $file File constructor.
 	 * @param string $version Plugin version.
 	 */
-	public function __construct($file = '', $version = '1.0.0')
-	{
+	public function __construct($file = '', $version = '1.0.0') {
 		$this->_version = $version;
-		$this->_token   = 'recursive_shortcode';
+		$this->_token = 'Icalyearbox';
 
 		// Load plugin environment variables.
-		$this->file       = $file;
-		$this->dir        = dirname($this->file);
+		$this->file = $file;
+		$this->dir = dirname($this->file);
 		$this->assets_dir = trailingslashit($this->dir) . 'assets';
 		$this->assets_url = esc_url(trailingslashit(plugins_url('/assets/', $this->file)));
 
@@ -196,7 +190,7 @@ class Recursive_Shortcode
 
 		// Load API for generic admin functions.
 		if (is_admin()) {
-			$this->admin = new Recursive_Shortcode_Admin_API();
+			$this->admin = new Icalyearbox_Admin_API();
 		}
 
 		// Handle localisation.
@@ -209,17 +203,23 @@ class Recursive_Shortcode
 	 *
 	 * @return Array Associative Array with default parameters.
 	 */
-	private static function default_shortcode_params()
-	{
+	private static function default_shortcode_params() {
 		if (self::$_default_shortcode_params === null) {
 			self::$_default_shortcode_params = array(
 				'open' => '\[',
 				'close' => '\]',
 				'deconstruct' => false,
+				'year' => "now",
+				'recent' => 21,
+				'months' => "all",
+				'align' => "center",
+				'weekdays' => "all",
+				'ical' => null,
+				'size' => 12,
 			);
 		}
 		return self::$_default_shortcode_params;
-	}  // default_shortcode_params
+	} // default_shortcode_params
 
 	/**
 	 * Register post type function.
@@ -230,16 +230,15 @@ class Recursive_Shortcode
 	 * @param string $description Description.
 	 * @param array  $options Options array.
 	 *
-	 * @return bool|string|Recursive_Shortcode_Post_Type
+	 * @return bool|string|Icalyearbox_Post_Type
 	 */
-	public function register_post_type($post_type = '', $plural = '', $single = '', $description = '', $options = array())
-	{
+	public function register_post_type($post_type = '', $plural = '', $single = '', $description = '', $options = array()) {
 
 		if (!$post_type || !$plural || !$single) {
 			return false;
 		}
 
-		$post_type = new Recursive_Shortcode_Post_Type($post_type, $plural, $single, $description, $options);
+		$post_type = new Icalyearbox_Post_Type($post_type, $plural, $single, $description, $options);
 
 		return $post_type;
 	}
@@ -253,16 +252,15 @@ class Recursive_Shortcode
 	 * @param array  $post_types Post types to register this taxonomy for.
 	 * @param array  $taxonomy_args Taxonomy arguments.
 	 *
-	 * @return bool|string|Recursive_Shortcode_Taxonomy
+	 * @return bool|string|Icalyearbox_Taxonomy
 	 */
-	public function register_taxonomy($taxonomy = '', $plural = '', $single = '', $post_types = array(), $taxonomy_args = array())
-	{
+	public function register_taxonomy($taxonomy = '', $plural = '', $single = '', $post_types = array(), $taxonomy_args = array()) {
 
 		if (!$taxonomy || !$plural || !$single) {
 			return false;
 		}
 
-		$taxonomy = new Recursive_Shortcode_Taxonomy($taxonomy, $plural, $single, $post_types, $taxonomy_args);
+		$taxonomy = new Icalyearbox_Taxonomy($taxonomy, $plural, $single, $post_types, $taxonomy_args);
 
 		return $taxonomy;
 	}
@@ -274,8 +272,7 @@ class Recursive_Shortcode
 	 * @return void
 	 * @since   1.0.0
 	 */
-	public function enqueue_styles()
-	{
+	public function enqueue_styles() {
 		wp_register_style($this->_token . '-frontend', esc_url($this->assets_url) . 'css/frontend.css', array(), $this->_version);
 		wp_enqueue_style($this->_token . '-frontend');
 	} // enqueue_styles
@@ -287,8 +284,7 @@ class Recursive_Shortcode
 	 * @return  void
 	 * @since   1.0.0
 	 */
-	public function enqueue_scripts()
-	{
+	public function enqueue_scripts() {
 		wp_register_script($this->_token . '-frontend', esc_url($this->assets_url) . 'js/frontend' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
 		wp_enqueue_script($this->_token . '-frontend');
 	} // enqueue_scripts
@@ -300,8 +296,7 @@ class Recursive_Shortcode
 	 *
 	 * @return void
 	 */
-	public function admin_enqueue_styles($hook = '')
-	{
+	public function admin_enqueue_styles($hook = '') {
 		wp_register_style($this->_token . '-admin', esc_url($this->assets_url) . 'css/admin.css', array(), $this->_version);
 		wp_enqueue_style($this->_token . '-admin');
 	} // admin_enqueue_styles
@@ -316,8 +311,7 @@ class Recursive_Shortcode
 	 * @return  void
 	 * @since   1.0.0
 	 */
-	public function admin_enqueue_scripts($hook = '')
-	{
+	public function admin_enqueue_scripts($hook = '') {
 		wp_register_script($this->_token . '-admin', esc_url($this->assets_url) . 'js/admin' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
 		wp_enqueue_script($this->_token . '-admin');
 	} // admin_enqueue_scripts
@@ -329,9 +323,8 @@ class Recursive_Shortcode
 	 * @return  void
 	 * @since   1.0.0
 	 */
-	public function load_localisation()
-	{
-		load_plugin_textdomain('recursive-shortcode', false, dirname(plugin_basename($this->file)) . '/languages/');
+	public function load_localisation() {
+		load_plugin_textdomain('icalyearbox', false, dirname(plugin_basename($this->file)) . '/languages/');
 	} // load_localisation
 
 	/**
@@ -341,9 +334,8 @@ class Recursive_Shortcode
 	 * @return  void
 	 * @since   1.0.0
 	 */
-	public function load_plugin_textdomain()
-	{
-		$domain = 'recursive-shortcode';
+	public function load_plugin_textdomain() {
+		$domain = 'icalyearbox';
 
 		$locale = apply_filters('plugin_locale', get_locale(), $domain);
 
@@ -352,20 +344,19 @@ class Recursive_Shortcode
 	} // load_plugin_textdomain
 
 	/**
-	 * Main Recursive_Shortcode Instance
+	 * Main Icalyearbox Instance
 	 *
-	 * Ensures only one instance of Recursive_Shortcode is loaded or can be loaded.
+	 * Ensures only one instance of Icalyearbox is loaded or can be loaded.
 	 *
 	 * @param string $file File instance.
 	 * @param string $version Version parameter.
 	 *
-	 * @return Object Recursive_Shortcode instance
-	 * @see Recursive_Shortcode()
+	 * @return Object Icalyearbox instance
+	 * @see Icalyearbox()
 	 * @since 1.0.0
 	 * @static
 	 */
-	public static function instance($file = '', $version = '1.0.0')
-	{
+	public static function instance($file = '', $version = '1.0.0') {
 		if (is_null(self::$_instance)) {
 			self::$_instance = new self($file, $version);
 		}
@@ -378,9 +369,8 @@ class Recursive_Shortcode
 	 *
 	 * @since 1.0.0
 	 */
-	public function __clone()
-	{
-		_doing_it_wrong(__FUNCTION__, esc_html(__('Cloning of Recursive_Shortcode is forbidden')), esc_attr($this->_version));
+	public function __clone() {
+		_doing_it_wrong(__FUNCTION__, esc_html(__('Cloning of Icalyearbox is forbidden')), esc_attr($this->_version));
 	} // __clone
 
 	/**
@@ -388,9 +378,8 @@ class Recursive_Shortcode
 	 *
 	 * @since 1.0.0
 	 */
-	public function __wakeup()
-	{
-		_doing_it_wrong(__FUNCTION__, esc_html(__('Unserializing instances of Recursive_Shortcode is forbidden')), esc_attr($this->_version));
+	public function __wakeup() {
+		_doing_it_wrong(__FUNCTION__, esc_html(__('Unserializing instances of Icalyearbox is forbidden')), esc_attr($this->_version));
 	} // __wakeup
 
 	/**
@@ -400,8 +389,7 @@ class Recursive_Shortcode
 	 * @return  void
 	 * @since   1.0.0
 	 */
-	public function install()
-	{
+	public function install() {
 		$this->_log_version_number();
 	} // install
 
@@ -412,8 +400,7 @@ class Recursive_Shortcode
 	 * @return  void
 	 * @since   1.0.0
 	 */
-	private function _log_version_number()
-	{ //phpcs:ignore
+	private function _log_version_number() { //phpcs:ignore
 		update_option($this->_token . '_version', $this->_version);
 	} // _log_version_number
 
@@ -424,14 +411,13 @@ class Recursive_Shortcode
 	 * @return  String
 	 * @since   1.0.0
 	 */
-	public static function recursive_shortcode_func($atts, $content)
-	{
+	public static function icalyearbox_func($atts = array(), $content = null) {
 		if (function_exists('shortcode_atts')) {
 			$atts = shortcode_atts(self::default_shortcode_params(), $atts);
 		}
 		$atts['deconstruct'] = (strtolower($atts['deconstruct']) == 'true');
 		$evaluate_stack = ($atts['deconstruct'] ? array() : NULL);
-		$eval = Recursive_Shortcode_Parser::parse($atts, $content, $evaluate_stack);
+		$eval = Icalyearbox_Parser::parse($atts, $content, $evaluate_stack);
 		if ($atts['deconstruct']) {
 			// Calculate inclusion levels.
 			foreach ($evaluate_stack as $i => $position) {
@@ -505,18 +491,18 @@ class Recursive_Shortcode
 		} else {
 			return $eval;
 		}
-	} // recursive_shortcode_func
+	} // icalyearbox_func
 
-}  // class Recursive_Shortcode
+} // class Icalyearbox
 
 /*
 .transparent-bg{
-	background: rgba(255, 165, 0, 0.73);
+background: rgba(255, 165, 0, 0.73);
 }*/
 
 /**
  * Register shortcode.
  */
 if (function_exists('add_shortcode')) {
-	add_shortcode('recursive-shortcode', array('Recursive_Shortcode', 'recursive_shortcode_func'));
+	add_shortcode('icalyearbox', array('Icalyearbox', 'icalyearbox_func'));
 }

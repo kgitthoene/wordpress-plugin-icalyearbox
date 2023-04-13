@@ -7,8 +7,8 @@ if (!defined('ABSPATH')) {
 
 
 // Load plugin class files.
-require_once '../recursive-shortcode/includes/class-recursive-shortcode.php';
-require_once '../recursive-shortcode/includes/class-recursive-shortcode-parser.php';
+require_once '../icalyearbox/includes/class-icalyearbox.php';
+require_once '../icalyearbox/includes/class-icalyearbox-parser.php';
 
 $atts = array(
   'open' => '\[',
@@ -21,7 +21,7 @@ $content = '[calc-pages]100[/calc-pages][display-posts category="Verein" orderby
 
 echo "BRACE_OPEN='" . $atts['open'] . "'\n";
 echo "BRACE_CLOSE='" . $atts['close'] . "'\n";
-echo "---\n" . Recursive_Shortcode_Parser::parse($atts, $content) . "\n...\n";
+echo "---\n" . Icalyearbox_Parser::parse($atts, $content) . "\n...\n";
 
 
 $content = '[calc-pages]100[/calc-pages][display-posts category="Verein" orderby="title" include_content="true" image_size="thumbnail" wrapper="div" wrapper_class="display-posts-listing-vereine grid" order="ASC" tag="[urlparam param="tag, Sportart"]" posts_per_page="[calc-pages]100[/calc-pages]"]';
@@ -31,4 +31,4 @@ echo "BRACE_OPEN='" . $atts['open'] . "'\n";
 echo "BRACE_CLOSE='" . $atts['close'] . "'\n";
 echo "DECONSTRUCT='" . $atts['deconstruct'] . "'\n";
 $evaluate_stack = array();
-echo "---\n" . Recursive_Shortcode::recursive_shortcode_func($atts, $content) . "\n...\n";
+echo "---\n" . Icalyearbox::Icalyearbox_func($atts, $content) . "\n...\n";

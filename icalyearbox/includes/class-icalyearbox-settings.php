@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 }
 
 /*
-Copyright (c) 2020 Kai Thoene
+Copyright (c) 2023 Kai Thoene
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,11 +35,11 @@ SOFTWARE.
 /**
  * Settings class.
  */
-class Recursive_Shortcode_Settings
+class Icalyearbox_Settings
 {
 
 	/**
-	 * The single instance of Recursive_Shortcode_Settings.
+	 * The single instance of Icalyearbox_Settings.
 	 *
 	 * @var     object
 	 * @access  private
@@ -156,8 +156,8 @@ class Recursive_Shortcode_Settings
 			array(
 				'location'    => 'options', // Possible settings: options, menu, submenu.
 				'parent_slug' => 'options-general.php',
-				'page_title'  => __('Plugin Settings', 'recursive-shortcode'),
-				'menu_title'  => __('Plugin Settings', 'recursive-shortcode'),
+				'page_title'  => __('Plugin Settings', 'icalyearbox'),
+				'menu_title'  => __('Plugin Settings', 'icalyearbox'),
 				'capability'  => 'manage_options',
 				'menu_slug'   => $this->parent->_token . '_settings',
 				'function'    => array($this, 'settings_page'),
@@ -208,7 +208,7 @@ class Recursive_Shortcode_Settings
 	 */
 	public function add_settings_link($links)
 	{
-		$settings_link = '<a href="options-general.php?page=' . $this->parent->_token . '_settings">' . __('Settings', 'recursive-shortcode') . '</a>';
+		$settings_link = '<a href="options-general.php?page=' . $this->parent->_token . '_settings">' . __('Settings', 'icalyearbox') . '</a>';
 		array_push($links, $settings_link);
 		return $links;
 	}
@@ -222,52 +222,52 @@ class Recursive_Shortcode_Settings
 	{
 
 		$settings['standard'] = array(
-			'title'       => __('Standard', 'recursive-shortcode'),
-			'description' => __('These are fairly standard form input fields.', 'recursive-shortcode'),
+			'title'       => __('Standard', 'icalyearbox'),
+			'description' => __('These are fairly standard form input fields.', 'icalyearbox'),
 			'fields'      => array(
 				array(
 					'id'          => 'text_field',
-					'label'       => __('Some Text', 'recursive-shortcode'),
-					'description' => __('This is a standard text field.', 'recursive-shortcode'),
+					'label'       => __('Some Text', 'icalyearbox'),
+					'description' => __('This is a standard text field.', 'icalyearbox'),
 					'type'        => 'text',
 					'default'     => '',
-					'placeholder' => __('Placeholder text', 'recursive-shortcode'),
+					'placeholder' => __('Placeholder text', 'icalyearbox'),
 				),
 				array(
 					'id'          => 'password_field',
-					'label'       => __('A Password', 'recursive-shortcode'),
-					'description' => __('This is a standard password field.', 'recursive-shortcode'),
+					'label'       => __('A Password', 'icalyearbox'),
+					'description' => __('This is a standard password field.', 'icalyearbox'),
 					'type'        => 'password',
 					'default'     => '',
-					'placeholder' => __('Placeholder text', 'recursive-shortcode'),
+					'placeholder' => __('Placeholder text', 'icalyearbox'),
 				),
 				array(
 					'id'          => 'secret_text_field',
-					'label'       => __('Some Secret Text', 'recursive-shortcode'),
-					'description' => __('This is a secret text field - any data saved here will not be displayed after the page has reloaded, but it will be saved.', 'recursive-shortcode'),
+					'label'       => __('Some Secret Text', 'icalyearbox'),
+					'description' => __('This is a secret text field - any data saved here will not be displayed after the page has reloaded, but it will be saved.', 'icalyearbox'),
 					'type'        => 'text_secret',
 					'default'     => '',
-					'placeholder' => __('Placeholder text', 'recursive-shortcode'),
+					'placeholder' => __('Placeholder text', 'icalyearbox'),
 				),
 				array(
 					'id'          => 'text_block',
-					'label'       => __('A Text Block', 'recursive-shortcode'),
-					'description' => __('This is a standard text area.', 'recursive-shortcode'),
+					'label'       => __('A Text Block', 'icalyearbox'),
+					'description' => __('This is a standard text area.', 'icalyearbox'),
 					'type'        => 'textarea',
 					'default'     => '',
-					'placeholder' => __('Placeholder text for this textarea', 'recursive-shortcode'),
+					'placeholder' => __('Placeholder text for this textarea', 'icalyearbox'),
 				),
 				array(
 					'id'          => 'single_checkbox',
-					'label'       => __('An Option', 'recursive-shortcode'),
-					'description' => __('A standard checkbox - if you save this option as checked then it will store the option as \'on\', otherwise it will be an empty string.', 'recursive-shortcode'),
+					'label'       => __('An Option', 'icalyearbox'),
+					'description' => __('A standard checkbox - if you save this option as checked then it will store the option as \'on\', otherwise it will be an empty string.', 'icalyearbox'),
 					'type'        => 'checkbox',
 					'default'     => '',
 				),
 				array(
 					'id'          => 'select_box',
-					'label'       => __('A Select Box', 'recursive-shortcode'),
-					'description' => __('A standard select box.', 'recursive-shortcode'),
+					'label'       => __('A Select Box', 'icalyearbox'),
+					'description' => __('A standard select box.', 'icalyearbox'),
 					'type'        => 'select',
 					'options'     => array(
 						'drupal'    => 'Drupal',
@@ -278,8 +278,8 @@ class Recursive_Shortcode_Settings
 				),
 				array(
 					'id'          => 'radio_buttons',
-					'label'       => __('Some Options', 'recursive-shortcode'),
-					'description' => __('A standard set of radio buttons.', 'recursive-shortcode'),
+					'label'       => __('Some Options', 'icalyearbox'),
+					'description' => __('A standard set of radio buttons.', 'icalyearbox'),
 					'type'        => 'radio',
 					'options'     => array(
 						'superman' => 'Superman',
@@ -290,8 +290,8 @@ class Recursive_Shortcode_Settings
 				),
 				array(
 					'id'          => 'multiple_checkboxes',
-					'label'       => __('Some Items', 'recursive-shortcode'),
-					'description' => __('You can select multiple items and they will be stored as an array.', 'recursive-shortcode'),
+					'label'       => __('Some Items', 'icalyearbox'),
+					'description' => __('You can select multiple items and they will be stored as an array.', 'icalyearbox'),
 					'type'        => 'checkbox_multi',
 					'options'     => array(
 						'square'    => 'Square',
@@ -305,36 +305,36 @@ class Recursive_Shortcode_Settings
 		);
 
 		$settings['extra'] = array(
-			'title'       => __('Extra', 'recursive-shortcode'),
-			'description' => __('These are some extra input fields that maybe aren\'t as common as the others.', 'recursive-shortcode'),
+			'title'       => __('Extra', 'icalyearbox'),
+			'description' => __('These are some extra input fields that maybe aren\'t as common as the others.', 'icalyearbox'),
 			'fields'      => array(
 				array(
 					'id'          => 'number_field',
-					'label'       => __('A Number', 'recursive-shortcode'),
-					'description' => __('This is a standard number field - if this field contains anything other than numbers then the form will not be submitted.', 'recursive-shortcode'),
+					'label'       => __('A Number', 'icalyearbox'),
+					'description' => __('This is a standard number field - if this field contains anything other than numbers then the form will not be submitted.', 'icalyearbox'),
 					'type'        => 'number',
 					'default'     => '',
-					'placeholder' => __('42', 'recursive-shortcode'),
+					'placeholder' => __('42', 'icalyearbox'),
 				),
 				array(
 					'id'          => 'colour_picker',
-					'label'       => __('Pick a colour', 'recursive-shortcode'),
-					'description' => __('This uses WordPress\' built-in colour picker - the option is stored as the colour\'s hex code.', 'recursive-shortcode'),
+					'label'       => __('Pick a colour', 'icalyearbox'),
+					'description' => __('This uses WordPress\' built-in colour picker - the option is stored as the colour\'s hex code.', 'icalyearbox'),
 					'type'        => 'color',
 					'default'     => '#21759B',
 				),
 				array(
 					'id'          => 'an_image',
-					'label'       => __('An Image', 'recursive-shortcode'),
-					'description' => __('This will upload an image to your media library and store the attachment ID in the option field. Once you have uploaded an imge the thumbnail will display above these buttons.', 'recursive-shortcode'),
+					'label'       => __('An Image', 'icalyearbox'),
+					'description' => __('This will upload an image to your media library and store the attachment ID in the option field. Once you have uploaded an imge the thumbnail will display above these buttons.', 'icalyearbox'),
 					'type'        => 'image',
 					'default'     => '',
 					'placeholder' => '',
 				),
 				array(
 					'id'          => 'multi_select_box',
-					'label'       => __('A Multi-Select Box', 'recursive-shortcode'),
-					'description' => __('A standard multi-select box - the saved data is stored as an array.', 'recursive-shortcode'),
+					'label'       => __('A Multi-Select Box', 'icalyearbox'),
+					'description' => __('A standard multi-select box - the saved data is stored as an array.', 'icalyearbox'),
 					'type'        => 'select_multi',
 					'options'     => array(
 						'linux'   => 'Linux',
@@ -435,7 +435,7 @@ class Recursive_Shortcode_Settings
 	{
 		// Build page HTML.
 		$html      = '<div class="wrap" id="' . $this->parent->_token . '_settings">' . "\n";
-		$html .= '<h2>' . __('Plugin Settings', 'recursive-shortcode') . '</h2>' . "\n";
+		$html .= '<h2>' . __('Plugin Settings', 'icalyearbox') . '</h2>' . "\n";
 
 		$tab = '';
 		//phpcs:disable
@@ -489,7 +489,7 @@ class Recursive_Shortcode_Settings
 
 		$html     .= '<p class="submit">' . "\n";
 		$html .= '<input type="hidden" name="tab" value="' . esc_attr($tab) . '" />' . "\n";
-		$html .= '<input name="Submit" type="submit" class="button-primary" value="' . esc_attr(__('Save Settings', 'recursive-shortcode')) . '" />' . "\n";
+		$html .= '<input name="Submit" type="submit" class="button-primary" value="' . esc_attr(__('Save Settings', 'icalyearbox')) . '" />' . "\n";
 		$html     .= '</p>' . "\n";
 		$html         .= '</form>' . "\n";
 		$html             .= '</div>' . "\n";
@@ -498,15 +498,15 @@ class Recursive_Shortcode_Settings
 	}
 
 	/**
-	 * Main Recursive_Shortcode_Settings Instance
+	 * Main Icalyearbox_Settings Instance
 	 *
-	 * Ensures only one instance of Recursive_Shortcode_Settings is loaded or can be loaded.
+	 * Ensures only one instance of Icalyearbox_Settings is loaded or can be loaded.
 	 *
 	 * @since 1.0.0
 	 * @static
-	 * @see Recursive_Shortcode()
+	 * @see Icalyearbox()
 	 * @param object $parent Object instance.
-	 * @return object Recursive_Shortcode_Settings instance
+	 * @return object Icalyearbox_Settings instance
 	 */
 	public static function instance($parent)
 	{
@@ -523,7 +523,7 @@ class Recursive_Shortcode_Settings
 	 */
 	public function __clone()
 	{
-		_doing_it_wrong(__FUNCTION__, esc_html(__('Cloning of Recursive_Shortcode_API is forbidden.')), esc_attr($this->parent->_version));
+		_doing_it_wrong(__FUNCTION__, esc_html(__('Cloning of Icalyearbox_API is forbidden.')), esc_attr($this->parent->_version));
 	} // End __clone()
 
 	/**
@@ -533,7 +533,7 @@ class Recursive_Shortcode_Settings
 	 */
 	public function __wakeup()
 	{
-		_doing_it_wrong(__FUNCTION__, esc_html(__('Unserializing instances of Recursive_Shortcode_API is forbidden.')), esc_attr($this->parent->_version));
+		_doing_it_wrong(__FUNCTION__, esc_html(__('Unserializing instances of Icalyearbox_API is forbidden.')), esc_attr($this->parent->_version));
 	} // End __wakeup()
 
 }

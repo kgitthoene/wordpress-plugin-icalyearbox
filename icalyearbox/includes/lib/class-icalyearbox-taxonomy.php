@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright (c) 2020 Kai Thoene
+Copyright (c) 2023 Kai Thoene
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Taxonomy functions class.
  */
-class Recursive_Shortcode_Taxonomy {
+class Icalyearbox_Taxonomy {
 
 	/**
 	 * The name for the taxonomy.
@@ -121,20 +121,20 @@ class Recursive_Shortcode_Taxonomy {
 			'name'                       => $this->plural,
 			'singular_name'              => $this->single,
 			'menu_name'                  => $this->plural,
-			'all_items'                  => sprintf( __( 'All %s', 'recursive-shortcode' ), $this->plural ),
-			'edit_item'                  => sprintf( __( 'Edit %s', 'recursive-shortcode' ), $this->single ),
-			'view_item'                  => sprintf( __( 'View %s', 'recursive-shortcode' ), $this->single ),
-			'update_item'                => sprintf( __( 'Update %s', 'recursive-shortcode' ), $this->single ),
-			'add_new_item'               => sprintf( __( 'Add New %s', 'recursive-shortcode' ), $this->single ),
-			'new_item_name'              => sprintf( __( 'New %s Name', 'recursive-shortcode' ), $this->single ),
-			'parent_item'                => sprintf( __( 'Parent %s', 'recursive-shortcode' ), $this->single ),
-			'parent_item_colon'          => sprintf( __( 'Parent %s:', 'recursive-shortcode' ), $this->single ),
-			'search_items'               => sprintf( __( 'Search %s', 'recursive-shortcode' ), $this->plural ),
-			'popular_items'              => sprintf( __( 'Popular %s', 'recursive-shortcode' ), $this->plural ),
-			'separate_items_with_commas' => sprintf( __( 'Separate %s with commas', 'recursive-shortcode' ), $this->plural ),
-			'add_or_remove_items'        => sprintf( __( 'Add or remove %s', 'recursive-shortcode' ), $this->plural ),
-			'choose_from_most_used'      => sprintf( __( 'Choose from the most used %s', 'recursive-shortcode' ), $this->plural ),
-			'not_found'                  => sprintf( __( 'No %s found', 'recursive-shortcode' ), $this->plural ),
+			'all_items'                  => sprintf( __( 'All %s', 'icalyearbox' ), $this->plural ),
+			'edit_item'                  => sprintf( __( 'Edit %s', 'icalyearbox' ), $this->single ),
+			'view_item'                  => sprintf( __( 'View %s', 'icalyearbox' ), $this->single ),
+			'update_item'                => sprintf( __( 'Update %s', 'icalyearbox' ), $this->single ),
+			'add_new_item'               => sprintf( __( 'Add New %s', 'icalyearbox' ), $this->single ),
+			'new_item_name'              => sprintf( __( 'New %s Name', 'icalyearbox' ), $this->single ),
+			'parent_item'                => sprintf( __( 'Parent %s', 'icalyearbox' ), $this->single ),
+			'parent_item_colon'          => sprintf( __( 'Parent %s:', 'icalyearbox' ), $this->single ),
+			'search_items'               => sprintf( __( 'Search %s', 'icalyearbox' ), $this->plural ),
+			'popular_items'              => sprintf( __( 'Popular %s', 'icalyearbox' ), $this->plural ),
+			'separate_items_with_commas' => sprintf( __( 'Separate %s with commas', 'icalyearbox' ), $this->plural ),
+			'add_or_remove_items'        => sprintf( __( 'Add or remove %s', 'icalyearbox' ), $this->plural ),
+			'choose_from_most_used'      => sprintf( __( 'Choose from the most used %s', 'icalyearbox' ), $this->plural ),
+			'not_found'                  => sprintf( __( 'No %s found', 'icalyearbox' ), $this->plural ),
 		);
 		//phpcs:enable
 		$args = array(

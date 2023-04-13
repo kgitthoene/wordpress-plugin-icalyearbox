@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Recursive Shortcode
+ * Plugin Name: Icalyearbox
  * Version: 1.0.1
- * Plugin URI: https://github.com/kgitthoene/wordpress-plugin-recursive-shortcode
+ * Plugin URI: https://github.com/kgitthoene/wordpress-plugin-icalyearbox
  * Description: Write shortcuts using other shortcodes.
  * Author: Kai Thoene
  * Author URI: https://github.com/kgitthoene/
@@ -11,8 +11,7 @@
  * Requires at least: 4.0
  * Tested up to: 4.0
  *
- * Text Domain: recursive-shortcode
- * Domain Path: /languages/
+ * Text Domain: icalyearbox
  *
  * @package WordPress
  * @author Kai Thoene
@@ -20,7 +19,7 @@
  */
 
 /*
-Copyright (c) 2020 Kai Thoene
+Copyright (c) 2023 Kai Thoene
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,33 +45,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Load plugin class files.
-require_once 'includes/class-recursive-shortcode.php';
-require_once 'includes/class-recursive-shortcode-parser.php';
+require_once 'includes/class-icalyearbox.php';
+require_once 'includes/class-icalyearbox-parser.php';
 /*
 TODO Add settings, if useful.
-require_once 'includes/class-recursive-shortcode-settings.php';
+require_once 'includes/class-icalyearbox-settings.php';
 */
 
 // Load plugin libraries.
-require_once 'includes/lib/class-recursive-shortcode-admin-api.php';
-require_once 'includes/lib/class-recursive-shortcode-post-type.php';
-require_once 'includes/lib/class-recursive-shortcode-taxonomy.php';
+require_once 'includes/lib/class-icalyearbox-admin-api.php';
+require_once 'includes/lib/class-icalyearbox-post-type.php';
+require_once 'includes/lib/class-icalyearbox-taxonomy.php';
 
 /**
- * Returns the main instance of Recursive_Shortcode to prevent the need to use globals.
+ * Returns the main instance of Icalyearbox to prevent the need to use globals.
  *
  * @since  1.0.0
- * @return object Recursive_Shortcode
+ * @return object Icalyearbox
  */
-function recursive_shortcode() {
-	$instance = Recursive_Shortcode::instance( __FILE__, '1.0.0' );
+function Icalyearbox() {
+	$instance = Icalyearbox::instance( __FILE__, '1.0.0' );
 	/*
-	TODO Add settings, if useful.
+	TODO: Add settings, if useful.
 	if ( is_null( $instance->settings ) ) {
-		$instance->settings = Recursive_Shortcode_Settings::instance( $instance );
+		$instance->settings = Icalyearbox_Settings::instance( $instance );
 	}
 	*/
 	return $instance;
-}  // recursive_shortcode
+}  // Icalyearbox
 
-recursive_shortcode();
+Icalyearbox();

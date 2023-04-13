@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright (c) 2020 Kai Thoene
+Copyright (c) 2023 Kai Thoene
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ if (!defined('ABSPATH')) {
 /**
  * Admin API class.
  */
-class Recursive_Shortcode_Admin_API
+class Icalyearbox_Admin_API
 {
 
 	/**
@@ -191,8 +191,8 @@ class Recursive_Shortcode_Admin_API
 					$image_thumb = wp_get_attachment_thumb_url($data);
 				}
 				$html .= '<img id="' . $option_name . '_preview" class="image_preview" src="' . $image_thumb . '" /><br/>' . "\n";
-				$html .= '<input id="' . $option_name . '_button" type="button" data-uploader_title="' . __('Upload an image', 'recursive-shortcode') . '" data-uploader_button_text="' . __('Use image', 'recursive-shortcode') . '" class="image_upload_button button" value="' . __('Upload new image', 'recursive-shortcode') . '" />' . "\n";
-				$html .= '<input id="' . $option_name . '_delete" type="button" class="image_delete_button button" value="' . __('Remove image', 'recursive-shortcode') . '" />' . "\n";
+				$html .= '<input id="' . $option_name . '_button" type="button" data-uploader_title="' . __('Upload an image', 'icalyearbox') . '" data-uploader_button_text="' . __('Use image', 'icalyearbox') . '" class="image_upload_button button" value="' . __('Upload new image', 'icalyearbox') . '" />' . "\n";
+				$html .= '<input id="' . $option_name . '_delete" type="button" class="image_delete_button button" value="' . __('Remove image', 'icalyearbox') . '" />' . "\n";
 				$html .= '<input id="' . $option_name . '" class="image_data_field" type="hidden" name="' . $option_name . '" value="' . $data . '"/><br/>' . "\n";
 				break;
 
