@@ -1,0 +1,84 @@
+.icalyearbox {
+  padding: 5px;
+  overflow-x: auto;
+  font-size: 12px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  /* font-family: Tahoma; */
+}
+.icalyearbox table {
+  border-width: 1px;
+  border-spacing: 2px;
+  border-style: solid solid solid solid;
+  border-color: #BFBFBF;
+  border-collapse: collapse;
+  background-color: white;
+  margin: 0 auto;
+}
+.icalyearbox table.left {
+  float: left;
+}
+.icalyearbox table.right {
+  float: right;
+}
+.icalyearbox table th {
+  border-width: 1px;
+  padding: 2px 3px;
+  border-style: solid solid solid solid;
+  border-color: #BFBFBF;
+  background-color: #F0F5F7;
+  text-align: center;
+  color: #666666;
+  width: 14px;
+  height: 14px;
+}
+.icalyearbox table th.wkend {
+  background-color: #D6DBEA;
+}
+.icalyearbox table th.alt {
+  background-color: #D6DBEA;
+}
+.icalyearbox table th.plain {
+  background: none;
+}
+.icalyearbox table td {
+  border-width: 1px;
+  padding: 1px 4px;
+  border-style: solid solid solid solid;
+  border-color: #BFBFBF;
+  background-color: white;
+  width: 14px;
+  height: 14px;
+}
+.icalyearbox table td.wkend {
+  background-color: #EAF0F0;
+}
+.icalyearbox table td.blank {
+  background-color: #CDD2E2;
+}
+.icalyearbox table td.today {
+  background-color: #FAEAC9;
+}
+.icalyearbox table td:hover {
+  background-color: #CDD2E2;
+}
+.icalyearbox table tr.yr-header {
+  border-bottom-width: 2px;
+  border-style: none none solid none;
+  border-color: #D8D8D8;
+}
+.icalyearbox table tr.blank,
+.icalyearbox table tr.blank td {
+  border: 0;
+  background: none;
+  height: 5px;
+}
+.icalyearbox table a.link1 {
+  border-bottom: 0 !important;
+  color: #238fcd !important;
+  text-decoration: none;
+}
+.icalyearbox table a.link2 {
+  border-bottom: 0 !important;
+  color: #fca77d !important;
+  text-decoration: none;
+}

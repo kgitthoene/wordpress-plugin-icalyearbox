@@ -1,0 +1,105 @@
+.icalyearbox {
+  padding: 5px;
+  overflow-x: auto;
+  font-size: 12px;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  /* font-family: Tahoma; */
+
+
+  table {
+    border-width: 1px;
+    border-spacing: 2px;
+    border-style: solid solid solid solid;
+    border-color: #BFBFBF;
+    border-collapse: collapse;
+    background-color: white;
+    margin: 0 auto;
+
+    &.left {
+      float: left;
+    }
+
+    &.right {
+      float: right;
+    }
+
+    th {
+      border-width: 1px;
+      padding: 2px 3px;
+      border-style: solid solid solid solid;
+      border-color: #BFBFBF;
+      background-color: #F0F5F7;
+      text-align: center;
+      color: #666666;
+
+      width: 14px;
+      height: 14px;
+
+      &.wkend {
+        background-color: #D6DBEA;
+      }
+
+      &.alt {
+        background-color: #D6DBEA;
+      }
+
+      &.plain {
+        background: none;
+      }
+    }
+
+    td {
+      border-width: 1px;
+      padding: 1px 4px;
+      border-style: solid solid solid solid;
+      border-color: #BFBFBF;
+      background-color: white;
+
+      width: 14px;
+      height: 14px;
+
+      &.wkend {
+        background-color: #EAF0F0;
+      }
+
+      &.blank {
+        background-color: #CDD2E2;
+      }
+
+      &.today {
+        background-color: #FAEAC9;
+      }
+
+      &:hover {
+        background-color: #CDD2E2;
+      }
+    }
+
+    tr {
+      &.yr-header {
+        border-bottom-width: 2px;
+        border-style: none none solid none;
+        border-color: #D8D8D8;
+      }
+
+      &.blank,
+      &.blank td {
+        border: 0;
+        background: none;
+        height: 5px;
+      }
+    }
+
+    a.link1 {
+      border-bottom: 0 !important;
+      color: #238fcd !important;
+      text-decoration: none;
+    }
+
+    a.link2 {
+      border-bottom: 0 !important;
+      color: #fca77d !important;
+      text-decoration: none;
+    }
+  }
+}
