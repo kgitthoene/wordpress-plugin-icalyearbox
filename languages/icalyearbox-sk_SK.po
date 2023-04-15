@@ -1,0 +1,72 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: icalyearbox\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-04-15 19:49:00 +0200\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Kai Thoene <k.git.thoene@gmx.de>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: .\n"
+
+msgid "Monday"
+msgstr "pondelok"
+
+msgid "Tuesday"
+msgstr "utorok"
+
+msgid "Wednesday"
+msgstr "streda"
+
+msgid "Thursday"
+msgstr "štvrtok"
+
+msgid "Friday"
+msgstr "piatok"
+
+msgid "Saturday"
+msgstr "sobota"
+
+msgid "Sunday"
+msgstr "nedela"
+
+msgid "Jan"
+msgstr "l'ad"
+
+msgid "Feb"
+msgstr "ún"
+
+msgid "Mar"
+msgstr "brez"
+
+msgid "Apr"
+msgstr "dub"
+
+msgid "May"
+msgstr "kvet"
+
+msgid "June"
+msgstr "cerv"
+
+msgid "July"
+msgstr "cerven"
+
+msgid "Aug"
+msgstr "srp"
+
+msgid "Sept"
+msgstr "zári"
+
+msgid "Oct"
+msgstr "ruj"
+
+msgid "Nov"
+msgstr "list"
+
+msgid "Dec"
+msgstr "pros"
+

@@ -1,0 +1,162 @@
+@cell-width: 18px;
+@cell-height: 16px;
+
+.icalyearbox {
+  padding: 5px;
+  overflow-x: auto;
+  font-size: 12px;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  /* font-family: Tahoma; */
+
+  .booking-free {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+    background-color: #1fff8f60;
+  }
+  
+  .booking-reserved {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+    background-color: #fca77d60;
+  }
+  
+  table {
+    border-width: 1px;
+    border-spacing: 2px;
+    border-style: solid solid solid solid;
+    border-color: #BFBFBF;
+    border-collapse: collapse;
+    background-color: white;
+    margin: 0 auto;
+
+    &.left {
+      float: left;
+    }
+
+    &.right {
+      float: right;
+    }
+
+    th {
+      border-width: 1px;
+      /*padding: 2px 3px;*/
+      border-style: solid solid solid solid;
+      border-color: #BFBFBF;
+      background-color: #F0F5F7;
+      text-align: center;
+      color: #666666;
+
+      padding: 0;
+      width: @cell-width;
+      height: @cell-height;
+
+      &.wkend {
+        background-color: #D6DBEA;
+      }
+
+      &.alt {
+        background-color: #D6DBEA;
+      }
+
+      &.plain {
+        background: none;
+      }
+
+      span.yr-span {
+        margin-left: 3px;
+        margin-right: 3px;
+      }
+
+      span.mo-span {
+        margin-left: 3px;
+        margin-right: 3px;
+      }
+    }
+
+    td {
+      border-width: 1px;
+      /*padding: 1px 4px;*/
+      border-style: solid solid solid solid;
+      border-color: #BFBFBF;
+      background-color: white;
+
+      padding: 0;
+      width: @cell-width;
+      height: @cell-height;
+
+      &.wkend {
+        background-color: #EAF0F0;
+      }
+
+      &.blank {
+        background-color: #CDD2E2;
+      }
+
+      &.today {
+        background-color: #ffea70;
+      }
+
+      &:hover {
+        background-color: #CDD2E2;
+      }
+
+      &.occupied {
+        background-color: #fca77d60;
+      }
+    }
+
+    tr {
+      &.yr-header {
+        border-bottom-width: 2px;
+        border-style: none none solid none;
+        border-color: #D8D8D8;
+      }
+
+      &.blank,
+      &.blank td {
+        border: 0;
+        background: none;
+        height: 5px;
+      }
+    }
+
+    div.cellc {
+      position: relative;
+      width: @cell-width;
+      height: @cell-height;
+    }
+    
+    div.linkc {
+      position:absolute;
+      width: 100%;
+      height: 100%;
+      top: 0px;
+      left: 0px;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    a.link1 {
+      border-bottom: 0 !important;
+      color: #238fcd !important;
+      text-decoration: none;
+    }
+
+    a.link2 {
+      border-bottom: 0 !important;
+      /*color: #ff894e !important;*/
+      color: #777777 !important;
+      text-decoration: none;
+    }
+  }
+}

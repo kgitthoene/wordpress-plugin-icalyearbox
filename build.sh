@@ -300,20 +300,39 @@ clean() {}
 install() {
   #----------
   # 1st: create zip file.
-  DISTDIR="icalyearbox"
+  DISTDIR="$MYDIR"
+  TOKEN="icalyearbox"
   # Change to root project directory.
   cd "$MYDIR"
   # Make ZIP file name.
-  FN="${DISTDIR}.zip"
+  FN="${TOKEN}.zip"
   # Check existence of distribution directory.
-  [ -d "$DISTDIR" ] || { error "Cannot find distribution directory! DISDIR='`pwd`/$DISTDIR'"; exit 1; }
+  [ -d "$DISTDIR" ] || { error "Cannot find distribution directory! DISDIR='$DISTDIR'"; exit 1; }
   # Create ZIP file.
   rm -f "$FN"
-  ( cd "$DISTDIR"; git ls-files | zip "../$FN" -@ ) && { info "ZIP file ready. FILE='$FN'"; exit 0; }
-  error "Cannot create ZIP file!"
-  return 1
+  if ( cd "$DISTDIR"; git ls-files | zip -q "../$FN" -@ ); then
+    info "ZIP file ready. FILE='$FN'"
+  else
+    error "Cannot create ZIP file!"
+    return 1
+  fi
+}
+
+deploy() {
   #----------
   # 2dn: deploy to local site.
+  DISTDIR="icalyearbox"
+  cd "$MYDIR"
+  FN="${DISTDIR}.zip"
+  DESTINATION=~www-data/SITES/wordpress-hausimsee-digamma.mooo.com/wp-content/plugins/icalyearbox
+  GROUP="www-data"
+  if cp "$FN" "$DESTINATION"; then
+    info "File copied to destination. DESTINATION='$DESTINATION'"
+    chgrp "$GROUP" "$DESTINATION/$FN"
+  else
+    error "Cannot copy file to destination! DESTINATION='$DESTINATION'"
+    return 1
+  fi
 }
 
 usage() {
@@ -322,7 +341,7 @@ Usage: $MYNAME [OPTIONS] COMMAND [...]
 Commands:
   install -- Install project.
   build   -- Same as install.
-  deploy  -- Same as install.
+  deploy  -- Deploy file to server.
 Options:
   -h, --help -- Print this text.
 EOF
@@ -372,28 +391,12 @@ done
   exit 0
 }
 #
-cat <&6 | while read ARG; do
-  case "$ARG" in
-    install|build) install; RC=$?; [ $RC = 0 ] || exit $RC;;
-    clean) clean; RC=$?; [ $RC = 0 ] || exit $RC;;
-    serve|run) serve; RC=$?; [ $RC = 0 ] || exit $RC;;
-    *) error "Unknown command! CMD='$ARG'"; exit 10;;
-  esac
-done
-close56
-#
-if [ "$SCRIPT_ARGS_HERE" = "false" ]; then
-  usage
-fi
-#
-#----------------------------------------------------------------------
-# START
-#
 check_tools zip git
 #
 cat <&6 | while read ARG; do
   case "$ARG" in
-    install|build|deploy) install; RC=$?; [ $RC = 0 ] || exit $RC;;
+    install|build) install; RC=$?; [ $RC = 0 ] || exit $RC;;
+    deploy) deploy; RC=$?; [ $RC = 0 ] || exit $RC;;
     clean) clean; RC=$?; [ $RC = 0 ] || exit $RC;;
     *) error "Unknown command! CMD='$ARG'"; exit 10;;
   esac
