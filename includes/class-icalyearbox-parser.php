@@ -799,7 +799,6 @@ class Icalyearbox_Parser {
                 $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
                 break;
               case Icalyearbox_Datespans::IS_FREE:
-                //$position_div = sprintf('<div class="booking-free" style="background-image: url(%s);"></div>',  plugins_url('/img/free-background.svg', self::$_my_plugin_directory . '/index.php'));
                 break;
             }
             if ($month_day == 1) {

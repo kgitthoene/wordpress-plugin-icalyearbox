@@ -1,12 +1,12 @@
 {
-	"name": "kgitthoene/wordpress-plugin-recursive-shortcode",
+	"name": "kgitthoene/wordpress-plugin-icalyearbox",
 	"license": "MIT",
-	"description": "A WordPress plugin to use shortcodes in shortcodes.",
+	"description": "A WordPress plugin create yearboxes with ical data.",
 	"keywords": [
-		"wordpress", "wp", "recursive shortcode"
+		"wordpress", "wp", "calendar ical year yearbox"
 	],
 	"support": {
-		"issues": "https://github.com/kgitthoene/wordpress-plugin-recursive-shortcode/issues"
+		"issues": "https://github.com/kgitthoene/wordpress-plugin-icalyearbox/issues"
 	},
 	"require": {
 		"php": ">=5.4",

@@ -21,7 +21,7 @@ Just write: `[icalyearbox]CONTENT[/icalyearbox]`
 
 The `CONTENT` is read by the parser, found shortcodes are properly executed.
 
-[The documentation, more examples and clues can be found on the project page.](https://github.com/kgitthoene/wordpress-plugin-recursive-shortcode/blob/master/README.md#usage)
+[The documentation, more examples and clues can be found on the project page.](https://github.com/kgitthoene/wordpress-plugin-icalyearbox/blob/master/README.md#usage)
 
 === Example ===
 
@@ -31,7 +31,7 @@ The `CONTENT` is read by the parser, found shortcodes are properly executed.
 
 First the inner shortcode (urlparam) is evaluated. The result inserted as parameter for the icon-shortcode. `urlparam` is from plugin [URL Params](https://wordpress.org/plugins/url-params/). `icon` is from plugin [Better Font Awesome](https://wordpress.org/plugins/better-font-awesome/).
 
-If you open: https://yourlocation.lan/page-with-recursive-shortcode?icon=file-pdf
+If you open: https://yourlocation.lan/page-with-icalyearbox?icon=file-pdf
 
 You'll get the icon `file-pdf`.
 
@@ -46,13 +46,13 @@ You'll get the icon `file-pdf`.
 = Manual installation =
 
 1. Download the plugin as a .zip file;
-2. Unzip downloaded archive and upload the recursive-shortcode folder under your /wp-content/plugins/ directory (resulted plugin path should be /wp-content/plugins/recursive-shortcode/);
+2. Unzip downloaded archive and upload the icalyearbox folder under your /wp-content/plugins/ directory (resulted plugin path should be /wp-content/plugins/icalyearbox/);
 3. Navigate to Dashboard – Plugins and activate the plugin.
 
 
 == Issues ==
 
-[Post your issues on the project page.](https://github.com/kgitthoene/wordpress-plugin-recursive-shortcode/issues)
+[Post your issues on the project page.](https://github.com/kgitthoene/wordpress-plugin-icalyearbox/issues)
 
 
 == Frequently Asked Questions ==
@@ -80,12 +80,12 @@ No upgrade. No payments. It's FOSS.
 
 = My question is not listed. =
 
-[Open an issue on the project page.](https://github.com/kgitthoene/wordpress-plugin-recursive-shortcode/issues)
+[Open an issue on the project page.](https://github.com/kgitthoene/wordpress-plugin-icalyearbox/issues)
 
 
 == Further Information ==
 
-[Please read the README.md of this project.](https://github.com/kgitthoene/wordpress-plugin-recursive-shortcode/blob/master/README.md)
+[Please read the README.md of this project.](https://github.com/kgitthoene/wordpress-plugin-icalyearbox/blob/master/README.md)
 
 
 == Screenshots ==
