@@ -23,7 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-include 'class-icaleasyreader.php';
+//include 'class-icaleasyreader.php';
+include 'class-ics-parser-event.php';
+include 'class-ics-parser-ical.php';
 //include 'Idearia-Logger.php';
 
 
@@ -452,20 +454,14 @@ class Icalyearbox_Parser {
         }
         // Analyse ical data.
         if (file_exists($cache_fn)) {
-          $ical = new icalyearbox_iCalEasyReader();
-          $ical_lines = $ical->load(file_get_contents($cache_fn));
-          self::write_log(sprintf("ICAL-SIZE=%d", count($ical_lines)));
-          if (count($ical_lines) == 4) {
-            if (array_key_exists('VEVENT', $ical_lines)) {
-              self::write_log(sprintf("ICAL-EVENTS=%d", count($ical_lines['VEVENT'])));
-              foreach ($ical_lines['VEVENT'] as $ical_event_key => $ical_event) {
-                if (array_key_exists('DTSTART', $ical_event) and array_key_exists('DTEND', $ical_event)) {
-                  if (array_key_exists('value', $ical_event['DTSTART']) and array_key_exists('value', $ical_event['DTEND'])) {
-                    array_push($a_ical_events, $ical_event);
-                    self::write_log(sprintf("[%s] ICAL-DTSTART=%s DTEND=%s", $ical_event_key, $ical_event['DTSTART']['value'], $ical_event['DTEND']['value']));
-                  }
-                }
-              }
+          //$ical = new icalyearbox_iCalEasyReader();
+          $ical = new Ical\ICal($cache_fn, array('defaultTimeZone' => 'Europe/Berlin'));
+          $ical_lines = $ical->events();
+          self::write_log(sprintf("ICAL-SIZE=%d", $ical->eventCount));
+          if ($ical->eventCount > 0) {
+            foreach ($ical_lines as $ical_event_key  => $ical_event) {
+              array_push($a_ical_events, $ical_event);
+              self::write_log(sprintf("[%s] ICAL-DTSTART=%s DTEND=%s", $ical_event_key, $ical_event->dtstart, $ical_event->dtend));
             }
           }
         }
@@ -477,8 +473,8 @@ class Icalyearbox_Parser {
     //----------
     // Get years and months per year from ical events.
     foreach ($a_ical_events as $ical_event) {
-      $dt_start = $ical_event['DTSTART']['value'];
-      $dt_end = $ical_event['DTEND']['value'];
+      $dt_start = $ical_event->dtstart;
+      $dt_end = $ical_event->dtend;
       foreach ([$dt_start, $dt_end] as $dt) {
         if (preg_match("/^(\d{4})(\d{2})(\d{2})/", $dt, $matches)) {
           if (count($matches) == 4) {
@@ -738,6 +734,7 @@ class Icalyearbox_Parser {
     $day_now = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", date('Y'), date('m'), date('d')));
     $doc = "";
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
+      self::write_log(sprintf("RENDER YEAR=%d", $year));
       // Determine witch month has the „earliest“ weekday.
       $calendar_starts_with_wday = 8;
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
@@ -759,7 +756,6 @@ class Icalyearbox_Parser {
       }
       self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
       //
-      $doc .= sprintf('<p>TAG=\'%s\'</p>', __(date('l'), 'icalyearbox'));
       $doc .= sprintf('<div class="icalyearbox" year="%d"><table class="%s"><tbody>', $year, $align) . PHP_EOL;
       // Table header:
       $doc .= sprintf('<tr class="yr-header"><th class="plain"><span class="yr-span">%04d</span></th>', $year) . PHP_EOL;
