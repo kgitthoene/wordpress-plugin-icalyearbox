@@ -47,7 +47,7 @@
   text-align: center;
   color: #666666;
   padding: 0;
-  width: 18px;
+  width: 21px;
   height: 16px;
 }
 .icalyearbox table th.wkend {
@@ -74,7 +74,7 @@
   border-color: #BFBFBF;
   background-color: white;
   padding: 0;
-  width: 18px;
+  width: 21px;
   height: 16px;
 }
 .icalyearbox table td.wkend {
@@ -105,8 +105,8 @@
 }
 .icalyearbox table div.cellc {
   position: relative;
-  width: 18px;
-  height: 16px;
+  width: 100%;
+  height: 100%;
 }
 .icalyearbox table div.linkc {
   position: absolute;
