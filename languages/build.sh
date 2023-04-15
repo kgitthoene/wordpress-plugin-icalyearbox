@@ -1,5 +1,27 @@
 #!/bin/sh
 #
+# MIT License
+# 
+# Copyright (c) 2023 Kai Thoene
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
 #----------
 # Get Startup Variables
 ME="$0"
@@ -273,19 +295,40 @@ trap at_exit EXIT HUP INT QUIT TERM
 #----------
 # Internal Script Functions
 #
-clean() {}
+clean() {
+  (
+    #----------
+    # remove PO and MO files.
+    cd "$MYDIR"
+    rm *.po *.mo; RC=$?; [ $RC = 0 ] || { error "Cannot remove PO & MO files!"; exit $RC; }
+  )
+}
 
-install() {}
+install() {
+  (
+    #----------
+    # 1st: create PO files.
+    cd "$MYDIR"
+    ruby ./create-po-files.rb; RC=$?; [ $RC = 0 ] || { error "Cannot create PO files!"; exit $RC; }
+    cp icalyearbox-en_GB.po icalyearbox.po
+    #----------
+    # 2nd: Create MO files
+    check_tools msgfmt
+    for FILE in *.po; do
+      BN=`echo "$FILE" | sed -e 's/\.po$//'`
+      msgfmt "$FILE" -o "${BN}.mo"; RC=$?; [ $RC = 0 ] || { error "Cannot compile! FILE='$FILE'"; exit $RC; }
+    done
+    info "All PO files compiled to MO files."
+  )
+}
 
 usage() {
   cat >&2 <<EOF
 Usage: $MYNAME [OPTIONS] COMMAND [...]
 Commands:
-  install -- Install project.
+  install -- Create PO and MO files.
   build   -- Same as install.
-  clean   -- Clean complete project. Doesn't affect database.
-  serve   -- Start internal server.
-  run     -- Same as serve.
+  clean   -- Remove created files.
 Options:
   -h, --help -- Print this text.
 EOF
@@ -319,7 +362,7 @@ while [ "${#}" != "0" ]; do
         C*) info "BIG-CLEAN"; exit $? ;;
         q*) SCRIPT_OPT_QUIT=true;;
         Q*) exit 0;;
-        *) log CRIT "invalid option -- '${flag%"${flag#?}"}'"; usage 1;;
+        *) log CRIT "invalid option -- '${flag%"${flag#?}"}'"; usage 1; exit 1;;
       esac
       flag="${flag#?}"
     done
@@ -330,31 +373,22 @@ done
 #----------------------------------------------------------------------
 # START
 #
-#[ "$SCRIPT_OPT_QUIT" = true ] && {
-#  info "QUIT"
-#  exit 0
-#}
-##
-#cat <&6 | while read ARG; do
-#  case "$ARG" in
-#    install|build) install; RC=$?; [ $RC = 0 ] || exit $RC;;
-#    clean) clean; RC=$?; [ $RC = 0 ] || exit $RC;;
-#    serve|run) serve; RC=$?; [ $RC = 0 ] || exit $RC;;
-#    *) error "Unknown command! CMD='$ARG'"; exit 10;;
-#  esac
-#done
-#close56
-##
-#if [ "$SCRIPT_ARGS_HERE" = "false" ]; then
-#  usage
-#fi
-##
-check_tools msgfmt
-(
-  cd "$MYDIR"
-  for FILE in *.po; do
-    BN=`echo "$FILE" | sed -e 's/\.po$//'`
-    msgfmt "$FILE" -o "${BN}.mo" || { error "Cannot compile! FILE='$FILE'"; exit 1; }
-  done
-  info "All PO files compiled to MO files."
-)
+[ "$SCRIPT_OPT_QUIT" = true ] && {
+  info "QUIT"
+  exit 0
+}
+#
+check_tools zip git
+#
+cat <&6 | while read ARG; do
+  case "$ARG" in
+    install|build) install; RC=$?; [ $RC = 0 ] || exit $RC;;
+    clean) clean; RC=$?; [ $RC = 0 ] || exit $RC;;
+    *) error "Unknown command! CMD='$ARG'"; exit 10;;
+  esac
+done
+close56
+#
+if [ "$SCRIPT_ARGS_HERE" = "false" ]; then
+  usage
+fi

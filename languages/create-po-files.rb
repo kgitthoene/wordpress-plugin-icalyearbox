@@ -376,7 +376,7 @@ It.debug "CONFIG=#{It.pp_s($g_config)}"
 token = 'icalyearbox'
 nr_codes = 0
 h_country_codes = {}
-CSV.foreach("country-codes.csv", headers: true, col_sep: ";") do |row|
+CSV.foreach(File.join("src", "country-codes.csv"), headers: true, col_sep: ";") do |row|
   h_country_codes[row['Code']] = row['Name']
   nr_codes += 1
 end
@@ -384,7 +384,7 @@ It.info("#{nr_codes} country codes loaded.")
 
 nr_abbreviations = 0
 h_month_abbreviations = {}
-CSV.foreach("international-monthnames-abr.csv", headers: true, col_sep: ";") do |row|
+CSV.foreach(File.join("src", "international-monthnames-abr.csv"), headers: true, col_sep: ";") do |row|
   h_month_abbreviations[row['Code']] = row
   nr_abbreviations += 1
 end
@@ -427,7 +427,6 @@ EOF
     end
     #
     if h_month_abbreviations.key?(lang_code) && h_month_abbreviations.key?('en')
-      puts(h_month_abbreviations[lang_code].inspect)
       (1..12).each do |nr_month|
         f.puts("msgid \"#{h_month_abbreviations['en'][nr_month.to_s]}\"")
         f.puts("msgstr \"#{h_month_abbreviations[lang_code][nr_month.to_s]}\"")
@@ -440,7 +439,7 @@ end
 
 
 nr_languages = 0
-CSV.foreach("international-weekdays.csv", headers: true, col_sep: ";") do |row|
+CSV.foreach(File.join("src", "international-weekdays.csv"), headers: true, col_sep: ";") do |row|
   lang_code = row['Code']
   # Find country code.
   b_found = false

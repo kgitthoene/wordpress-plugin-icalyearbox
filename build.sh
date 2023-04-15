@@ -310,7 +310,7 @@ install() {
   [ -d "$DISTDIR" ] || { error "Cannot find distribution directory! DISDIR='$DISTDIR'"; exit 1; }
   # Create ZIP file.
   rm -f "$FN"
-  if ( cd "$DISTDIR"; git ls-files | zip -q "../$FN" -@ ); then
+  if ( cd "$DISTDIR"; git ls-files | zip -q "$FN" -@ ); then
     info "ZIP file ready. FILE='$FN'"
   else
     error "Cannot create ZIP file!"
