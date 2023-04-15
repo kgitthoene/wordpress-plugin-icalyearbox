@@ -105,10 +105,8 @@
 }
 .icalyearbox table div.cellc {
   position: relative;
-  /*
-      width: @cell-width;
-      height: @cell-height;
-      */
+  width: 18px;
+  height: 16px;
 }
 .icalyearbox table div.linkc {
   position: absolute;
