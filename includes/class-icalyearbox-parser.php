@@ -638,16 +638,6 @@ class Icalyearbox_Parser {
     }
     //
     //----------
-    // Add ical months for orhant years:
-    if ($b_use_ical_years) {
-      foreach ($a_ical_years as $year) {
-        if (!in_array($year, $a_ical_year_months)) {
-          $a_ical_year_months[$year] = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-        }
-      }
-    }
-    //
-    //----------
     // Collect all months.
     $a_months = array();
     //self::write_log($atts);
@@ -791,6 +781,20 @@ class Icalyearbox_Parser {
         }
       }
     }
+    self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
+    self::write_log($a_ical_years);
+    self::write_log($a_ical_year_months);
+    //
+    //----------
+    // Add ical months for orhant years:
+    if ($b_use_ical_years) {
+      foreach ($a_ical_years as $year) {
+        if (!array_key_exists($year, $a_ical_year_months)) {
+          $a_ical_year_months[$year] = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        }
+      }
+    }
+    //
     self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
     self::write_log($a_ical_years);
     self::write_log($a_ical_year_months);
