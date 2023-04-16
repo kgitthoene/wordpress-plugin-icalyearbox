@@ -279,7 +279,7 @@ class Icalyearbox_Parser {
 
   private static function _set_year($match, &$year) {
     if (strtolower($match) == "now") {
-      $year = intval(date('Y'));
+      $year = intval(intval(date('Y')));
       return true;
     } else {
       if (preg_match("/^[+-]{0,1}[1-9]\d*$/", $match, $matches)) {
@@ -297,7 +297,7 @@ class Icalyearbox_Parser {
       return true;
     } else {
       if (strtolower($match) == "now") {
-        $month = intval(date('m'));
+        $month = intval(intval(date('m')));
         return true;
       } else {
         if ((intval($match) >= 1) and (intval($match) <= 12)) {
@@ -459,7 +459,7 @@ class Icalyearbox_Parser {
           $ical_lines = $ical->events();
           self::write_log(sprintf("ICAL-SIZE=%d", $ical->eventCount));
           if ($ical->eventCount > 0) {
-            foreach ($ical_lines as $ical_event_key  => $ical_event) {
+            foreach ($ical_lines as $ical_event_key => $ical_event) {
               array_push($a_ical_events, $ical_event);
               self::write_log(sprintf("[%s] ICAL-DTSTART=%s DTEND=%s", $ical_event_key, $ical_event->dtstart, $ical_event->dtend));
             }
@@ -508,8 +508,6 @@ class Icalyearbox_Parser {
       }
       $a_ical_year_months[$year] = $a_cont_months;
     }
-    self::write_log($a_ical_years);
-    self::write_log($a_ical_year_months);
     //
     //----------
     // Collect all years.
@@ -523,6 +521,57 @@ class Icalyearbox_Parser {
         self::write_log($matches);
         if (strtolower($matches[1]) == 'ical') {
           $b_use_ical_years = true;
+          switch (count($matches)) {
+            case 2:
+              // Detected the word "ical":
+              break;
+            case 3:
+              // Detected one plus or minus.
+              $offset = intval($matches[2]);
+              if ($offset < 0) {
+                $base_year = min($a_ical_years);
+              } else {
+                $base_year = max($a_ical_years);
+              }
+              $from = $base_year;
+              $to = $base_year + $offset;
+              if ($from > $to) {
+                self::_swap_values($from, $to);
+              }
+              for ($year = $from; $year <= $to; $year++) {
+                if (!in_array($year, $a_ical_years)) {
+                  array_push($a_ical_years, $year);
+                }
+              }
+              sort($a_ical_years);
+              break;
+            case 4:
+              // Detected two plus or minus values.
+              $offset1 = intval($matches[2]);
+              $offset2 = intval($matches[3]);
+              if ($offset1 < 0) {
+                $base_year1 = min($a_ical_years);
+              } else {
+                $base_year1 = max($a_ical_years);
+              }
+              if ($offset2 < 0) {
+                $base_year2 = min($a_ical_years);
+              } else {
+                $base_year2 = max($a_ical_years);
+              }
+              $from = $base_year1 + $offset1;
+              $to = $base_year2 + $offset2;
+              if ($from > $to) {
+                self::_swap_values($from, $to);
+              }
+              for ($year = $from; $year <= $to; $year++) {
+                if (!in_array($year, $a_ical_years)) {
+                  array_push($a_ical_years, $year);
+                }
+              }
+              sort($a_ical_years);
+              break;
+          }
         } else {
           self::_set_year($matches[1], $base_year);
           switch (count($matches)) {
@@ -587,7 +636,16 @@ class Icalyearbox_Parser {
         }
       }
     }
-    self::write_log($a_years);
+    //
+    //----------
+    // Add ical months for orhant years:
+    if ($b_use_ical_years) {
+      foreach ($a_ical_years as $year) {
+        if (!in_array($year, $a_ical_year_months)) {
+          $a_ical_year_months[$year] = array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+        }
+      }
+    }
     //
     //----------
     // Collect all months.
@@ -674,32 +732,57 @@ class Icalyearbox_Parser {
           if (preg_match("/^((?i)NOW([+-])(?i)ICAL)$/", $atts_months, $matches)) {
             self::write_log($matches);
             $operator = $matches[2];
-            $month_now = date('m');
-            $year_now = date('Y');
+            $year_now = intval(date('Y'));
+            $month_now = intval(date('m'));
             $b_is_ok = false;
+            // Correct months in current year:
             foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
-              if (array_key_exists($year, $a_ical_year_months)) {
-                if ($operator == '+') {
-                  $max_ical_month = max($a_ical_year_months[$year]);
-                  if ($max_ical_month >= $month_now) {
-                    $new_month_list = array();
-                    for ($m = $month_now; $m <= $max_ical_month; $m++) {
-                      array_push($new_month_list, $m);
+              if ($year == $year_now) {
+                if (array_key_exists($year, $a_ical_year_months)) {
+                  if ($operator == '+') {
+                    $max_ical_month = max($a_ical_year_months[$year]);
+                    if ($max_ical_month >= $month_now) {
+                      $new_month_list = array();
+                      for ($m = $month_now; $m <= $max_ical_month; $m++) {
+                        array_push($new_month_list, $m);
+                      }
+                      $a_ical_year_months[$year] = $new_month_list;
+                      $b_use_ical_months = true;
                     }
-                    $a_ical_year_months[$year] = $new_month_list;
-                    $b_use_ical_months = true;
-                  }
-                } else {
-                  $min_ical_month = min($a_ical_year_months[$year]);
-                  if ($min_ical_month <= $month_now) {
-                    $new_month_list = array();
-                    for ($m = $min_ical_month; $m <= $month_now; $m++) {
-                      array_push($new_month_list, $m);
+                  } else {
+                    $min_ical_month = min($a_ical_year_months[$year]);
+                    if ($min_ical_month <= $month_now) {
+                      $new_month_list = array();
+                      for ($m = $min_ical_month; $m <= $month_now; $m++) {
+                        array_push($new_month_list, $m);
+                      }
+                      $a_ical_year_months[$year] = $new_month_list;
+                      $b_use_ical_months = true;
                     }
-                    $a_ical_year_months[$year] = $new_month_list;
-                    $b_use_ical_months = true;
                   }
                 }
+              }
+            }
+            if ($b_use_ical_years) {
+              // Correct years, if we are in ical mode:
+              $a_keys_to_remove = array();
+              if ($operator == '+') {
+                // Remove all years before the current year:
+                foreach ($a_ical_years as $key => $year) {
+                  if ($year < $year_now) {
+                    array_push($a_keys_to_remove, $key);
+                  }
+                }
+              } else {
+                // Remove all years before the current year:
+                foreach ($a_ical_years as $key => $year) {
+                  if ($year > $year_now) {
+                    array_push($a_keys_to_remove, $key);
+                  }
+                }
+              }
+              while (($key = array_pop($a_keys_to_remove)) != null) {
+                unset($a_ical_years[$key]);
               }
             }
           } else {
@@ -708,6 +791,11 @@ class Icalyearbox_Parser {
         }
       }
     }
+    self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
+    self::write_log($a_ical_years);
+    self::write_log($a_ical_year_months);
+    self::write_log(sprintf("YEARS & MONTHS:"));
+    self::write_log($a_years);
     self::write_log($a_months);
     //
     //----------
@@ -731,7 +819,7 @@ class Icalyearbox_Parser {
     // Get alignment.
     $align = (in_array($atts['align'], ['left', 'center', 'right']) ? $atts['align'] : 'center');
     //
-    $day_now = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", date('Y'), date('m'), date('d')));
+    $day_now = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       self::write_log(sprintf("RENDER YEAR=%d", $year));
@@ -756,9 +844,9 @@ class Icalyearbox_Parser {
       }
       self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
       //
-      $doc .= sprintf('<div class="icalyearbox" year="%d"><table class="%s"><tbody>', $year, $align) . PHP_EOL;
+      $doc .= sprintf('<div class="icalyearbox icalyearbox-tag" year="%d"><table class="icalyearbox-tag%s"><tbody>', $year, ($align == '' ? '' : (' ' . $align))) . PHP_EOL;
       // Table header:
-      $doc .= sprintf('<tr class="yr-header"><th class="plain"><span class="yr-span">%04d</span></th>', $year) . PHP_EOL;
+      $doc .= sprintf('<tr class="icalyearbox-tag yr-header"><th class="icalyearbox-tag plain"><span class="icalyearbox-tag yr-span">%04d</span></th>', $year) . PHP_EOL;
       for ($i = 0; $i < $calendar_width; $i++) {
         $offset = ($i % 7);
         $offset = ($offset == 0 ? 7 : $offset);
@@ -773,7 +861,9 @@ class Icalyearbox_Parser {
         $month_starts_with_wday = ($month_starts_with_wday == 0 ? 7 : $month_starts_with_wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         // Month name:
-        $doc .= sprintf('<tr><th%s><span class="mo-span">%s</span></th>', (($nr_month_counter % 2) == 1 ? ' class="alt"' : ''), __($a_months_abr[$month - 1], 'icalyearbox')) . PHP_EOL;
+        $doc .= sprintf('<tr class="icalyearbox-tag"><th%s><span class="mo-span">%s</span></th>',
+          (($nr_month_counter % 2) == 1 ? ' class="icalyearbox-tag alt"' : ' class="icalyearbox-tag"'),
+          __($a_months_abr[$month - 1], 'icalyearbox')) . PHP_EOL;
         self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
         for ($i = 0; $i < $calendar_width; $i++) {
           $wday = (($calendar_starts_with_wday + $i) % 7);
@@ -800,7 +890,7 @@ class Icalyearbox_Parser {
             if ($month_day == 1) {
               self::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
             }
-            $a_wday_classes = array();
+            $a_wday_classes = array('icalyearbox-tag');
             if ($wday >= 6) {
               array_push($a_wday_classes, "wkend");
             }
@@ -811,10 +901,10 @@ class Icalyearbox_Parser {
             if (count($a_wday_classes)) {
               $wday_class = sprintf(' class="%s"', implode(' ', $a_wday_classes));
             }
-            $doc .= sprintf('<td%s%s><div class="cellc">%s<div class="linkc"><a href="#" class="link2" title="TITLE" rel="nofollow">%02d</a></div></div></td>',
+            $doc .= sprintf('<td%s%s><div class="icalyearbox-tag cellc">%s<div class="icalyearbox-tag linkc"><a href="#" class="icalyearbox-tag link2" title="TITLE" rel="nofollow">%02d</a></div></div></td>',
               $wday_class, $td_backgroud_image_style, $position_div, $month_day) . PHP_EOL;
           } else {
-            $doc .= sprintf('<td class="blank"><div class="cellc">&nbsp;</div></td>') . PHP_EOL;
+            $doc .= sprintf('<td class="icalyearbox-tag blank"><div class="icalyearbox-tag cellc">&nbsp;</div></td>') . PHP_EOL;
           }
         }
         $doc .= '</tr>' . PHP_EOL;
