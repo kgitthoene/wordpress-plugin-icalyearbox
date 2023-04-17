@@ -719,7 +719,12 @@ class Icalyearbox_Parser {
             }
           }
         } else {
+          // now[+-]ical
           if (preg_match("/^((?i)NOW([+-])(?i)ICAL)$/", $atts_months, $matches)) {
+            self::write_log(sprintf("NOW[+-]ICAL: ICAL-YEARS & ICAL-MONTHS: USE-ICAL-YEARS=%s", self::_booltostr($b_use_ical_years)));
+            self::write_log($a_ical_years);
+            self::write_log(sprintf("NOW[+-]ICAL: YEARS & MONTHS:"));
+            self::write_log($a_years);
             self::write_log($matches);
             $operator = $matches[2];
             $year_now = intval(date('Y'));
@@ -728,27 +733,28 @@ class Icalyearbox_Parser {
             // Correct months in current year:
             foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
               if ($year == $year_now) {
-                if (array_key_exists($year, $a_ical_year_months)) {
-                  if ($operator == '+') {
-                    $max_ical_month = max($a_ical_year_months[$year]);
-                    if ($max_ical_month >= $month_now) {
-                      $new_month_list = array();
-                      for ($m = $month_now; $m <= $max_ical_month; $m++) {
-                        array_push($new_month_list, $m);
-                      }
-                      $a_ical_year_months[$year] = $new_month_list;
-                      $b_use_ical_months = true;
+                if (!array_key_exists($year, $a_ical_year_months)) {
+                  $a_ical_year_months[$year] = array();
+                }
+                if ($operator == '+') {
+                  $max_ical_month = ((in_array($year + 1, ($b_use_ical_years ? $a_ical_years : $a_years))) ? 12 : max($a_ical_year_months[$year]));
+                  if ($max_ical_month >= $month_now) {
+                    $new_month_list = array();
+                    for ($m = $month_now; $m <= $max_ical_month; $m++) {
+                      array_push($new_month_list, $m);
                     }
-                  } else {
-                    $min_ical_month = min($a_ical_year_months[$year]);
-                    if ($min_ical_month <= $month_now) {
-                      $new_month_list = array();
-                      for ($m = $min_ical_month; $m <= $month_now; $m++) {
-                        array_push($new_month_list, $m);
-                      }
-                      $a_ical_year_months[$year] = $new_month_list;
-                      $b_use_ical_months = true;
+                    $a_ical_year_months[$year] = $new_month_list;
+                    $b_use_ical_months = true;
+                  }
+                } else {
+                  $min_ical_month = ((array_key_exists($year - 1, ($b_use_ical_years ? $a_ical_years : $a_years))) ? 1 : min($a_ical_year_months[$year]));
+                  if ($min_ical_month <= $month_now) {
+                    $new_month_list = array();
+                    for ($m = $min_ical_month; $m <= $month_now; $m++) {
+                      array_push($new_month_list, $m);
                     }
+                    $a_ical_year_months[$year] = $new_month_list;
+                    $b_use_ical_months = true;
                   }
                 }
               }
@@ -825,19 +831,18 @@ class Icalyearbox_Parser {
     //
     $day_now = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
+    // Calc start week day and width for all years:
+    $calendar_starts_with_wday = 8;
+    $calendar_width = 0;
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
-      self::write_log(sprintf("RENDER YEAR=%d", $year));
       // Determine witch month has the „earliest“ weekday.
-      $calendar_starts_with_wday = 8;
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
         $month_first_day = DateTime::createFromFormat('Ymd', sprintf("%04d%02d01", $year, $month));
         $wday = $month_first_day->format('w');
         $wday = ($wday == 0 ? 7 : $wday);
         $calendar_starts_with_wday = ($wday < $calendar_starts_with_wday ? $wday : $calendar_starts_with_wday);
-        self::write_log(sprintf("%04d%02d01 = %d '%s'", $year, $month, $wday, __($a_wdays[$wday - 1], 'icalyearbox')));
       }
       // Determine the „width“ of the calendar.
-      $calendar_width = 0;
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
         $month_first_day = DateTime::createFromFormat('Ymd', sprintf("%04d%02d01", $year, $month));
         $wday = $month_first_day->format('w');
@@ -846,15 +851,24 @@ class Icalyearbox_Parser {
         $mwidth = $nr_mdays + ($wday - $calendar_starts_with_wday);
         $calendar_width = ($mwidth > $calendar_width ? $mwidth : $calendar_width);
       }
+    }
+    //
+    foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
+      self::write_log(sprintf("RENDER YEAR=%d", $year));
       self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
       //
-      $doc .= sprintf('<div class="icalyearbox icalyearbox-tag" year="%d"><table class="icalyearbox-tag%s"><tbody>', $year, ($align == '' ? '' : (' ' . $align))) . PHP_EOL;
+      $doc .= sprintf('<div class="reset-this icalyearbox icalyearbox-tag" year="%d"><table class="icalyearbox-tag%s"><tbody>', $year, ($align == '' ? '' : (' ' . $align))) . PHP_EOL;
       // Table header:
-      $doc .= sprintf('<tr class="icalyearbox-tag yr-header"><th class="icalyearbox-tag plain"><span class="icalyearbox-tag yr-span">%04d</span></th>', $year) . PHP_EOL;
+      $doc .= sprintf('<tr class="icalyearbox-tag yr-header"><th class="icalyearbox-tag"><div class="icalyearbox-tag cellc plain"><span class="icalyearbox-tag yr-span">%04d</span></div></th>', $year) . PHP_EOL;
       for ($i = 0; $i < $calendar_width; $i++) {
         $offset = ($i % 7);
         $offset = ($offset == 0 ? 7 : $offset);
-        $doc .= sprintf('<th>%s</th>', $a_wdays_first_chracter[($offset + $calendar_starts_with_wday - 1) % 7]) . PHP_EOL;
+        $wday_index = ($offset + $calendar_starts_with_wday - 1) % 7;
+        $wday_class = '';
+        if ($wday_index >= 5) {
+          $wday_class = ' wkend';
+        }
+        $doc .= sprintf('<th><div class="cellc%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$wday_index]) . PHP_EOL;
       }
       $doc .= '</tr>' . PHP_EOL;
       // Table body (months):
@@ -865,7 +879,7 @@ class Icalyearbox_Parser {
         $month_starts_with_wday = ($month_starts_with_wday == 0 ? 7 : $month_starts_with_wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         // Month name:
-        $doc .= sprintf('<tr class="icalyearbox-tag"><th%s><span class="mo-span">%s</span></th>',
+        $doc .= sprintf('<tr class="icalyearbox-tag"><th%s><div class="cellc"><span class="mo-span">%s</span></div></th>',
           (($nr_month_counter % 2) == 1 ? ' class="icalyearbox-tag alt"' : ' class="icalyearbox-tag"'),
           __($a_months_abr[$month - 1], 'icalyearbox')) . PHP_EOL;
         self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
@@ -876,7 +890,6 @@ class Icalyearbox_Parser {
           if (($month_day >= 1) and ($month_day <= $nr_mdays)) {
             $dt_this_date = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", $year, $month, $month_day));
             $pos = $ical_spans->position($dt_this_date);
-            $position_div = '';
             $td_backgroud_image_style = '';
             switch ($pos) {
               case Icalyearbox_Datespans::IS_START:
@@ -894,7 +907,7 @@ class Icalyearbox_Parser {
             if ($month_day == 1) {
               self::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
             }
-            $a_wday_classes = array('icalyearbox-tag');
+            $a_wday_classes = array();
             if ($wday >= 6) {
               array_push($a_wday_classes, "wkend");
             }
@@ -903,12 +916,12 @@ class Icalyearbox_Parser {
             }
             $wday_class = "";
             if (count($a_wday_classes)) {
-              $wday_class = sprintf(' class="%s"', implode(' ', $a_wday_classes));
+              $wday_class = sprintf(' %s', implode(' ', $a_wday_classes));
             }
-            $doc .= sprintf('<td%s%s><div class="icalyearbox-tag cellc">%s<div class="icalyearbox-tag linkc"><a href="#" class="icalyearbox-tag link2" title="TITLE" rel="nofollow">%02d</a></div></div></td>',
-              $wday_class, $td_backgroud_image_style, $position_div, $month_day) . PHP_EOL;
+            $doc .= sprintf('<td><div class="icalyearbox-tag cellc%s"%s><a href="#" class="icalyearbox-tag link" title="TITLE" rel="nofollow">%02d</a></div></td>',
+              $wday_class, $td_backgroud_image_style, $month_day) . PHP_EOL;
           } else {
-            $doc .= sprintf('<td class="icalyearbox-tag blank"><div class="icalyearbox-tag cellc">&nbsp;</div></td>') . PHP_EOL;
+            $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc blank">&nbsp;</div></td>') . PHP_EOL;
           }
         }
         $doc .= '</tr>' . PHP_EOL;
