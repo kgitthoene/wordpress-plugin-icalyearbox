@@ -29,7 +29,7 @@ include 'Idearia-Logger.php';
 /**
  * Main plugin class file.
  *
- * @package WordPress Plugin Recursive Shortcode/Includes
+ * @package WordPress Plugin Icalyearbox
  */
 
 /*

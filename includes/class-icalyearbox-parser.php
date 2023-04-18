@@ -345,6 +345,7 @@ class Icalyearbox_Parser {
    * @since   1.0.0
    */
   public static function parse($atts, $content, &$evaluate_stack = NULL, $token = 'icalyearbox') {
+    date_default_timezone_set("Europe/Berlin");
     //----------
     self::_init_directories();
     self::_init_log(self::$_my_log_directory);
@@ -895,13 +896,13 @@ class Icalyearbox_Parser {
             $td_backgroud_image_style = '';
             switch ($pos) {
               case Icalyearbox_Datespans::IS_START:
-                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/img/start-background.svg', self::$_my_plugin_directory . '/index.php'));
+                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/start-background.svg', self::$_my_plugin_directory . '/index.php'));
                 break;
               case Icalyearbox_Datespans::IS_END:
-                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/img/end-background.svg', self::$_my_plugin_directory . '/index.php'));
+                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/end-background.svg', self::$_my_plugin_directory . '/index.php'));
                 break;
               case Icalyearbox_Datespans::IS_OCCUPIED:
-                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
                 break;
               case Icalyearbox_Datespans::IS_FREE:
                 break;
