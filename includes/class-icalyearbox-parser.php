@@ -38,9 +38,11 @@ include 'class-ics-parser-ical.php';
 class Icalyearbox_Datespan {
   private $_from;
   private $_to;
+  private $_description;
 
-  public function __construct($from, $to) {
+  public function __construct($from, $to, $description = "") {
     if (is_a($from, 'DateTime') and is_a($to, 'DateTime')) {
+      $this->_description = $description;
       if ($from <= $to) {
         $this->_from = $from;
         $this->_to = $to;
@@ -107,6 +109,10 @@ class Icalyearbox_Datespan {
     return Icalyearbox_Datespans::IS_OUTSIDE;
   } // add
 
+  public function description() {
+    return $this->_description;
+  } // description
+
   public function inspect() {
     $value = sprintf("Icalyearbox_Datespan(_from = '%s', _to = '%s')", $this->_from->format('Ymd'), $this->_to->format('Ymd'));
     return $value;
@@ -120,14 +126,17 @@ class Icalyearbox_Datespans {
   public const IS_FREE = 2;
   public const IS_END = 3;
 
+  private $_raw_spans;
   private $_spans;
 
   public function __construct() {
+    $this->_raw_spans = array();
     $this->_spans = array();
   } // __construct
 
   public function add($span) {
     if (is_a($span, 'Icalyearbox_Datespan')) {
+      array_push($this->_raw_spans, $span);
       $b_is_found = false;
       foreach ($this->_spans as $saved_span) {
         if ($saved_span->add($span)) {
@@ -158,6 +167,26 @@ class Icalyearbox_Datespans {
     } else {
       throw new ErrorException("Parameter must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
     }
+  }
+
+  public function description($dt) {
+    $rv = array();
+    if (is_a($dt, 'DateTime')) {
+      foreach ($this->_raw_spans as $span) {
+        $pos = $span->position($dt);
+        switch ($pos) {
+          case self::IS_START:
+          case self::IS_END:
+          case self::IS_OCCUPIED:
+            if (!empty($span->description())) {
+              array_push($rv, $span->description());
+            }
+        }
+      }
+    } else {
+      throw new ErrorException("Parameter must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
+    }
+    return array_unique($rv);
   }
 
   public function inspect() {
@@ -476,6 +505,7 @@ class Icalyearbox_Parser {
     foreach ($a_ical_events as $ical_event) {
       $dt_start = $ical_event->dtstart;
       $dt_end = $ical_event->dtend;
+      $dt_description = (!empty($ical_event->description) ? $ical_event->description : (!empty($ical_event->summary) ? $ical_event->summary : ''));
       foreach ([$dt_start, $dt_end] as $dt) {
         if (preg_match("/^(\d{4})(\d{2})(\d{2})/", $dt, $matches)) {
           if (count($matches) == 4) {
@@ -496,7 +526,7 @@ class Icalyearbox_Parser {
       // Collect ical spans:
       $from = DateTime::createFromFormat('Ymd', substr($dt_start, 0, 8));
       $to = DateTime::createFromFormat('Ymd', substr($dt_end, 0, 8));
-      $ical_spans->add(new Icalyearbox_Datespan($from, $to));
+      $ical_spans->add(new Icalyearbox_Datespan($from, $to, $dt_description));
     }
     //----------
     // Make contious list of months in a year:
@@ -802,6 +832,12 @@ class Icalyearbox_Parser {
       }
     }
     //
+    // Get alignment.
+    $align = (in_array($atts['align'], ['left', 'center', 'right']) ? $atts['align'] : 'center');
+    //
+    // Get calendar type.
+    $type = (in_array($atts['type'], ['booking', 'event']) ? $atts['type'] : 'event');
+    //
     self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
     self::write_log($a_ical_years);
     self::write_log($a_ical_year_months);
@@ -826,9 +862,6 @@ class Icalyearbox_Parser {
     //
     //----------
     // Render calender.
-    //
-    // Get alignment.
-    $align = (in_array($atts['align'], ['left', 'center', 'right']) ? $atts['align'] : 'center');
     //
     $day_now = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
@@ -894,18 +927,34 @@ class Icalyearbox_Parser {
             $dt_this_date = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", $year, $month, $month_day));
             $pos = $ical_spans->position($dt_this_date);
             $td_backgroud_image_style = '';
-            switch ($pos) {
-              case Icalyearbox_Datespans::IS_START:
-                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/start-background.svg', self::$_my_plugin_directory . '/index.php'));
-                break;
-              case Icalyearbox_Datespans::IS_END:
-                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/end-background.svg', self::$_my_plugin_directory . '/index.php'));
-                break;
-              case Icalyearbox_Datespans::IS_OCCUPIED:
-                $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
-                break;
-              case Icalyearbox_Datespans::IS_FREE:
-                break;
+            if ($type == "event") {
+              switch ($pos) {
+                case Icalyearbox_Datespans::IS_START:
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  break;
+                case Icalyearbox_Datespans::IS_END:
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  break;
+                case Icalyearbox_Datespans::IS_OCCUPIED:
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  break;
+                case Icalyearbox_Datespans::IS_FREE:
+                  break;
+              }
+            } else {
+              switch ($pos) {
+                case Icalyearbox_Datespans::IS_START:
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/start-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  break;
+                case Icalyearbox_Datespans::IS_END:
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/end-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  break;
+                case Icalyearbox_Datespans::IS_OCCUPIED:
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  break;
+                case Icalyearbox_Datespans::IS_FREE:
+                  break;
+              }
             }
             if ($month_day == 1) {
               self::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
@@ -921,8 +970,13 @@ class Icalyearbox_Parser {
             if (count($a_wday_classes)) {
               $wday_class = sprintf(' %s', implode(' ', $a_wday_classes));
             }
-            $doc .= sprintf('<td><div class="icalyearbox-tag cellc square%s"%s><a href="#" class="icalyearbox-tag link" title="%02d.%02d.%04d" rel="nofollow">%02d</a></div></td>',
-              $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $month_day) . PHP_EOL;
+            $desc = '';
+            if ($type == "event") {
+              $a_desc = $ical_spans->description($dt_this_date);
+              $desc = (count($a_desc) ? ': ' . implode(', ', $a_desc) : '');
+            }
+            $doc .= sprintf('<td><div class="icalyearbox-tag cellc square%s"%s><a href="#" class="icalyearbox-tag link" title="%02d.%02d.%04d%s" rel="nofollow">%02d</a></div></td>',
+              $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $desc, $month_day) . PHP_EOL;
           } else {
             $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square blank">&nbsp;</div></td>') . PHP_EOL;
           }
