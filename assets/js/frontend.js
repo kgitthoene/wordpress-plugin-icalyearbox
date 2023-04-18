@@ -1,11 +1,6 @@
 /**
- * Plugin Recursive Shortcode frontend js.
+ * Wordpress Plugin icalyearbox (Javascript Component)
  *
- *  @package WordPress Plugin Recursive Shortcode
+ * @license MIT https://en.wikipedia.org/wiki/MIT_License
+ * @author  Kai Thoene <k.git.thoene@gmx.net>
  */
-
-jQuery( document ).ready(
-	function ( e ) {
-
-	}
-);

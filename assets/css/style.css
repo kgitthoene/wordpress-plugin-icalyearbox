@@ -40,6 +40,9 @@
   text-align: center;
   box-sizing: unset;
 }
+.icalyearbox table th.wday {
+  width: 16px;
+}
 .icalyearbox table th .cellc {
   background-color: #F0F5F7;
   width: 100%;
@@ -112,7 +115,7 @@
   text-decoration: none;
   box-sizing: unset;
 }
-.icalyearbox .reset-this {
+.icalyearbox-reset-this {
   animation: none;
   animation-delay: 0;
   animation-direction: normal;

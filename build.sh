@@ -299,7 +299,27 @@ clean() {}
 
 install() {
   #----------
-  # 1st: create zip file.
+  # Create language files.
+  (
+    cd "$MYDIR/languages"
+    sh ./build.sh build
+  )
+  #----------
+  # Minify Javascript files.
+  (
+    cd "$MYDIR/assets/js"
+    for JSF in *.[jJ][sS]; do
+      BN=`echo "$JSF" | sed -e 's/\.[jJ][sS]$//'`
+      BN2=`echo "$JSF" | sed -e 's/\.min\.[jJ][sS]$//'`
+      if [ ! "${BN}" = "${BN2}.min" ]; then
+        rm -f "${BN}.min.js"
+        uglifyjs "$JSF" -o "${BN}.min.js" || { error "Cannot uglify Javascript file! FILE='$JSF'"; exit 1; }
+      fi
+    done
+    info "Javascript minimal files ready."
+  )
+  #----------
+  # Create zip file.
   DISTDIR="$MYDIR"
   TOKEN="icalyearbox"
   # Change to root project directory.
@@ -391,7 +411,7 @@ done
   exit 0
 }
 #
-check_tools zip git
+check_tools zip git ruby uglifyjs
 #
 cat <&6 | while read ARG; do
   case "$ARG" in

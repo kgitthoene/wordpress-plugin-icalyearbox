@@ -852,13 +852,14 @@ class Icalyearbox_Parser {
         $calendar_width = ($mwidth > $calendar_width ? $mwidth : $calendar_width);
       }
     }
+    $approximated_table_width_in_pixels = 50 + 2 + 19 * $calendar_width; // 19
     //
-    $align = 'left';
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       self::write_log(sprintf("RENDER YEAR=%d", $year));
       self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
       //
-      $doc .= sprintf('<div class="reset-this icalyearbox icalyearbox-tag" year="%d"><table class="icalyearbox-tag%s"><tbody>', $year, ($align == '' ? '' : (' ' . $align))) . PHP_EOL;
+      $doc .= sprintf('<div class="icalyearbox-reset-this"><div class="icalyearbox icalyearbox-tag" year="%d"><table class="icalyearbox-tag%s" width="%dpx"><tbody>',
+        $year, ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels) . PHP_EOL;
       // Table header:
       $doc .= sprintf('<tr class="icalyearbox-tag yr-header"><th class="icalyearbox-tag"><div class="icalyearbox-tag cellc plain frow"><span class="icalyearbox-tag yr-span">%04d</span></div></th>', $year) . PHP_EOL;
       for ($i = 0; $i < $calendar_width; $i++) {
@@ -919,16 +920,16 @@ class Icalyearbox_Parser {
             if (count($a_wday_classes)) {
               $wday_class = sprintf(' %s', implode(' ', $a_wday_classes));
             }
-            $doc .= sprintf('<td><div class="icalyearbox-tag cellc%s"%s><a href="#" class="icalyearbox-tag link" title="TITLE" rel="nofollow">%02d</a></div></td>',
+            $doc .= sprintf('<td><div class="icalyearbox-tag cellc square%s"%s><a href="#" class="icalyearbox-tag link" title="TITLE" rel="nofollow">%02d</a></div></td>',
               $wday_class, $td_backgroud_image_style, $month_day) . PHP_EOL;
           } else {
-            $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc blank">&nbsp;</div></td>') . PHP_EOL;
+            $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square blank">&nbsp;</div></td>') . PHP_EOL;
           }
         }
         $doc .= '</tr>' . PHP_EOL;
         $nr_month_counter++;
       }
-      $doc .= '</tbody></table></div>' . PHP_EOL;
+      $doc .= '</tbody></table></div></div>' . PHP_EOL;
     }
     return $doc;
     //
