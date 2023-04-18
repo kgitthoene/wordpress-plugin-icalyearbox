@@ -176,11 +176,8 @@ class Icalyearbox_Settings {
    * @return void
    */
   public function settings_assets() {
-
-    // We're including the farbtastic script & styles here because they're needed for the colour picker
-    // If you're not including a colour picker field then you can leave these calls out as well as the farbtastic dependency for the wpt-admin-js script below.
-    wp_enqueue_style('farbtastic');
-    wp_enqueue_script('farbtastic');
+    // add jQuery.
+    wp_enqueue_script('jquery');
 
     // We're including the WP media scripts here because they're needed for the image upload field.
     // If you're not including an image upload then you can leave this function call out.

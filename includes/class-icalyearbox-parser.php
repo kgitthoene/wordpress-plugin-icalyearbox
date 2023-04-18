@@ -853,13 +853,14 @@ class Icalyearbox_Parser {
       }
     }
     //
+    $align = 'left';
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       self::write_log(sprintf("RENDER YEAR=%d", $year));
       self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
       //
       $doc .= sprintf('<div class="reset-this icalyearbox icalyearbox-tag" year="%d"><table class="icalyearbox-tag%s"><tbody>', $year, ($align == '' ? '' : (' ' . $align))) . PHP_EOL;
       // Table header:
-      $doc .= sprintf('<tr class="icalyearbox-tag yr-header"><th class="icalyearbox-tag"><div class="icalyearbox-tag cellc plain"><span class="icalyearbox-tag yr-span">%04d</span></div></th>', $year) . PHP_EOL;
+      $doc .= sprintf('<tr class="icalyearbox-tag yr-header"><th class="icalyearbox-tag"><div class="icalyearbox-tag cellc plain frow"><span class="icalyearbox-tag yr-span">%04d</span></div></th>', $year) . PHP_EOL;
       for ($i = 0; $i < $calendar_width; $i++) {
         $offset = ($i % 7);
         $offset = ($offset == 0 ? 7 : $offset);
@@ -868,7 +869,7 @@ class Icalyearbox_Parser {
         if ($wday_index >= 5) {
           $wday_class = ' wkend';
         }
-        $doc .= sprintf('<th><div class="cellc%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$wday_index]) . PHP_EOL;
+        $doc .= sprintf('<th class="icalyearbox-tag"><div class="icalyearbox-tag cellc wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$wday_index]) . PHP_EOL;
       }
       $doc .= '</tr>' . PHP_EOL;
       // Table body (months):
@@ -879,7 +880,7 @@ class Icalyearbox_Parser {
         $month_starts_with_wday = ($month_starts_with_wday == 0 ? 7 : $month_starts_with_wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         // Month name:
-        $doc .= sprintf('<tr class="icalyearbox-tag"><th%s><div class="cellc"><span class="mo-span">%s</span></div></th>',
+        $doc .= sprintf('<tr class="icalyearbox-tag"><th%s><div class="icalyearbox-tag cellc frow"><span class="mo-span">%s</span></div></th>',
           (($nr_month_counter % 2) == 1 ? ' class="icalyearbox-tag alt"' : ' class="icalyearbox-tag"'),
           __($a_months_abr[$month - 1], 'icalyearbox')) . PHP_EOL;
         self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));

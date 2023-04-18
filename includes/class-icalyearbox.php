@@ -335,6 +335,8 @@ class Icalyearbox {
   public function enqueue_scripts() {
     wp_register_script(self::$token . '-frontend', esc_url($this->assets_url) . 'js/frontend' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
     wp_enqueue_script(self::$token . '-frontend');
+    wp_register_script(self::$token . '-script', esc_url($this->assets_url) . 'js/script' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(self::$token . '-script');
   } // enqueue_scripts
 
   /**
