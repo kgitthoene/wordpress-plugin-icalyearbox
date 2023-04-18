@@ -921,8 +921,8 @@ class Icalyearbox_Parser {
             if (count($a_wday_classes)) {
               $wday_class = sprintf(' %s', implode(' ', $a_wday_classes));
             }
-            $doc .= sprintf('<td><div class="icalyearbox-tag cellc square%s"%s><a href="#" class="icalyearbox-tag link" title="TITLE" rel="nofollow">%02d</a></div></td>',
-              $wday_class, $td_backgroud_image_style, $month_day) . PHP_EOL;
+            $doc .= sprintf('<td><div class="icalyearbox-tag cellc square%s"%s><a href="#" class="icalyearbox-tag link" title="%02d.%02d.%04d" rel="nofollow">%02d</a></div></td>',
+              $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $month_day) . PHP_EOL;
           } else {
             $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square blank">&nbsp;</div></td>') . PHP_EOL;
           }
