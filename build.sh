@@ -299,25 +299,15 @@ clean() {}
 
 install() {
   #----------
-  # Create language files.
-  (
-    cd "$MYDIR/languages"
-    sh ./build.sh build
-  )
-  #----------
-  # Minify Javascript files.
-  (
-    cd "$MYDIR/assets/js"
-    for JSF in *.[jJ][sS]; do
-      BN=`echo "$JSF" | sed -e 's/\.[jJ][sS]$//'`
-      BN2=`echo "$JSF" | sed -e 's/\.min\.[jJ][sS]$//'`
-      if [ ! "${BN}" = "${BN2}.min" ]; then
-        rm -f "${BN}.min.js"
-        uglifyjs "$JSF" -o "${BN}.min.js" || { error "Cannot uglify Javascript file! FILE='$JSF'"; exit 1; }
-      fi
+  # Create language files. / Minify Javascript files. / Compile LESS files.
+  [ "$SCRIPT_OPT_BUILD_ALL" = "true" ] && {
+    for BUILD_DIR in "$MYDIR/languages" "$MYDIR/assets/js" "$MYDIR/assets/css"; do
+      (
+        cd "$BUILD_DIR"
+        sh ./build.sh build || { error "An error occured! BUILD_DIR='$BUILD_DIR'"; exit 1; }
+      )
     done
-    info "Javascript minimal files ready."
-  )
+  }
   #----------
   # Create zip file.
   DISTDIR="$MYDIR"
@@ -363,6 +353,7 @@ Commands:
   build   -- Same as install.
   deploy  -- Deploy file to server.
 Options:
+  -a, --all  -- Build all, this includes builds in subdirectories.
   -h, --help -- Print this text.
 EOF
 }
@@ -376,11 +367,10 @@ while [ "${#}" != "0" ]; do
   SCRIPT_OPTION="true"
 	case "${1}" in
     --clean) info "CLEAN"; exit $?;;
-		--quit)
-      SCRIPT_OPT_QUIT=true; continue;;
-    --invalid)
-			log CRIT "'${1}' invalid. Use ${1}=... instead"; exit 1; continue;;
+		--quit) SCRIPT_OPT_QUIT=true; continue;;
+    --invalid) log CRIT "'${1}' invalid. Use ${1}=... instead"; exit 1; continue;;
 		--help) usage; exit 0;;
+    --all) SCRIPT_OPT_BUILD_ALL=true; continue;;
 		--*) log CRIT "invalid option '${1}'"; usage 1; exit 1;;
 		# Posix getopt stops after first non-option
 		-*);;
@@ -391,6 +381,7 @@ while [ "${#}" != "0" ]; do
     while [ -n "${flag}" ]; do
       case "${flag}" in
         h*) usage; exit 0;;
+        a) SCRIPT_OPT_BUILD_ALL=true;;
         c*) info "CLEAN"; exit $? ;;
         C*) info "BIG-CLEAN"; exit $? ;;
         q*) SCRIPT_OPT_QUIT=true;;
@@ -411,7 +402,7 @@ done
   exit 0
 }
 #
-check_tools zip git ruby uglifyjs
+check_tools zip git
 #
 cat <&6 | while read ARG; do
   case "$ARG" in

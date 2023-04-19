@@ -297,38 +297,41 @@ trap at_exit EXIT HUP INT QUIT TERM
 #
 clean() {
   (
-    #----------
-    # remove PO and MO files.
     cd "$MYDIR"
-    rm *.po *.mo; RC=$?; [ $RC = 0 ] || { error "Cannot remove PO & MO files!"; exit $RC; }
+    for FN in *.[jJ][sS]; do
+      BN=`echo "$FN" | sed -e 's/\.[jJ][sS]$//'`
+      BN2=`echo "$FN" | sed -e 's/\.min\.[jJ][sS]$//'`
+      [ ! "${BN}" = "${BN2}.min" -a -f "${BN}.min.js" ] && { rm -f "${BN}.min.js"; }
+    done
+    info "Javascript minimal files cleaned."
   )
+  return 0
 }
 
 install() {
   (
-    #----------
-    # 1st: create PO files.
     cd "$MYDIR"
-    ruby ./create-po-files.rb; RC=$?; [ $RC = 0 ] || { error "Cannot create PO files!"; exit $RC; }
-    cp icalyearbox-en_GB.po icalyearbox.po
-    #----------
-    # 2nd: Create MO files
-    check_tools msgfmt
-    for FILE in *.po; do
-      BN=`echo "$FILE" | sed -e 's/\.po$//'`
-      msgfmt "$FILE" -o "${BN}.mo"; RC=$?; [ $RC = 0 ] || { error "Cannot compile! FILE='$FILE'"; exit $RC; }
+    for FN in *.[jJ][sS]; do
+      [ -r "$FN" ] && {
+        BN=`echo "$FN" | sed -e 's/\.[jJ][sS]$//'`
+        BN2=`echo "$FN" | sed -e 's/\.min\.[jJ][sS]$//'`
+        if [ ! "${BN}" = "${BN2}.min" ]; then
+          rm -f "${BN}.min.js"
+          uglifyjs "$FN" -o "${BN}.min.js" || { error "Cannot uglify Javascript file! FILE='$FN'"; exit 1; }
+        fi
+      }
     done
-    info "All PO files compiled to MO files."
+    info "Javascript minimal files ready."
   )
+  return 0
 }
 
 usage() {
   cat >&2 <<EOF
 Usage: $MYNAME [OPTIONS] COMMAND [...]
 Commands:
-  install -- Create PO and MO files.
+  install -- Install project.
   build   -- Same as install.
-  clean   -- Remove created files.
 Options:
   -h, --help -- Print this text.
 EOF
@@ -343,11 +346,10 @@ while [ "${#}" != "0" ]; do
   SCRIPT_OPTION="true"
 	case "${1}" in
     --clean) info "CLEAN"; exit $?;;
-		--quit)
-      SCRIPT_OPT_QUIT=true; continue;;
-    --invalid)
-			log CRIT "'${1}' invalid. Use ${1}=... instead"; exit 1; continue;;
+		--quit) SCRIPT_OPT_QUIT=true; continue;;
+    --invalid) log CRIT "'${1}' invalid. Use ${1}=... instead"; exit 1; continue;;
 		--help) usage; exit 0;;
+    --all) SCRIPT_OPT_BUILD_ALL=true; continue;;
 		--*) log CRIT "invalid option '${1}'"; usage 1; exit 1;;
 		# Posix getopt stops after first non-option
 		-*);;
@@ -358,6 +360,7 @@ while [ "${#}" != "0" ]; do
     while [ -n "${flag}" ]; do
       case "${flag}" in
         h*) usage; exit 0;;
+        a) SCRIPT_OPT_BUILD_ALL=true;;
         c*) info "CLEAN"; exit $? ;;
         C*) info "BIG-CLEAN"; exit $? ;;
         q*) SCRIPT_OPT_QUIT=true;;
@@ -378,7 +381,7 @@ done
   exit 0
 }
 #
-check_tools ruby
+check_tools uglifyjs
 #
 cat <&6 | while read ARG; do
   case "$ARG" in

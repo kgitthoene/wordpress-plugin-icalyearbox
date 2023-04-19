@@ -68,26 +68,29 @@ end
 #
 class It
   @@options = { info: true, error: true, warn: true, debug: false, verbose: false, quiet: false }
+  @@me = $PROGRAM_NAME.to_s
+  @@myname = File.basename(@@me)
+  @@mydir = File.dirname(@@me)
 
   class << self
     def info(msg_p)
-      msg_p.to_s.each_line { |l| out "INFO -- #{l}" } if @@options[:info] && !@@options[:quiet]
+      msg_p.to_s.each_line { |l| out "#{HighLine.color('I', :cyan, :bold)} #{@@myname}: #{l}" } if @@options[:info] && !@@options[:quiet]
     end
 
     def error(msg_p)
-      msg_p.to_s.each_line { |l| out "ERROR -- #{l}" } if @@options[:error] && !@@options[:quiet]
+      msg_p.to_s.each_line { |l| out "#{HighLine.color('E', :red, :bold)} #{@@myname}: #{l}" } if @@options[:error] && !@@options[:quiet]
     end
 
     def warn(msg_p)
-      msg_p.to_s.each_line { |l| out "WARNING -- #{l}" } if @@options[:warn] && !@@options[:quiet]
+      msg_p.to_s.each_line { |l| out "#{HighLine.color('I', :yellow, :bold)} #{@@myname}: #{l}" } if @@options[:warn] && !@@options[:quiet]
     end
 
     def debug(msg_p)
-      msg_p.to_s.each_line { |l| out "DEBUG -- #{l}" } if @@options[:debug] && !@@options[:quiet]
+      msg_p.to_s.each_line { |l| out "#{HighLine.color('D', :blue, :bold)} #{@@myname}: #{l}" } if @@options[:debug] && !@@options[:quiet]
     end
 
     def verbose(msg_p)
-      msg_p.to_s.each_line { |l| out "INFO -- #{l}" } if @@options[:verbose] && !@@options[:quiet]
+      msg_p.to_s.each_line { |l| out "#{HighLine.color('V', :blue, :bold)} #{@@myname}: #{l}" } if @@options[:verbose] && !@@options[:quiet]
     end
 
     def out(msg_p)
