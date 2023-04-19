@@ -415,7 +415,7 @@ class Icalyearbox_Parser {
         if ($wday_index >= 5) {
           $wday_class = ' wkend';
         }
-        $doc .= sprintf('<th class="icalyearbox-tag"><div class="icalyearbox-tag cellc wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$wday_index]) . PHP_EOL;
+        $doc .= sprintf('<th class="icalyearbox-tag"><div class="icalyearbox-tag cellc square wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$wday_index]) . PHP_EOL;
       }
       $doc .= '</tr>' . PHP_EOL;
       // Table body (months):
@@ -426,8 +426,8 @@ class Icalyearbox_Parser {
         $month_starts_with_wday = ($month_starts_with_wday == 0 ? 7 : $month_starts_with_wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         // Month name:
-        $doc .= sprintf('<tr class="icalyearbox-tag"><th%s><div class="icalyearbox-tag cellc frow"><span class="mo-span">%s</span></div></th>',
-          (($nr_month_counter % 2) == 1 ? ' class="icalyearbox-tag alt"' : ' class="icalyearbox-tag"'),
+        $doc .= sprintf('<tr class="icalyearbox-tag"><th><div class="icalyearbox-tag cellc frow%s"><span class="mo-span">%s</span></div></th>',
+        (($nr_month_counter % 2) == 1 ? ' alt' : ''),
           __($a_months_abr[$month - 1], 'icalyearbox')) . PHP_EOL;
         self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
         for ($i = 0; $i < $calendar_width; $i++) {
@@ -523,7 +523,7 @@ class Icalyearbox_Parser {
         $calendar_height = ($mheight > $calendar_height ? $mheight : $calendar_height);
       }
     }
-    $approximated_table_width_in_pixels = 1 + 19 * 7; // 19
+    $approximated_table_width_in_pixels = 2 + 18 * 7;
     //
     $doc .= sprintf('<div class="icalyearbox-reset-this"><div class="icalyearbox icalyearbox-tag mo-grid">') . PHP_EOL;
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
@@ -533,8 +533,8 @@ class Icalyearbox_Parser {
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
         //
         // Table body (months):
-        $doc .= sprintf('<div class="icalyearbox-tag mo-column"><table class="icalyearbox-tag%s" width="%dpx" year="%04d"><tbody>',
-          ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels, $year) . PHP_EOL;
+        $doc .= sprintf('<div class="icalyearbox-tag mo-column"><table class="icalyearbox-tag mo-table%s" width="%dpx" year-mo="%04d%02d"><tbody>',
+          ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels, $year, $month) . PHP_EOL;
         // Table header:
         $doc .= sprintf('<tr class="icalyearbox-tag"><th class="icalyearbox-tag" colspan="7"><div class="icalyearbox-tag cellc plain"><span class="icalyearbox-tag yr-span">%s&nbsp;&nbsp;%04d</span></div></th></tr>',
           __($a_months_names[$month - 1], 'icalyearbox'), $year) . PHP_EOL;
@@ -544,7 +544,7 @@ class Icalyearbox_Parser {
           if ($i >= 5) {
             $wday_class = ' wkend';
           }
-          $doc .= sprintf('<th class="icalyearbox-tag"><div class="icalyearbox-tag cellc wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$i]) . PHP_EOL;
+          $doc .= sprintf('<th class="icalyearbox-tag"><div class="icalyearbox-tag cellc square wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$i]) . PHP_EOL;
         }
         $doc .= '</tr>' . PHP_EOL;
         $month_first_day = DateTime::createFromFormat('Ymd', sprintf("%04d%02d01", $year, $month));
@@ -559,7 +559,7 @@ class Icalyearbox_Parser {
           $doc .= sprintf('<tr class="icalyearbox-tag">') . PHP_EOL;
           for ($i = 0; $i < 7; $i++) {
             if ($y > $month_height) {
-              $doc .= sprintf('<td class="icalyearbox-tag blank no-hover"><div class="icalyearbox-tag cellc square">&nbsp;</div></td>') . PHP_EOL;
+              $doc .= sprintf('<td class="icalyearbox-tag hidden"><div class="icalyearbox-tag cellc square">&nbsp;</div></td>') . PHP_EOL;
             } else {
               $month_index++;
               $wday = $i + 1;

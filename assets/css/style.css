@@ -86,7 +86,8 @@
   margin-right: 6px;
 }
 .icalyearbox table td {
-  width: 16px;
+  width: 18px;
+  height: 18px;
   position: relative;
   border: 1px solid #BFBFBF;
   padding: 0 1px 0 1px;
@@ -98,7 +99,7 @@
   display: block;
   margin-top: 100%;
 }
-.icalyearbox table td.blank {
+.icalyearbox table td.hidden {
   background-color: transparent;
   border: 1px solid transparent;
   visibility: hidden;
@@ -130,9 +131,6 @@
 }
 .icalyearbox table td:hover {
   background-color: #CDD2E2;
-}
-.icalyearbox table td.no-hover:hover {
-  background-color: transparent;
 }
 .icalyearbox table a.link {
   border-bottom: 0 !important;

@@ -22,6 +22,7 @@ if (window.jQuery) {
       var _g = globalThis[Symbol.for('icalyearbox_storage')];
       try {
         if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": HELLO"); }
+        // Work on year table.
         $("table.icalyearbox-tag.yr-table").each(function () {
           let nr_weekdays = $(this).find("div.icalyearbox-tag.wday").length;
           if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": NR OF WEEKDAYS=" + nr_weekdays); }
@@ -34,9 +35,17 @@ if (window.jQuery) {
           if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": 1st ROW MAX WIDTH=" + first_row_max_width + " TABLE-WIDTH=" + calculated_table_width); }
           $(this).attr('width', calculated_table_width);
           if ($(this).find("div.icalyearbox-tag.square")) {
-            let cell_height = $(this).find("div.icalyearbox-tag.square").width();
-            if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": CELL HEIGHT=" + cell_height); }
-            $(this).find(".cellc.icalyearbox-tag").css("height", cell_height + "px")
+            $(this).find(".square.cellc.icalyearbox-tag").css("width", "18px")
+            $(this).find(".square.cellc.icalyearbox-tag").css("height", "18px")
+          }
+        });
+        // Work on months.
+        $("table.icalyearbox-tag.mo-table").each(function () {
+          if ($(this).find("div.icalyearbox-tag.square.cellc")) {
+            var calculated_table_width = 2 + 18 * 7;
+            $(this).attr('width', calculated_table_width);
+            $(this).find(".square.cellc.icalyearbox-tag").css("width", "18px")
+            $(this).find(".square.cellc.icalyearbox-tag").css("height", "18px")
           }
         });
       }
