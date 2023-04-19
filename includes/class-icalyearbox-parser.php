@@ -397,7 +397,7 @@ class Icalyearbox_Parser {
         $calendar_width = ($mwidth > $calendar_width ? $mwidth : $calendar_width);
       }
     }
-    $approximated_table_width_in_pixels = 50 + 2 + 19 * $calendar_width; // 19
+    $approximated_table_width_in_pixels = 50 + 19 * $calendar_width; // 19
     //
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       self::write_log(sprintf("RENDER YEAR=%d", $year));
@@ -523,7 +523,7 @@ class Icalyearbox_Parser {
         $calendar_height = ($mheight > $calendar_height ? $mheight : $calendar_height);
       }
     }
-    $approximated_table_width_in_pixels = 2 + 18 * 7;
+    $approximated_table_width_in_pixels = 19 * 7;
     //
     $doc .= sprintf('<div class="icalyearbox-reset-this"><div class="icalyearbox icalyearbox-tag mo-grid">') . PHP_EOL;
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
