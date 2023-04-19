@@ -7,7 +7,6 @@
 }
 .icalyearbox div.mo-column {
   display: flex;
-  margin-bottom: 5px;
 }
 .icalyearbox.mo-grid {
   display: grid;
@@ -28,7 +27,7 @@
   /* Placeholder for a table containing a year. */
 }
 .icalyearbox table.mo-table {
-  /* Placeholder for a table containing a year. */
+  margin-bottom: 5px;
 }
 .icalyearbox table.left {
   float: left;
