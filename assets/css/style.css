@@ -5,6 +5,15 @@
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: normal;
 }
+.icalyearbox div.mo-column {
+  display: flex;
+  margin-bottom: 5px;
+}
+.icalyearbox.mo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-column-gap: 5px;
+}
 .icalyearbox table {
   border-width: 1px;
   border-spacing: 2px;
@@ -14,6 +23,12 @@
   background-color: white;
   margin: 0 auto;
   box-sizing: unset;
+}
+.icalyearbox table.yr-table {
+  /* Placeholder for a table containing a year. */
+}
+.icalyearbox table.mo-table {
+  /* Placeholder for a table containing a year. */
 }
 .icalyearbox table.left {
   float: left;
@@ -25,7 +40,9 @@
   box-sizing: unset;
 }
 .icalyearbox table tr.yr-header {
-  border-color: #D8D8D8;
+  border-bottom: 2px solid #BFBFBF;
+}
+.icalyearbox table tr.mo-header {
   border-bottom: 2px solid #BFBFBF;
 }
 .icalyearbox table tr.blank,
@@ -81,6 +98,11 @@
   display: block;
   margin-top: 100%;
 }
+.icalyearbox table td.blank {
+  background-color: transparent;
+  border: 1px solid transparent;
+  visibility: hidden;
+}
 .icalyearbox table td .cellc {
   position: absolute;
   top: 0;
@@ -108,6 +130,9 @@
 }
 .icalyearbox table td:hover {
   background-color: #CDD2E2;
+}
+.icalyearbox table td.no-hover:hover {
+  background-color: transparent;
 }
 .icalyearbox table a.link {
   border-bottom: 0 !important;

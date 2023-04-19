@@ -299,9 +299,29 @@ clean() {}
 
 install() {
   #----------
-  # Create language files. / Minify Javascript files. / Compile LESS files.
-  [ "$SCRIPT_OPT_BUILD_ALL" = "true" ] && {
-    for BUILD_DIR in "$MYDIR/languages" "$MYDIR/assets/js" "$MYDIR/assets/css"; do
+  # Create language files.
+  [ "$SCRIPT_OPT_BUILD_ALL" = "true" -o "$SCRIPT_OPT_BUILD_LANGUAGES" = "true" ] && {
+    for BUILD_DIR in "$MYDIR/languages"; do
+      (
+        cd "$BUILD_DIR"
+        sh ./build.sh build || { error "An error occured! BUILD_DIR='$BUILD_DIR'"; exit 1; }
+      )
+    done
+  }
+  #----------
+  # Minify Javascript files.
+  [ "$SCRIPT_OPT_BUILD_ALL" = "true" -o "$SCRIPT_OPT_BUILD_UGLIFY" = "true" ] && {
+    for BUILD_DIR in "$MYDIR/assets/js"; do
+      (
+        cd "$BUILD_DIR"
+        sh ./build.sh build || { error "An error occured! BUILD_DIR='$BUILD_DIR'"; exit 1; }
+      )
+    done
+  }
+  #----------
+  # Compile LESS files.
+  [ "$SCRIPT_OPT_BUILD_ALL" = "true" -o "$SCRIPT_OPT_BUILD_LESS" = "true" ] && {
+    for BUILD_DIR in "$MYDIR/assets/css"; do
       (
         cd "$BUILD_DIR"
         sh ./build.sh build || { error "An error occured! BUILD_DIR='$BUILD_DIR'"; exit 1; }
@@ -310,22 +330,24 @@ install() {
   }
   #----------
   # Create zip file.
-  DISTDIR="$MYDIR"
-  TOKEN="icalyearbox"
-  # Change to root project directory.
-  cd "$MYDIR"
-  # Make ZIP file name.
-  FN="${TOKEN}.zip"
-  # Check existence of distribution directory.
-  [ -d "$DISTDIR" ] || { error "Cannot find distribution directory! DISDIR='$DISTDIR'"; exit 1; }
-  # Create ZIP file.
-  rm -f "$FN"
-  if ( cd "$DISTDIR"; git ls-files | zip -q "$FN" -@ ); then
-    info "ZIP file ready. FILE='$FN'"
-  else
-    error "Cannot create ZIP file!"
-    return 1
-  fi
+  (
+    DISTDIR="$MYDIR"
+    TOKEN="icalyearbox"
+    # Change to root project directory.
+    cd "$DISTDIR"
+    # Make ZIP file name.
+    FN="${TOKEN}.zip"
+    # Check existence of distribution directory.
+    [ -d "$DISTDIR" ] || { error "Cannot find distribution directory! DISDIR='$DISTDIR'"; exit 1; }
+    # Create ZIP file.
+    rm -f "$FN"
+    if ( cd "$DISTDIR"; git ls-files | zip -q "$FN" -@ ); then
+      info "ZIP file ready. FILE='$FN'"
+    else
+      error "Cannot create ZIP file!"
+      return 1
+    fi
+  )
 }
 
 deploy() {
@@ -353,8 +375,11 @@ Commands:
   build   -- Same as install.
   deploy  -- Deploy file to server.
 Options:
-  -a, --all  -- Build all, this includes builds in subdirectories.
-  -h, --help -- Print this text.
+  -a, --all         -- Build all, this includes builds in subdirectories.
+  -L, --less        -- Compile only the LESS files.
+  -U, --uglify      -- Minimize Javascript files.
+  -T, --translate   -- Create language files.
+  -h, --help        -- Print this text.
 EOF
 }
 #
@@ -371,6 +396,9 @@ while [ "${#}" != "0" ]; do
     --invalid) log CRIT "'${1}' invalid. Use ${1}=... instead"; exit 1; continue;;
 		--help) usage; exit 0;;
     --all) SCRIPT_OPT_BUILD_ALL=true; continue;;
+    --less) SCRIPT_OPT_BUILD_LESS=true; continue;;
+    --uglify) SCRIPT_OPT_BUILD_UGLIFY=true; continue;;
+    --translate) SCRIPT_OPT_BUILD_LANGUAGES=true; continue;;
 		--*) log CRIT "invalid option '${1}'"; usage 1; exit 1;;
 		# Posix getopt stops after first non-option
 		-*);;
@@ -381,7 +409,10 @@ while [ "${#}" != "0" ]; do
     while [ -n "${flag}" ]; do
       case "${flag}" in
         h*) usage; exit 0;;
-        a) SCRIPT_OPT_BUILD_ALL=true;;
+        a*) SCRIPT_OPT_BUILD_ALL=true;;
+        L*) SCRIPT_OPT_BUILD_LESS=true;;
+        U*) SCRIPT_OPT_BUILD_UGLIFY=true;;
+        T*) SCRIPT_OPT_BUILD_LANGUAGES=true;;
         c*) info "CLEAN"; exit $? ;;
         C*) info "BIG-CLEAN"; exit $? ;;
         q*) SCRIPT_OPT_QUIT=true;;

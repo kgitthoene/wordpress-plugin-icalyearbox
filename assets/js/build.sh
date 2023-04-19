@@ -311,6 +311,7 @@ clean() {
 install() {
   (
     cd "$MYDIR"
+    COUNTER=0
     for FN in *.[jJ][sS]; do
       [ -r "$FN" ] && {
         BN=`echo "$FN" | sed -e 's/\.[jJ][sS]$//'`
@@ -318,10 +319,11 @@ install() {
         if [ ! "${BN}" = "${BN2}.min" ]; then
           rm -f "${BN}.min.js"
           uglifyjs "$FN" -o "${BN}.min.js" || { error "Cannot uglify Javascript file! FILE='$FN'"; exit 1; }
+          COUNTER=`echo "1+$COUNTER" | bc`
         fi
       }
     done
-    info "Javascript minimal files ready."
+    [ $COUNTER -gt 0 ] && info "$COUNTER Javascript files uglified."
   )
   return 0
 }

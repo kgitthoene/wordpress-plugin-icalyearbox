@@ -253,15 +253,16 @@ class Icalyearbox {
         'open' => '\[',
         'close' => '\]',
         'deconstruct' => false,
-        'year' => "now",
-        'recent' => 21,
-        'months' => "all",
-        'align' => "center",
-        'weekdays' => "all",
-        'ical' => null,
-        'size' => 12,
-        'cache' => 86400,
+        'year' => "now", // List of years to show. TODO: Documentation.
+        'recent' => 21, // Display this days before today. TODO: Not used.
+        'months' => "all", // List of months to print. TODO: Documentation.
+        'align' => "center", // Alignment of output in page.
+        'weekdays' => "all", // Limit weekdays to this list. TODO: Not used.
+        'ical' => null, // ical urls sparated by space
+        'size' => 12, // font-size in pt. TODO: Not used.
+        'cache' => 86400, // seconds, number + [hdmy]
         'type' => 'event', // [ 'booking', 'event' ]
+        'display' => 'year', // [ 'month', 'year' ]
       );
     }
     return self::$_default_shortcode_params;

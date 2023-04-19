@@ -393,8 +393,16 @@ CSV.foreach(File.join("src", "international-monthnames-abr.csv"), headers: true,
 end
 It.info("#{nr_abbreviations} abbreviations for month names loaded.")
 
+nr_month_names = 0
+h_month_names = {}
+CSV.foreach(File.join("src", "international-monthnames.csv"), headers: true, col_sep: ";") do |row|
+  h_month_names[row['Code']] = row
+  nr_month_names += 1
+end
+It.info("#{nr_month_names} month names loaded.")
 
-def write_po_file(token, lang_code, country_code, row, h_month_abbreviations)
+
+def write_po_file(token, lang_code, country_code, row, h_month_names, h_month_abbreviations)
   #
   # Write PO file.
   fn = "#{token}-#{country_code}.po"
@@ -429,6 +437,14 @@ EOF
       end
     end
     #
+    if h_month_names.key?(lang_code) && h_month_names.key?('en')
+      (1..12).each do |nr_month|
+        f.puts("msgid \"MONTH-#{h_month_names['en'][nr_month.to_s]}\"")
+        f.puts("msgstr \"#{h_month_names[lang_code][nr_month.to_s]}\"")
+        f.puts("");
+      end
+    end
+    #
     if h_month_abbreviations.key?(lang_code) && h_month_abbreviations.key?('en')
       (1..12).each do |nr_month|
         f.puts("msgid \"#{h_month_abbreviations['en'][nr_month.to_s]}\"")
@@ -450,13 +466,13 @@ CSV.foreach(File.join("src", "international-weekdays.csv"), headers: true, col_s
   h_country_codes.keys.each do |code|
     if code.start_with?(lang_code) && (code.length == 5)
       country_code = code.gsub(/-/, '_')
-      write_po_file(token, lang_code, country_code, row, h_month_abbreviations)
+      write_po_file(token, lang_code, country_code, row, h_month_names, h_month_abbreviations)
       b_found = true
     end
   end
   if !b_found
     country_code = "#{lang_code.downcase}_#{lang_code.upcase}"
-    write_po_file(token, lang_code, country_code, row, h_month_abbreviations)
+    write_po_file(token, lang_code, country_code, row, h_month_names, h_month_abbreviations)
   end
   nr_languages += 1
 end

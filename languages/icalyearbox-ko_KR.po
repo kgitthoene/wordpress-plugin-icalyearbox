@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: icalyearbox\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-19 16:33:42 +0200\n"
+"POT-Creation-Date: 2023-04-19 18:15:56 +0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Kai Thoene <k.git.thoene@gmx.de>\n"
 "Language-Team: \n"
@@ -33,4 +33,40 @@ msgstr "토요일"
 
 msgid "Sunday"
 msgstr "일요일"
+
+msgid "MONTH-January"
+msgstr "1월"
+
+msgid "MONTH-February"
+msgstr "2월"
+
+msgid "MONTH-March"
+msgstr "3월"
+
+msgid "MONTH-April"
+msgstr "4월"
+
+msgid "MONTH-May"
+msgstr "5월"
+
+msgid "MONTH-June"
+msgstr "6월"
+
+msgid "MONTH-July"
+msgstr "7월"
+
+msgid "MONTH-August"
+msgstr "8월"
+
+msgid "MONTH-September"
+msgstr "9월"
+
+msgid "MONTH-October"
+msgstr "10월"
+
+msgid "MONTH-November"
+msgstr "11월"
+
+msgid "MONTH-December"
+msgstr "12월"
 

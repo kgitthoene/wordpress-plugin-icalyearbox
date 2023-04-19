@@ -310,14 +310,16 @@ clean() {
 install() {
   (
     cd "$MYDIR"
-    for FN in *.[lL][eE][eE][sS]; do
+    COUNTER=0
+    for FN in *.[lL][eE][sS][sS]; do
       [ -r "$FN" ] && {
-        BN=`echo "$FN" | sed -e 's/\.[lL][eE][eE][sS]$//'`
+        BN=`echo "$FN" | sed -e 's/\.[lL][eE][sS][sS]$//'`
         rm -f "${BN}.css"
         lessc "$FN" "${BN}.css" || { error "Cannot compile LESS file! FILE='$FN'"; exit 1; }
+        COUNTER=`echo "1+$COUNTER" | bc`
       }
     done
-    info "All CSS files ready."
+    [ $COUNTER -gt 0 ] && info "$COUNTER CSS files compiled."
   )
   return 0
 }

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: icalyearbox\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-04-19 16:33:42 +0200\n"
+"POT-Creation-Date: 2023-04-19 18:15:56 +0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Kai Thoene <k.git.thoene@gmx.de>\n"
 "Language-Team: \n"
@@ -33,6 +33,42 @@ msgstr "Sâmbătă"
 
 msgid "Sunday"
 msgstr "Duminică"
+
+msgid "MONTH-January"
+msgstr "ianuarie"
+
+msgid "MONTH-February"
+msgstr "februarie"
+
+msgid "MONTH-March"
+msgstr "martie"
+
+msgid "MONTH-April"
+msgstr "aprilie"
+
+msgid "MONTH-May"
+msgstr "mai"
+
+msgid "MONTH-June"
+msgstr "iunie"
+
+msgid "MONTH-July"
+msgstr "iulie"
+
+msgid "MONTH-August"
+msgstr "august"
+
+msgid "MONTH-September"
+msgstr "septembrie"
+
+msgid "MONTH-October"
+msgstr "octombrie"
+
+msgid "MONTH-November"
+msgstr "noiembrie"
+
+msgid "MONTH-December"
+msgstr "decembrie"
 
 msgid "Jan"
 msgstr "Ian"

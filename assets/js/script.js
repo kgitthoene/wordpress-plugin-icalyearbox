@@ -22,7 +22,7 @@ if (window.jQuery) {
       var _g = globalThis[Symbol.for('icalyearbox_storage')];
       try {
         if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": HELLO"); }
-        $("table.icalyearbox-tag").each(function () {
+        $("table.icalyearbox-tag.yr-table").each(function () {
           let nr_weekdays = $(this).find("div.icalyearbox-tag.wday").length;
           if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": NR OF WEEKDAYS=" + nr_weekdays); }
           var first_row_max_width = 0;
