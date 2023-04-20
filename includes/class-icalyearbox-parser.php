@@ -373,7 +373,7 @@ class Icalyearbox_Parser {
    * @return  String
    * @since   1.0.0
    */
-  private static function _render_as_years($align, $type, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
+  private static function _render_as_years($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
     $day_now = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     // Calc start week day and width for all years:
@@ -397,14 +397,15 @@ class Icalyearbox_Parser {
         $calendar_width = ($mwidth > $calendar_width ? $mwidth : $calendar_width);
       }
     }
-    $approximated_table_width_in_pixels = 50 + 19 * $calendar_width; // 19
+    $approximated_table_width_in_pixels = 50 + 19 * $calendar_width;
     //
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       self::write_log(sprintf("RENDER YEAR=%d", $year));
       self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
       //
-      $doc .= sprintf('<div class="icalyearbox-reset-this"><div class="icalyearbox icalyearbox-tag" year="%d"><table class="icalyearbox-tag yr-table%s" width="%dpx"><tbody>',
-        $year, ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels) . PHP_EOL;
+      $hint_top_space = ($description ? ' style="padding-top:15px;"' : '');
+      $doc .= sprintf('<div class="icalyearbox-reset-this"><div class="icalyearbox icalyearbox-tag"%s year="%d"><table class="icalyearbox-tag yr-table%s" width="%dpx"><tbody>',
+        $hint_top_space, $year, ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels) . PHP_EOL;
       // Table header:
       $doc .= sprintf('<tr class="icalyearbox-tag yr-header"><th class="icalyearbox-tag"><div class="icalyearbox-tag cellc plain frow"><span class="icalyearbox-tag yr-span">%04d</span></div></th>', $year) . PHP_EOL;
       for ($i = 0; $i < $calendar_width; $i++) {
@@ -427,7 +428,7 @@ class Icalyearbox_Parser {
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         // Month name:
         $doc .= sprintf('<tr class="icalyearbox-tag"><th><div class="icalyearbox-tag cellc frow%s"><span class="mo-span">%s</span></div></th>',
-        (($nr_month_counter % 2) == 1 ? ' alt' : ''),
+          (($nr_month_counter % 2) == 1 ? ' alt' : ''),
           __($a_months_abr[$month - 1], 'icalyearbox')) . PHP_EOL;
         self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
         for ($i = 0; $i < $calendar_width; $i++) {
@@ -486,8 +487,23 @@ class Icalyearbox_Parser {
               $a_desc = $ical_spans->description($dt_this_date);
               $desc = (count($a_desc) ? ': ' . implode(', ', $a_desc) : '');
             }
+            $desc = '';
+            if ($description) {
+              $a_desc = $ical_spans->description($dt_this_date);
+              $desc = (count($a_desc) ? implode(', ', $a_desc) : '');
+            }
+            if(empty($desc)) {
+              $mo_day_span = sprintf('<span class="icalyearbox-tag">%02d</span>', $month_day);
+            } else {
+              //SEE:https://github.com/chinchang/hint.css
+              $mo_day_span = sprintf('<span class="hint--top icalyearbox-tag icalyearbox-hint" aria-label="%s">%02d</span>', esc_html($desc), $month_day);
+            }
+            $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square%s"%s>%s</div></td>',
+              $wday_class, $td_backgroud_image_style, $mo_day_span) . PHP_EOL;
+            /*
             $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square%s"%s><a href="#" class="icalyearbox-tag link" title="%02d.%02d.%04d%s" rel="nofollow">%02d</a></div></td>',
-              $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $desc, $month_day) . PHP_EOL;
+            $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $desc, $month_day) . PHP_EOL;
+            */
           } else {
             $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square blank">&nbsp;</div></td>') . PHP_EOL;
           }
@@ -507,7 +523,7 @@ class Icalyearbox_Parser {
    * @return  String
    * @since   1.0.0
    */
-  private static function _render_as_months($align, $type, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
+  private static function _render_as_months($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
     $day_now = DateTime::createFromFormat('Ymd', sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     // Calc start week day and width for all years:
@@ -528,7 +544,7 @@ class Icalyearbox_Parser {
     $doc .= sprintf('<div class="icalyearbox-reset-this"><div class="icalyearbox icalyearbox-tag mo-grid">') . PHP_EOL;
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       self::write_log(sprintf("RENDER AS MONTHS YEAR=%d", $year));
-      self::write_log(sprintf("%04d: WIDTH=%d HEIGHT=%d DIR='%s'", $year, 7, $calendar_height, self::$_my_plugin_directory));
+      self::write_log(sprintf("%04d: WIDTH=%d HEIGHT=%d DIR='%s' DESCRIPTION=%s", $year, 7, $calendar_height, self::$_my_plugin_directory, self::_booltostr($description)));
       $nr_month_counter = 0;
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
         //
@@ -613,12 +629,22 @@ class Icalyearbox_Parser {
                   $wday_class = sprintf(' %s', implode(' ', $a_wday_classes));
                 }
                 $desc = '';
-                if ($type == "event") {
+                if ($description) {
                   $a_desc = $ical_spans->description($dt_this_date);
-                  $desc = (count($a_desc) ? ': ' . implode(', ', $a_desc) : '');
+                  $desc = (count($a_desc) ? implode(', ', $a_desc) : '');
                 }
+                if(empty($desc)) {
+                  $mo_day_span = sprintf('<span class="icalyearbox-tag">%02d</span>', $month_day);
+                } else {
+                  //SEE:https://github.com/chinchang/hint.css
+                  $mo_day_span = sprintf('<span class="hint--top icalyearbox-tag icalyearbox-hint" aria-label="%s">%02d</span>', esc_html($desc), $month_day);
+                }
+                $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square%s"%s>%s</div></td>',
+                  $wday_class, $td_backgroud_image_style, $mo_day_span) . PHP_EOL;
+                /*
                 $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square%s"%s><a href="#" class="icalyearbox-tag link" title="%02d.%02d.%04d%s" rel="nofollow">%02d</a></div></td>',
-                  $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $desc, $month_day) . PHP_EOL;
+                $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $desc, $month_day) . PHP_EOL;
+                */
                 $month_day++;
               }
             }
@@ -1108,6 +1134,9 @@ class Icalyearbox_Parser {
     // Get calendar display type.
     $display = (in_array($atts['display'], ['month', 'year']) ? $atts['display'] : 'year');
     //
+    // Get description flag.
+    $description = (in_array($atts['description'], [false, true]) ? $atts['description'] : false);
+    //
     self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
     self::write_log($a_ical_years);
     self::write_log($a_ical_year_months);
@@ -1135,8 +1164,8 @@ class Icalyearbox_Parser {
     // Render calender.
     //
     $doc = ($display == 'year'
-      ? self::_render_as_years($align, $type, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
-      : self::_render_as_months($align, $type, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
+      ? self::_render_as_years($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
+      : self::_render_as_months($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
     );
     return $doc;
     //

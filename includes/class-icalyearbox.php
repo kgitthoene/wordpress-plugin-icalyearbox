@@ -263,6 +263,7 @@ class Icalyearbox {
         'cache' => 86400, // seconds, number + [hdmy]
         'type' => 'event', // [ 'booking', 'event' ]
         'display' => 'year', // [ 'month', 'year' ]
+        'description' => false, // Add description to event. TODO: Documentation.
       );
     }
     return self::$_default_shortcode_params;
@@ -320,6 +321,8 @@ class Icalyearbox {
    * @since   1.0.0
    */
   public function enqueue_styles() {
+    wp_register_style(self::$token . '-hint', esc_url($this->assets_url) . 'css/hint.css', array(), $this->_version);
+    wp_enqueue_style(self::$token . '-hint');
     wp_register_style(self::$token . '-frontend', esc_url($this->assets_url) . 'css/frontend.css', array(), $this->_version);
     wp_enqueue_style(self::$token . '-frontend');
     wp_register_style(self::$token . '-style', esc_url($this->assets_url) . 'css/style.css', array(), $this->_version);

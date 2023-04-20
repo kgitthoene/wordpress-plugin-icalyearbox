@@ -24,8 +24,8 @@ if (window.jQuery) {
     (function ($) {
       var _g = globalThis[Symbol.for('icalyearbox_storage')];
 
-      function resize() {
-        if (_g.defaults.is_enabled) {
+      if (_g.defaults.is_enabled) {
+        function resize() {
           try {
             if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": HELLO"); }
             // Work on year table.
@@ -56,15 +56,15 @@ if (window.jQuery) {
             });
           }
           catch (e) { console.error("plugin:" + _g.defaults.token + ":EXCEPTION: " + e); }
-        }
-      }  // resize
+        }  // resize
 
-      $(window).resize(function () {
-        if (_g.resize_timeout != null) { clearTimeout(_g.resize_timeout); }
-        _g.resize_timeout = setTimeout(resize, 100);
-      });
+        $(window).resize(function () {
+          if (_g.resize_timeout != null) { clearTimeout(_g.resize_timeout); }
+          _g.resize_timeout = setTimeout(resize, 100);
+        });
 
-      resize();
+        resize();
+      }
     })(jQuery);
   });
 } else {
