@@ -143,6 +143,17 @@
 .icalyearbox .icalyearbox-hint {
   border-bottom: 1px dotted black;
 }
+.html5tooltip-box {
+  background-color: #2A2A2A;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 0 10px rgba(255, 255, 255, 0.15);
+  color: #F7F7F7;
+  font-size: 12px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding: 5px 5px 5px 5px;
+  max-width: 200px;
+  /*font-weight: bold;*/
+}
 .icalyearbox-reset-this {
   animation: none;
   animation-delay: 0;

@@ -321,8 +321,8 @@ class Icalyearbox {
    * @since   1.0.0
    */
   public function enqueue_styles() {
-    wp_register_style(self::$token . '-hint', esc_url($this->assets_url) . 'css/hint.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-hint');
+    wp_register_style(self::$token . '-microtip', esc_url($this->assets_url) . 'css/microtip.min.css', array(), $this->_version);
+    wp_enqueue_style(self::$token . '-microtip');
     wp_register_style(self::$token . '-frontend', esc_url($this->assets_url) . 'css/frontend.min.css', array(), $this->_version);
     wp_enqueue_style(self::$token . '-frontend');
     wp_register_style(self::$token . '-style', esc_url($this->assets_url) . 'css/style.min.css', array(), $this->_version);
@@ -339,6 +339,8 @@ class Icalyearbox {
   public function enqueue_scripts() {
     wp_register_script(self::$token . '-frontend', esc_url($this->assets_url) . 'js/frontend' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
     wp_enqueue_script(self::$token . '-frontend');
+    wp_register_script(self::$token . '-html5tooltips', esc_url($this->assets_url) . 'js/html5tooltips.1.7.3' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(self::$token . '-html5tooltips');
     wp_register_script(self::$token . '-script', esc_url($this->assets_url) . 'js/script' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
     wp_enqueue_script(self::$token . '-script');
   } // enqueue_scripts
