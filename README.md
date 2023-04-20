@@ -3,6 +3,7 @@
 This software is a plugin for [Wordpress](https://wordpress.org/).
 You can make calendars as year overview or as separate months.
 
+![Holydays, NRW, Germany, 2023](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-icalyearbox/master/readme/2023-feiertage-nrw.png)
 
 Sourcecode in Wordpress:
 ```
