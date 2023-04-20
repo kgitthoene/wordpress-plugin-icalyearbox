@@ -817,6 +817,7 @@ class Icalyearbox_Parser {
         }
       }
       // Collect ical spans:
+      self::write_log(sprintf("DTSTART='%s' DTEND='%s'", strval($dt_start), strval($dt_end)));
       $from = DateTime::createFromFormat('Ymd', substr($dt_start, 0, 8));
       $to = DateTime::createFromFormat('Ymd', substr($dt_end, 0, 8));
       $ical_spans->add(new Icalyearbox_Datespan($from, $to, $dt_description));
