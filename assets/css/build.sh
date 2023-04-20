@@ -298,11 +298,25 @@ trap at_exit EXIT HUP INT QUIT TERM
 clean() {
   (
     cd "$MYDIR"
+    COUNTER=0
+    for FN in *.[cC][sS][sS]; do
+      BN=`echo "$FN" | sed -e 's/\.[cC][sS][sS]$//'`
+      BN2=`echo "$FN" | sed -e 's/\.min\.[cC][sS][sS]$//'`
+      [ ! "${BN}" = "${BN2}.min" -a -f "${BN}.min.css" -a -f "${BN}.css" ] && {
+        rm -f "${BN}.min.css"
+        COUNTER=`echo "1+$COUNTER" | bc`
+      }
+    done
+    [ $COUNTER -gt 0 ] && info "$COUNTER CSS minimal files cleaned."
+    COUNTER=0
     for FN in *.[lL][eE][sS][sS]; do
       BN=`echo "$FN" | sed -e 's/\.[lL][eE][sS][sS]$//'`
-      [ -f "${BN}.css" ] && { rm -f "${BN}.css"; }
+      [ -f "${BN}.css" ] && {
+        rm -f "${BN}.css"
+        COUNTER=`echo "1+$COUNTER" | bc`
+      }
     done
-    info "All CSS files cleaned."
+    [ $COUNTER -gt 0 ] && info "$COUNTER CSS files cleaned."
   )
   return 0
 }
@@ -310,6 +324,7 @@ clean() {
 install() {
   (
     cd "$MYDIR"
+    # Compile LESS files:
     COUNTER=0
     for FN in *.[lL][eE][sS][sS]; do
       [ -r "$FN" ] && {
@@ -320,6 +335,20 @@ install() {
       }
     done
     [ $COUNTER -gt 0 ] && info "$COUNTER CSS files compiled."
+    # Minify CSS files:
+    COUNTER=0
+    for FN in *.[cC][sS][sS]; do
+      [ -r "$FN" ] && {
+        BN=`echo "$FN" | sed -e 's/\.[cC][sS][sS]$//'`
+        BN2=`echo "$FN" | sed -e 's/\.min\.[cC][sS][sS]$//'`
+        if [ ! "${BN}" = "${BN2}.min" ]; then
+          rm -f "${BN}.min.css"
+          uglifycss "$FN" > "${BN}.min.css" || { error "Cannot uglify CSS file! FILE='$FN'"; exit 1; }
+          COUNTER=`echo "1+$COUNTER" | bc`
+        fi
+      }
+    done
+    [ $COUNTER -gt 0 ] && info "$COUNTER CSS files uglified."
   )
   return 0
 }
@@ -379,7 +408,7 @@ done
   exit 0
 }
 #
-check_tools lessc
+check_tools lessc uglifycss
 #
 cat <&6 | while read ARG; do
   case "$ARG" in

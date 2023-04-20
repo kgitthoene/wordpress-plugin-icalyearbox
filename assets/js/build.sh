@@ -298,12 +298,16 @@ trap at_exit EXIT HUP INT QUIT TERM
 clean() {
   (
     cd "$MYDIR"
+    COUNTER=0
     for FN in *.[jJ][sS]; do
       BN=`echo "$FN" | sed -e 's/\.[jJ][sS]$//'`
       BN2=`echo "$FN" | sed -e 's/\.min\.[jJ][sS]$//'`
-      [ ! "${BN}" = "${BN2}.min" -a -f "${BN}.min.js" ] && { rm -f "${BN}.min.js"; }
+      [ ! "${BN}" = "${BN2}.min" -a -f "${BN}.min.js" -a -f "${BN}.js" ] && {
+        rm -f "${BN}.min.js"
+        COUNTER=`echo "1+$COUNTER" | bc`
+      }
     done
-    info "Javascript minimal files cleaned."
+    [ $COUNTER -gt 0 ] && info "$COUNTER Javascript minimal files cleaned."
   )
   return 0
 }
