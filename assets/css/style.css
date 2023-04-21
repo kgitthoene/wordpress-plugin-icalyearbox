@@ -141,8 +141,10 @@
   box-sizing: unset;
 }
 .icalyearbox .icalyearbox-hint {
+  cursor: pointer;
   border-bottom: 1px dotted black;
 }
+/* SEE:https://github.com/ytiurin/html5tooltipsjs */
 .html5tooltip-box {
   background-color: #2A2A2A;
   border-radius: 2px;

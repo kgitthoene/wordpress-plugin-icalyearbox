@@ -263,7 +263,7 @@ class Icalyearbox {
         'cache' => 86400, // seconds, number + [hdmy]
         'type' => 'event', // [ 'booking', 'event' ]
         'display' => 'year', // [ 'month', 'year' ]
-        'description' => false, // Add description to event. TODO: Documentation.
+        'description' => 'none', // [ 'mix', 'description', 'summary', 'none' ] / Add description to event. TODO: Documentation.
       );
     }
     return self::$_default_shortcode_params;

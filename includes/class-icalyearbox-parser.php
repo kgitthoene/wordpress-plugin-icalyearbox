@@ -88,6 +88,9 @@ class Icalyearbox_Datespan {
   public function position($dt, $type = 'event') {
     if (is_a($dt, 'DateTime')) {
       if ($type = 'booking') {
+        if (($dt == $this->_from) and ($dt == $this->_to)) {
+          return Icalyearbox_Datespans::IS_IN_SPAN;
+        }
         if ($dt == $this->_to) {
           return Icalyearbox_Datespans::IS_END;
         }
@@ -173,12 +176,12 @@ class Icalyearbox_Datespans {
             case self::IS_START:
             case self::IS_END:
             case self::IS_IN_SPAN:
-              Icalyearbox_Parser::write_log(sprintf("%s: SEARCH-COUNTER=%d POS=%d", $dt->format('Ymd'), $search_counter, $pos));
+              //Icalyearbox_Parser::write_log(sprintf("%s: SEARCH-COUNTER=%d POS=%d", $dt->format('Ymd'), $search_counter, $pos));
               return $pos;
           }
         }
       }
-      Icalyearbox_Parser::write_log(sprintf("%s: SEARCH-COUNTER=%d POS=%d", $dt->format('Ymd'), $search_counter, self::IS_FREE));
+      //Icalyearbox_Parser::write_log(sprintf("%s: SEARCH-COUNTER=%d POS=%d", $dt->format('Ymd'), $search_counter, self::IS_FREE));
       return self::IS_FREE;
     } else {
       throw new ErrorException("Parameter must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
@@ -424,9 +427,8 @@ class Icalyearbox_Parser {
       self::write_log(sprintf("RENDER YEAR=%d TYPE='%s'", $year, $type));
       self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
       //
-      $hint_top_space = ($description ? ' style="padding-top:15px;"' : '');
-      $doc .= sprintf('<div class="icalyearbox-reset-this"><div class="icalyearbox icalyearbox-tag"%s year="%d"><table class="icalyearbox-tag yr-table%s" width="%dpx"><tbody>',
-        $hint_top_space, $year, ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels) . PHP_EOL;
+      $doc .= sprintf('<div class="icalyearbox-reset-this"><div class="icalyearbox icalyearbox-tag" year="%d"><table class="icalyearbox-tag yr-table%s" width="%dpx"><tbody>',
+        $year, ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels) . PHP_EOL;
       // Table header:
       $doc .= sprintf('<tr class="icalyearbox-tag yr-header"><th class="icalyearbox-tag"><div class="icalyearbox-tag cellc plain frow"><span class="icalyearbox-tag yr-span">%04d</span></div></th>', $year) . PHP_EOL;
       for ($i = 0; $i < $calendar_width; $i++) {
@@ -451,7 +453,7 @@ class Icalyearbox_Parser {
         $doc .= sprintf('<tr class="icalyearbox-tag"><th><div class="icalyearbox-tag cellc frow%s"><span class="mo-span">%s</span></div></th>',
           (($nr_month_counter % 2) == 1 ? ' alt' : ''),
           __($a_months_abr[$month - 1], 'icalyearbox')) . PHP_EOL;
-        self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
+        //self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
         for ($i = 0; $i < $calendar_width; $i++) {
           $wday = (($calendar_starts_with_wday + $i) % 7);
           $wday = ($wday == 0 ? 7 : $wday);
@@ -459,7 +461,7 @@ class Icalyearbox_Parser {
           if (($month_day >= 1) and ($month_day <= $nr_mdays)) {
             $dt_this_date = self::_strtodatetime(sprintf("%04d%02d%02d", $year, $month, $month_day));
             $pos = $ical_spans->position($dt_this_date, $type);
-            self::write_log(sprintf("%04d%02d%02d: DATE='%s' POS=%d", $year, $month, $month_day, $dt_this_date->format('c'), $pos));
+            //self::write_log(sprintf("%04d%02d%02d: DATE='%s' POS=%d", $year, $month, $month_day, $dt_this_date->format('c'), $pos));
             $td_backgroud_image_style = '';
             if ($type == "event") {
               switch ($pos) {
@@ -490,9 +492,11 @@ class Icalyearbox_Parser {
                   break;
               }
             }
+            /*
             if ($month_day == 1) {
               self::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
             }
+            */
             $a_wday_classes = array();
             if ($wday >= 6) {
               array_push($a_wday_classes, "wkend");
@@ -510,7 +514,7 @@ class Icalyearbox_Parser {
               $desc = (count($a_desc) ? ': ' . implode(', ', $a_desc) : '');
             }
             $desc = '';
-            if ($description) {
+            if ($description != 'none') {
               $a_desc = $ical_spans->description($dt_this_date);
               $desc = (count($a_desc) ? implode(', ', $a_desc) : '');
             }
@@ -651,7 +655,7 @@ class Icalyearbox_Parser {
                   $wday_class = sprintf(' %s', implode(' ', $a_wday_classes));
                 }
                 $desc = '';
-                if ($description) {
+                if ($description != 'none') {
                   $a_desc = $ical_spans->description($dt_this_date);
                   $desc = (count($a_desc) ? implode(', ', $a_desc) : '');
                 }
@@ -701,9 +705,17 @@ class Icalyearbox_Parser {
     self::write_log("CLOSE='" . $pattern_close . "'");
     //
     //----------
-    // Check syntax for tags.
+    // Get alignment.
+    $align = (in_array($atts['align'], ['left', 'center', 'right']) ? $atts['align'] : 'center');
     //
+    // Get calendar type.
+    $type = (in_array($atts['type'], ['booking', 'event']) ? $atts['type'] : 'event');
     //
+    // Get calendar display type.
+    $display = (in_array($atts['display'], ['month', 'year']) ? $atts['display'] : 'year');
+    //
+    // Get description flag.
+    $description = (in_array($atts['description'], [false, true]) ? $atts['description'] : false);
     //
     //----------
     // Load ical(s).
@@ -805,26 +817,50 @@ class Icalyearbox_Parser {
             'defaultTimeZone' => 'Europe/Berlin',
             'defaultWeekStart' => 'MO',
             'skipRecurrence' => false,
-            'defaultSpan' => 20));
+            'defaultSpan' => 5));
           $ical_lines = $ical->events();
           self::write_log(sprintf("ICAL-SIZE=%d", $ical->eventCount));
           if ($ical->eventCount > 0) {
             foreach ($ical_lines as $ical_event_key => $ical_event) {
-              $dt_start = substr(strval($ical_event->dtstart), 0, 8);
-              $dt_end = substr(strval($ical_event->dtend), 0, 8);
-              $dt_end = (empty($dt_end) ? $dt_start : $dt_end);
-              $dt_start = (empty($dt_start) ? $dt_end : $dt_start);
-              $ical_event->dtstart = $dt_start;
-              $ical_event->dtend = $dt_end;
-              if (empty($dt_start) or empty($dt_end)) {
-                self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' DTEND='%s'", strval($dt_start), strval($dt_end)));
+              if (preg_match('/^(\d{8})/', $ical_event->dtstart, $matches)) {
+                $dt_start = $matches[1];
+                $b_exclude_dtend = false;
+                if (preg_match('/^\d{8}$/', $ical_event->dtstart) and preg_match('/^\d{8}$/', $ical_event->dtend)) {
+                  // In date format dtend is not inclusive!
+                  $b_exclude_dtend = true;
+                }
+                $dt_end = substr(strval($ical_event->dtend), 0, 8);
+                $dt_end = (empty($dt_end) ? $dt_start : $dt_end);
+                $dt_start = (empty($dt_start) ? $dt_end : $dt_start);
+                //$ical_event->dtstart = $dt_start;
+                //$ical_event->dtend = $dt_end;
+                if (empty($dt_start) or empty($dt_end)) {
+                  self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' DTEND='%s'", strval($dt_start), strval($dt_end)));
+                } else {
+                  array_push($a_ical_events, array('EVENT' => $ical_event, 'DTSTART' => $dt_start, 'DTEND' => $dt_end));
+                  switch($description) {
+                    case 'none':
+                      $dt_description = '';
+                    case 'description':
+                      $dt_description = $ical_event->description;
+                      break;
+                    case 'summary':
+                      $dt_description = $ical_event->summary;
+                      break;
+                    case 'mix':
+                      $dt_description = (!empty($ical_event->description) ? $ical_event->description : (!empty($ical_event->summary) ? $ical_event->summary : ''));
+                      break;
+                  }
+                  $from = self::_strtodatetime($dt_start);
+                  $to = self::_strtodatetime($dt_end);
+                  if ($b_exclude_dtend) {
+                    $to = $to->modify('-1 day');
+                  }
+                  $ical_spans->add(new Icalyearbox_Datespan($from, $to, $dt_description));
+                  //self::write_log(sprintf("[%s] ICAL-DTSTART=%s DTEND=%s", $ical_event_key, $dt_start, $dt_end));
+                }
               } else {
-                array_push($a_ical_events, $ical_event);
-                $dt_description = (!empty($ical_event->description) ? $ical_event->description : (!empty($ical_event->summary) ? $ical_event->summary : ''));
-                $from = self::_strtodatetime($dt_start);
-                $to = self::_strtodatetime($dt_end);
-                $ical_spans->add(new Icalyearbox_Datespan($from, $to, $dt_description));
-                self::write_log(sprintf("[%s] ICAL-DTSTART=%s DTEND=%s", $ical_event_key, $dt_start, $dt_end));
+                self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' EMPTY OR WRONG FORMAT!", strval($dt_start)));
               }
             }
           }
@@ -836,9 +872,12 @@ class Icalyearbox_Parser {
     //
     //----------
     // Get years and months per year from ical events.
-    foreach ($a_ical_events as $ical_event_key => $ical_event) {
+    foreach ($a_ical_events as $ical_event_key => $a_ical_event) {
+      $ical_event = $a_ical_event['EVENT'];
+      $dt_start = $a_ical_event['DTSTART'];
+      $dt_end = $a_ical_event['DTEND'];
       // Collect ical spans:
-      self::write_log(sprintf("[%s] GET YEARS/MONTHS ICAL-DTSTART='%s' DTEND='%s'", $ical_event_key, $dt_start, $dt_end));
+      //self::write_log(sprintf("[%s] GET YEARS/MONTHS ICAL-DTSTART='%s' DTEND='%s'", $ical_event_key, $dt_start, $dt_end));
       foreach ([$dt_start, $dt_end] as $dt) {
         if (preg_match("/^(\d{4})(\d{2})(\d{2})/", $dt, $matches)) {
           if (count($matches) == 4) {
@@ -875,7 +914,7 @@ class Icalyearbox_Parser {
     //self::write_log($atts);
     if (array_key_exists('year', $atts)) {
       $atts_year = trim($atts['year']);
-      self::write_log(sprintf("PARAM YEAR='%s'", $atts_year));
+      //self::write_log(sprintf("PARAM YEAR='%s'", $atts_year));
       if (preg_match("/^((?i)NOW|(?i)ICAL|[1-9][0-9]*)(\+[1-9][0-9]*){0,1}(-[1-9][0-9]*){0,1}$/", $atts_year, $matches)
         or preg_match("/^((?i)NOW|(?i)ICAL|[1-9][0-9]*)(\-[1-9][0-9]*){0,1}(\+[1-9][0-9]*){0,1}$/", $atts_year, $matches)) {
         self::write_log($matches);
@@ -1161,18 +1200,6 @@ class Icalyearbox_Parser {
       }
     }
     //
-    // Get alignment.
-    $align = (in_array($atts['align'], ['left', 'center', 'right']) ? $atts['align'] : 'center');
-    //
-    // Get calendar type.
-    $type = (in_array($atts['type'], ['booking', 'event']) ? $atts['type'] : 'event');
-    //
-    // Get calendar display type.
-    $display = (in_array($atts['display'], ['month', 'year']) ? $atts['display'] : 'year');
-    //
-    // Get description flag.
-    $description = (in_array($atts['description'], [false, true]) ? $atts['description'] : false);
-    //
     self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
     self::write_log($a_ical_years);
     self::write_log($a_ical_year_months);
@@ -1182,8 +1209,10 @@ class Icalyearbox_Parser {
     //
     //----------
     //
+    /*
     self::write_log(sprintf("B_USE_ICAL_YEARS=%s B_USE_ICAL_MONTHS=%s", self::_booltostr($b_use_ical_years), self::_booltostr($b_use_ical_months)));
     self::write_log($ical_spans->inspect());
+    */
     //
     //----------
     // Get first character for each day in a week.

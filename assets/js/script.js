@@ -20,10 +20,10 @@ if (window.jQuery) {
     };
   })();
 
+  /*
   addEventListener("DOMContentLoaded", (event) => {
     (function ($) {
       var _g = globalThis[Symbol.for('icalyearbox_storage')];
-
       if (_g.defaults.is_enabled) {
         function resize() {
           try {
@@ -67,6 +67,7 @@ if (window.jQuery) {
       }
     })(jQuery);
   });
+  */
 } else {
   console.error("plugin:icalyearbox:ERROR: jQuery is undefined!");
 }
