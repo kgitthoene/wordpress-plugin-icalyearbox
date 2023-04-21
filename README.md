@@ -5,7 +5,7 @@ You can make calendars as year overview or as separate months.
 
 Official holydays in North Rhine-Westphalia, Germany, 2023.
 
-![Holydays, NRW, Germany, 2023](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-icalyearbox/master/readme/2023-feiertage-nrw.png?token=GHSAT0AAAAAACBVMCMK4ZAOYIYLFYHQNPXWZCBNMPA)
+![Holydays, NRW, Germany, 2023](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-icalyearbox/master/readme/2023-feiertage-nrw.png)
 
 Sourcecode in Wordpress:
 ```
