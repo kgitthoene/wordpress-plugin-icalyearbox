@@ -260,7 +260,7 @@ class Icalyearbox {
         'weekdays' => "all", // Limit weekdays to this list. TODO: Not used.
         'ical' => null, // ical urls sparated by space
         'size' => 12, // font-size in pt. TODO: Not used.
-        'cache' => 86400, // seconds, number + [hdmy]
+        'cache' => "86400", // seconds, number + [hdmy]
         'type' => 'event', // [ 'booking', 'event' ]
         'display' => 'year', // [ 'month', 'year' ]
         'description' => 'none', // [ 'mix', 'description', 'summary', 'none' ] / Add description to event. TODO: Documentation.

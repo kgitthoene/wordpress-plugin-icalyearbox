@@ -1007,7 +1007,7 @@ class Icalyearbox_Parser {
         }
       } else {
         // year interval = from,to
-        if (preg_match("/^((?i)NOW|\d+)\s*,\s*((?i)NOW|\d+)$/", $atts_year, $matches)) {
+        if (preg_match("/^((?i)NOW|\d+)\s*--\s*((?i)NOW|\d+)$/", $atts_year, $matches)) {
           // year range = two values (inclusive):
           if (count($matches) == 3) {
             if (self::_set_year($matches[1], $from) and self::_set_year($matches[2], $to)) {
