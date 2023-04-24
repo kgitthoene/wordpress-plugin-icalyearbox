@@ -23,206 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-//include 'class-icaleasyreader.php';
+
 include 'class-ics-parser-event.php';
 include 'class-ics-parser-ical.php';
-//include 'Idearia-Logger.php';
+include 'class-icalyearbox-datespans.php';
 
-
-/**
- * Parser plugin class file.
- *
- * @package WordPress Plugin Recursive Shortcode/Includes
- */
-
-class Icalyearbox_Datespan {
-  private $_from;
-  private $_to;
-  private $_description;
-
-  public function __construct($from, $to, $description = "") {
-    if (is_a($from, 'DateTime') and is_a($to, 'DateTime')) {
-      $this->_description = $description;
-      if ($from <= $to) {
-        $this->_from = $from;
-        $this->_to = $to;
-      } else {
-        $this->_from = $to;
-        $this->_to = $from;
-      }
-    } else {
-      throw new ErrorException("Parameters must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
-    }
-  } // __construct
-
-  public function connects_to($other_span) {
-    if (is_a($other_span, 'Icalyearbox_Datespan')) {
-      if ((($other_span->_from >= $this->_from) and ($other_span->_from <= $this->_to))
-        or (($other_span->_to >= $this->_from) and ($other_span->_to <= $this->_to))) {
-        return true;
-      }
-      return false;
-    } else {
-      throw new ErrorException("Parameter must be type Icalyearbox_Datespan!", 0, E_ERROR, __FILE__, __LINE__);
-    }
-  } // connects_to
-
-  public function add($other_span) {
-    if (is_a($other_span, 'Icalyearbox_Datespan')) {
-      // Add this span to this, if they are connecting.
-      if ($this->connects_to($other_span)) {
-        if ($other_span->_to > $this->_to) {
-          $this->_to = $other_span->_to;
-        }
-        if ($other_span->_from < $this->_from) {
-          $this->_from = $other_span->_from;
-        }
-        return true;
-      }
-    } else {
-      throw new ErrorException("Parameter must be type Icalyearbox_Datespan!", 0, E_ERROR, __FILE__, __LINE__);
-    }
-    return false;
-  } // add
-
-  public function position($dt, $type = 'event') {
-    if (is_a($dt, 'DateTime')) {
-      if ($type = 'booking') {
-        if (($dt == $this->_from) and ($dt == $this->_to)) {
-          return Icalyearbox_Datespans::IS_IN_SPAN;
-        }
-        if ($dt == $this->_to) {
-          return Icalyearbox_Datespans::IS_END;
-        }
-        if ($dt == $this->_from) {
-          return Icalyearbox_Datespans::IS_START;
-        }
-        if (($dt > $this->_from) and ($dt < $this->_to)) {
-          return Icalyearbox_Datespans::IS_IN_SPAN;
-        }
-      } else {
-        if (($dt >= $this->_from) and ($dt <= $this->_to)) {
-          return Icalyearbox_Datespans::IS_IN_SPAN;
-        }
-      }
-    } else {
-      throw new ErrorException("Parameter must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
-    }
-    return Icalyearbox_Datespans::IS_OUTSIDE;
-  } // add
-
-  public function description() {
-    return $this->_description;
-  } // description
-
-  public function inspect() {
-    $value = sprintf("Icalyearbox_Datespan(_from = '%s', _to = '%s', _description='%s')", $this->_from->format('c'), $this->_to->format('c'), $this->_description);
-    //$value = sprintf("Icalyearbox_Datespan(_from = '%s', _to = '%s', _description='%s')", $this->_from->format('Ymd'), $this->_to->format('Ymd'), $this->_description);
-    return $value;
-  }
-} // class Icalyearbox_Datespan
-
-class Icalyearbox_Datespans {
-  public const IS_OUTSIDE = -1;
-  public const IS_START = 0;
-  public const IS_IN_SPAN = 1;
-  public const IS_FREE = 2;
-  public const IS_END = 3;
-
-  private $_raw_spans;
-  private $_spans;
-
-  public function __construct() {
-    $this->_raw_spans = array();
-    $this->_spans = array();
-  } // __construct
-
-  public function add($span) {
-    if (is_a($span, 'Icalyearbox_Datespan')) {
-      array_push($this->_raw_spans, $span);
-      $b_is_found = false;
-      foreach ($this->_spans as $saved_span) {
-        if ($saved_span->add($span)) {
-          $b_is_found = true;
-          break;
-        }
-      }
-      if (!$b_is_found) {
-        array_push($this->_spans, $span);
-      }
-    } else {
-      throw new ErrorException("Parameter must be type Icalyearbox_Datespan!", 0, E_ERROR, __FILE__, __LINE__);
-    }
-  } // function add
-
-  public function position($dt, $type = 'event') {
-    if (is_a($dt, 'DateTime')) {
-      $search_counter = 0;
-      if ($type == 'booking') {
-        foreach ($this->_spans as $span) {
-          $pos = $span->position($dt, $type);
-          switch ($pos) {
-            case self::IS_START:
-            case self::IS_END:
-            case self::IS_IN_SPAN:
-              return $pos;
-          }
-        }
-      } else {
-        foreach ($this->_raw_spans as $span) {
-          $search_counter++;
-          $pos = $span->position($dt, $type);
-          switch ($pos) {
-            case self::IS_START:
-            case self::IS_END:
-            case self::IS_IN_SPAN:
-              //Icalyearbox_Parser::write_log(sprintf("%s: SEARCH-COUNTER=%d POS=%d", $dt->format('Ymd'), $search_counter, $pos));
-              return $pos;
-          }
-        }
-      }
-      //Icalyearbox_Parser::write_log(sprintf("%s: SEARCH-COUNTER=%d POS=%d", $dt->format('Ymd'), $search_counter, self::IS_FREE));
-      return self::IS_FREE;
-    } else {
-      throw new ErrorException("Parameter must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
-    }
-  }
-
-  public function description($dt) {
-    $rv = array();
-    if (is_a($dt, 'DateTime')) {
-      foreach ($this->_raw_spans as $span) {
-        $pos = $span->position($dt);
-        switch ($pos) {
-          case self::IS_START:
-          case self::IS_END:
-          case self::IS_IN_SPAN:
-            if (!empty($span->description())) {
-              array_push($rv, $span->description());
-            }
-        }
-      }
-    } else {
-      throw new ErrorException("Parameter must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
-    }
-    return array_unique($rv);
-  }
-
-  public function inspect() {
-    $value = 'Icalyearbox_Datespans(_spans = [';
-    $nr_spans = count($this->_spans);
-    $nr = 0;
-    foreach ($this->_spans as $span) {
-      $value .= $span->inspect();
-      $nr++;
-      if ($nr < $nr_spans) {
-        $value .= ', ';
-      }
-    }
-    $value .= '])';
-    return $value;
-  } // inspect
-} // class Icalyearbox_Datespans
 
 /**
  * Parser plugin class.
@@ -235,7 +40,7 @@ class Icalyearbox_Parser {
    * @access  private
    * @since   1.0.0
    */
-  private static $_enable_debugging = true; //TODO //phpcs:ignore
+  private static $_enable_debugging = true;
   private static $_log_initialized = false;
   private static $_log_class = null;
 
@@ -314,14 +119,14 @@ class Icalyearbox_Parser {
    */
   private static function _error($msg, $sc = NULL, $sc_pos = NULL, $content = NULL) {
     if ($sc != NULL and $sc_pos != NULL and $content != NULL) {
-      $cn = substr($content, 0, $sc_pos) . '<span style="background-color:#AA000F; color:white;">' . substr($content, $sc_pos, strlen($sc)) . '</span>' . substr($content, $sc_pos + strlen($sc));
+      $cn = substr($content, 0, $sc_pos) . '<span style="background-color:#AA000F; color:white;">' . esc_html(substr($content, $sc_pos, strlen($sc))) . '</span>' . esc_html(substr($content, $sc_pos + strlen($sc)));
     } else {
       $cn = NULL;
     }
     return
       '<div style="unicode-bidi: embed; font-family: monospace; font-size:12px; color:black; background-color:#E0E0E0;">' .
-      '[icalyearbox]:ERROR -- ' . $msg . ($sc_pos === NULL ? '' : ' POSITION=' . $sc_pos) . ($sc === NULL ? '' : ' SHORTCODE="' . $sc . '"') . "\n" .
-      ($cn === NULL ? '' : 'CONTENT="' . $cn . '"') .
+      '[icalyearbox::ERROR -- ' . esc_html($msg) . ($sc_pos === NULL ? '' : ' POSITION=' . esc_html($sc_pos)) . ($sc === NULL ? '' : ' SHORTCODE="' . esc_html($sc) . '"') . "]\n" .
+      ($cn === NULL ? '' : 'CONTENT="' . esc_html($cn) . '"') .
       '</div>';
   } // _error
 
@@ -373,6 +178,16 @@ class Icalyearbox_Parser {
     return $dt;
   } // _strtodatetime
 
+  private static function _getav($a, $k) {
+    return array_key_exists($k, $a) ? trim(strval($a[$k])) : '';
+  } // _getav
+
+  private static function _purecontent($c) {
+    $c = preg_replace('/<br\s\/>/i', "\n", $c);
+    $c = preg_replace('/<p>([^<]*?)<\/p>/i', "$1\n", $c);
+    return trim($c);
+  } // _purecontent
+
   /**
    * Get name and state (OPEN, CLOSE) of a shortcode from shortcode content.
    *
@@ -390,6 +205,48 @@ class Icalyearbox_Parser {
     return NULL;
   } // _get_shortcode_tag
 
+  private static function _add_ical_events_to_ical_spans($description, $ical_lines, &$a_ical_events, &$ical_spans) {
+    foreach ($ical_lines as $ical_event_key => $ical_event) {
+      if (preg_match('/^(\d{8})/', $ical_event->dtstart, $matches)) {
+        $dt_start = $matches[1];
+        $b_exclude_dtend = false;
+        if (preg_match('/^\d{8}$/', $ical_event->dtstart) and preg_match('/^\d{8}$/', $ical_event->dtend)) {
+          // In date format dtend is not inclusive!
+          $b_exclude_dtend = true;
+        }
+        $dt_end = substr(strval($ical_event->dtend), 0, 8);
+        $dt_end = (empty($dt_end) ? $dt_start : $dt_end);
+        $dt_start = (empty($dt_start) ? $dt_end : $dt_start);
+        if (empty($dt_start) or empty($dt_end)) {
+          self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' DTEND='%s'", strval($dt_start), strval($dt_end)));
+        } else {
+          array_push($a_ical_events, array('EVENT' => $ical_event, 'DTSTART' => $dt_start, 'DTEND' => $dt_end));
+          switch ($description) {
+            case 'none':
+              $dt_description = '';
+            case 'description':
+              $dt_description = $ical_event->description;
+              break;
+            case 'summary':
+              $dt_description = $ical_event->summary;
+              break;
+            case 'mix':
+              $dt_description = (!empty($ical_event->description) ? $ical_event->description : (!empty($ical_event->summary) ? $ical_event->summary : ''));
+              break;
+          }
+          $from = self::_strtodatetime($dt_start);
+          $to = self::_strtodatetime($dt_end);
+          if ($b_exclude_dtend) {
+            $to = $to->modify('-1 day');
+          }
+          $ical_spans->add(new Icalyearbox_Datespan($from, $to, $dt_description));
+          //self::write_log(sprintf("[%s] ICAL-DTSTART=%s DTEND=%s", $ical_event_key, $dt_start, $dt_end));
+        }
+      } else {
+        self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' EMPTY OR WRONG FORMAT!", strval($dt_start)));
+      }
+    }
+  } // _add_ical_events_to_ical_spans
   /**
    * Render calendar as years.
    *
@@ -494,7 +351,7 @@ class Icalyearbox_Parser {
             }
             /*
             if ($month_day == 1) {
-              self::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
+            self::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
             }
             */
             $a_wday_classes = array();
@@ -700,6 +557,8 @@ class Icalyearbox_Parser {
     //----------
     $pattern_open = '/(' . $atts['open'] . ')/';
     $pattern_close = '/(' . $atts['close'] . ')/';
+    $content = self::_purecontent($content);
+    $has_content = !empty($content);
     self::write_log("CONTENT='" . $content . "'");
     self::write_log("OPEN='" . $pattern_open . "'");
     self::write_log("CLOSE='" . $pattern_close . "'");
@@ -733,7 +592,7 @@ class Icalyearbox_Parser {
     if (array_key_exists('cache', $atts)) {
       $atts_cache = trim($atts['cache']);
       if (preg_match("/^([1-9]\d*)((?i)[hdmy])$/", $atts_cache, $matches)) {
-        self::write_log(sprintf("CACHE-MATCHES=%d", count($matches)));
+        //self::write_log(sprintf("CACHE-MATCHES=%d", count($matches)));
         if (count($matches) == 3) {
           $multiplier = intval($matches[1]);
           $time_period = 86400;
@@ -767,8 +626,8 @@ class Icalyearbox_Parser {
       $atts_ical = trim($atts['ical']);
       self::write_log(sprintf("PARAM ICAL='%s'", $atts_ical));
       if (preg_match("/^(\S+(\s+))*(\S+)$/", $atts_ical, $matches)) {
-        self::write_log(sprintf("ICAL-URL-MATCHES=%d", count($matches)));
-        self::write_log($matches);
+        //self::write_log(sprintf("ICAL-URL-MATCHES=%d", count($matches)));
+        //self::write_log($matches);
         if (count($matches) == 4) {
           $ical_list_string = preg_replace('/\s+/', ' ', $matches[0]);
           $a_ical_url_list = explode(' ', $ical_list_string);
@@ -800,13 +659,20 @@ class Icalyearbox_Parser {
         // Load external resource.
         if ($has_reload) {
           $response = wp_remote_get($ical_url, ['timeout' => 30]);
-          if (is_array($response) && !is_wp_error($response)) {
-            // Write to cahce:
-            $my_cache_file = fopen($cache_fn, "w");
-            fwrite($my_cache_file, wp_remote_retrieve_body($response));
-            fclose($my_cache_file);
+
+          if (is_array($response) && (!is_wp_error($response))) {
+            $response_code = intval(wp_remote_retrieve_response_code($response));
+            self::write_log(sprintf("HTTP-RESPONSE-CODE=%d", $response_code));
+            if ($response_code == 200) {
+              // Write to cahce:
+              $my_cache_file = fopen($cache_fn, "w");
+              fwrite($my_cache_file, wp_remote_retrieve_body($response));
+              fclose($my_cache_file);
+            } else {
+              return self::_error(sprintf("Cannot load URL! URL=\"%s\" RESPONSE-CODE=\"%s\"", $ical_url, strval(wp_remote_retrieve_response_code($response))));
+            }
           } else {
-            // TODO make error message
+            return self::_error(sprintf("Cannot load URL! URL=\"%s\"", $ical_url));
           }
         }
         // Analyse ical data.
@@ -818,55 +684,31 @@ class Icalyearbox_Parser {
             'defaultWeekStart' => 'MO',
             'skipRecurrence' => false,
             'defaultSpan' => 5));
-          $ical_lines = $ical->events();
           self::write_log(sprintf("ICAL-SIZE=%d", $ical->eventCount));
           if ($ical->eventCount > 0) {
-            foreach ($ical_lines as $ical_event_key => $ical_event) {
-              if (preg_match('/^(\d{8})/', $ical_event->dtstart, $matches)) {
-                $dt_start = $matches[1];
-                $b_exclude_dtend = false;
-                if (preg_match('/^\d{8}$/', $ical_event->dtstart) and preg_match('/^\d{8}$/', $ical_event->dtend)) {
-                  // In date format dtend is not inclusive!
-                  $b_exclude_dtend = true;
-                }
-                $dt_end = substr(strval($ical_event->dtend), 0, 8);
-                $dt_end = (empty($dt_end) ? $dt_start : $dt_end);
-                $dt_start = (empty($dt_start) ? $dt_end : $dt_start);
-                //$ical_event->dtstart = $dt_start;
-                //$ical_event->dtend = $dt_end;
-                if (empty($dt_start) or empty($dt_end)) {
-                  self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' DTEND='%s'", strval($dt_start), strval($dt_end)));
-                } else {
-                  array_push($a_ical_events, array('EVENT' => $ical_event, 'DTSTART' => $dt_start, 'DTEND' => $dt_end));
-                  switch($description) {
-                    case 'none':
-                      $dt_description = '';
-                    case 'description':
-                      $dt_description = $ical_event->description;
-                      break;
-                    case 'summary':
-                      $dt_description = $ical_event->summary;
-                      break;
-                    case 'mix':
-                      $dt_description = (!empty($ical_event->description) ? $ical_event->description : (!empty($ical_event->summary) ? $ical_event->summary : ''));
-                      break;
-                  }
-                  $from = self::_strtodatetime($dt_start);
-                  $to = self::_strtodatetime($dt_end);
-                  if ($b_exclude_dtend) {
-                    $to = $to->modify('-1 day');
-                  }
-                  $ical_spans->add(new Icalyearbox_Datespan($from, $to, $dt_description));
-                  //self::write_log(sprintf("[%s] ICAL-DTSTART=%s DTEND=%s", $ical_event_key, $dt_start, $dt_end));
-                }
-              } else {
-                self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' EMPTY OR WRONG FORMAT!", strval($dt_start)));
-              }
-            }
+            self::_add_ical_events_to_ical_spans($description, $ical->events(), $a_ical_events, $ical_spans);
           }
         }
       } catch (Exception $e) {
-        self::write_log(sprintf("ERROR='%s'", strval($e)));
+        $msg = sprintf("ERROR='%s'", strval($e));
+        self::write_log($msg);
+        return self::_error($msg);
+      }
+    }
+    //
+    //----------
+    // Analyse ICAL content:
+    if ($has_content) {
+      //$ical = new icalyearbox_iCalEasyReader();
+      //SEE:https://github.com/u01jmg3/ics-parser
+      $ical = new Ical\ICal($content, array(
+        'defaultTimeZone' => 'Europe/Berlin',
+        'defaultWeekStart' => 'MO',
+        'skipRecurrence' => false,
+        'defaultSpan' => 5));
+      self::write_log(sprintf("CONTENT-ICAL-SIZE=%d", $ical->eventCount));
+      if ($ical->eventCount > 0) {
+        self::_add_ical_events_to_ical_spans($description, $ical->events(), $a_ical_events, $ical_spans);
       }
     }
     //
@@ -897,7 +739,7 @@ class Icalyearbox_Parser {
       }
     }
     //----------
-    // Make contious list of months in a year:
+    // Make continuous list of months in a year:
     foreach ($a_ical_year_months as $year => $a_months) {
       $min = min($a_months);
       $max = max($a_months);
@@ -910,6 +752,7 @@ class Icalyearbox_Parser {
     //
     //----------
     // Collect all years.
+    $b_years_syntax_is_correct = false;
     $a_years = array();
     //self::write_log($atts);
     if (array_key_exists('year', $atts)) {
@@ -917,15 +760,17 @@ class Icalyearbox_Parser {
       //self::write_log(sprintf("PARAM YEAR='%s'", $atts_year));
       if (preg_match("/^((?i)NOW|(?i)ICAL|[1-9][0-9]*)(\+[1-9][0-9]*){0,1}(-[1-9][0-9]*){0,1}$/", $atts_year, $matches)
         or preg_match("/^((?i)NOW|(?i)ICAL|[1-9][0-9]*)(\-[1-9][0-9]*){0,1}(\+[1-9][0-9]*){0,1}$/", $atts_year, $matches)) {
-        self::write_log($matches);
+        //self::write_log($matches);
         if (strtolower($matches[1]) == 'ical') {
           $b_use_ical_years = true;
           switch (count($matches)) {
             case 2:
               // Detected the word "ical":
+              $b_years_syntax_is_correct = true;
               break;
             case 3:
-              // Detected one plus or minus.
+              // Detected ONE plus or minus.
+              $b_years_syntax_is_correct = true;
               $offset = intval($matches[2]);
               if ($offset < 0) {
                 $base_year = min($a_ical_years);
@@ -945,7 +790,8 @@ class Icalyearbox_Parser {
               sort($a_ical_years);
               break;
             case 4:
-              // Detected two plus or minus values.
+              // Detected TWO plus or minus values.
+              $b_years_syntax_is_correct = true;
               $offset1 = intval($matches[2]);
               $offset2 = intval($matches[3]);
               if ($offset1 < 0) {
@@ -971,15 +817,17 @@ class Icalyearbox_Parser {
               sort($a_ical_years);
               break;
           }
-        } else {
+        } else { // Base year is "now" or NUMBER:
           self::_set_year($matches[1], $base_year);
           switch (count($matches)) {
             case 2:
-              // Detected the word "now":
+              // Detected the word "now" or NUMBER:
+              $b_years_syntax_is_correct = true;
               array_push($a_years, $base_year);
               break;
             case 3:
               // Detected one plus or minus.
+              $b_years_syntax_is_correct = true;
               $offset = intval($matches[2]);
               $from = $base_year;
               $to = $base_year + $offset;
@@ -992,6 +840,7 @@ class Icalyearbox_Parser {
               break;
             case 4:
               // Detected two plus or minus values.
+              $b_years_syntax_is_correct = true;
               $offset1 = intval($matches[2]);
               $offset2 = intval($matches[3]);
               $from = $base_year + $offset1;
@@ -1006,11 +855,12 @@ class Icalyearbox_Parser {
           }
         }
       } else {
-        // year interval = from,to
+        // year interval = from--to
         if (preg_match("/^((?i)NOW|\d+)\s*--\s*((?i)NOW|\d+)$/", $atts_year, $matches)) {
           // year range = two values (inclusive):
           if (count($matches) == 3) {
             if (self::_set_year($matches[1], $from) and self::_set_year($matches[2], $to)) {
+              $b_years_syntax_is_correct = true;
               if ($from > $to) {
                 self::_swap_values($from, $to);
               }
@@ -1023,6 +873,7 @@ class Icalyearbox_Parser {
           // year list = a,b,c[...]
           if (preg_match("/^(((?i)NOW|[\d,\s]+)+)$/", $atts_year, $matches)) {
             if (count($matches) == 3) {
+              $b_years_syntax_is_correct = true;
               $years_list_string = preg_replace('/\s+/', '', $matches[1]);
               $a_years_list = explode(',', $years_list_string);
               foreach ($a_years_list as $year_raw) {
@@ -1034,10 +885,14 @@ class Icalyearbox_Parser {
           }
         }
       }
+      if (!$b_years_syntax_is_correct) {
+        return self::_error(sprintf("The syntax of YEAR is incorrect. YEAR=\"%s\"", $atts_year));
+      }
     }
     //
     //----------
     // Collect all months.
+    $b_months_syntax_is_correct = false;
     $a_months = array();
     //self::write_log($atts);
     if (array_key_exists('months', $atts)) {
@@ -1046,13 +901,70 @@ class Icalyearbox_Parser {
       if (preg_match("/^((?i)NOW|(?i)ALL|(?i)ICAL|[1-9][0-9]*)(\+[1-9][0-9]*){0,1}(-[1-9][0-9]*){0,1}$/", $atts_months, $matches)
         or preg_match("/^((?i)NOW|(?i)ALL|(?i)ICAL|[1-9][0-9]*)(\-[1-9][0-9]*){0,1}(\+[1-9][0-9]*){0,1}$/", $atts_months, $matches)) {
         if (strtolower($matches[1]) == 'ical') {
+          $b_months_syntax_is_correct = true;
           $b_use_ical_months = true;
+          //self::write_log($matches);
+          switch (count($matches)) {
+            case 2:
+              // ICAL months, do nothing these are set.
+              $b_months_syntax_is_correct = true;
+              break;
+            case 3:
+              // Detected one plus or minus.
+              $b_months_syntax_is_correct = true;
+              foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
+                if (array_key_exists($year, $a_ical_year_months) and (!empty($a_ical_year_months[$year]))) {
+                  $offset = intval($matches[2]);
+                  if ($offset >= 0) {
+                    $from = min($a_ical_year_months[$year]);
+                    $to = min([12, max($a_ical_year_months[$year]) + $offset]);
+                  } else {
+                    $from = max([1, min($a_ical_year_months[$year]) + $offset]);
+                    $to = max($a_ical_year_months[$year]);
+                  }
+                  if ($from > $to) {
+                    self::_swap_values($from, $to);
+                  }
+                  $a_new_months = array();
+                  for ($month = $from; $month <= $to; $month++) {
+                    array_push($a_new_months, $month);
+                  }
+                  $a_ical_year_months[$year] = $a_new_months;
+                } else {
+                  return self::_error(sprintf("No ICAL data found for this year! YEAR=\"%s\"", $year));
+                }
+              }
+              break;
+            case 4:
+              // Detected two plus or minus values.
+              $b_months_syntax_is_correct = true;
+              foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
+                if (array_key_exists($year, $a_ical_year_months) and (!empty($a_ical_year_months[$year]))) {
+                  $offset1 = intval($matches[2]);
+                  $offset2 = intval($matches[3]);
+                  if ($offset1 > $offset2) {
+                    self::_swap_values($offset1, $offset2);
+                  }
+                  $from = max([1, min($a_ical_year_months[$year]) + $offset1]);
+                  $to = min([12, max($a_ical_year_months[$year]) + $offset2]);
+                  $a_new_months = array();
+                  for ($month = $from; $month <= $to; $month++) {
+                    array_push($a_new_months, $month);
+                  }
+                  $a_ical_year_months[$year] = $a_new_months;
+                } else {
+                  return self::_error(sprintf("No ICAL data found for this year! YEAR=\"%s\"", $year));
+                }
+              }
+              break;
+          }
         } else {
-          self::write_log($matches);
+          //self::write_log($matches);
           if (self::_set_month($matches[1], $base_month)) {
             switch (count($matches)) {
               case 2:
                 // Detected the word "all" or "now":
+                $b_months_syntax_is_correct = true;
                 if ($base_month == -1) {
                   array_push($a_months, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
                 } else {
@@ -1061,6 +973,7 @@ class Icalyearbox_Parser {
                 break;
               case 3:
                 // Detected one plus or minus.
+                $b_months_syntax_is_correct = true;
                 if ($base_month == -1) {
                   array_push($a_months, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
                 } else {
@@ -1079,6 +992,7 @@ class Icalyearbox_Parser {
                 break;
               case 4:
                 // Detected two plus or minus values.
+                $b_months_syntax_is_correct = true;
                 if ($base_month == -1) {
                   array_push($a_months, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
                 } else {
@@ -1099,16 +1013,15 @@ class Icalyearbox_Parser {
                 }
                 break;
             }
-          } else {
-            // TODO Errounous month!
           }
         }
       } else {
         // list of months = a,b,c[...]
         if (preg_match("/^((?i)NOW|[\d,\s]+)+$/", $atts_months, $matches)) {
-          self::write_log("LIST OF MONTHS");
-          self::write_log($matches);
+          //self::write_log("LIST OF MONTHS");
+          //self::write_log($matches);
           if (count($matches) == 2) {
+            $b_months_syntax_is_correct = true;
             $months_list_string = preg_replace('/\s+/', '', $matches[0]);
             $a_months_list = explode(',', $months_list_string);
             foreach ($a_months_list as $month_raw) {
@@ -1119,12 +1032,15 @@ class Icalyearbox_Parser {
           }
         } else {
           // now[+-]ical
-          if (preg_match("/^((?i)NOW([+-])(?i)ICAL)$/", $atts_months, $matches)) {
+          if (preg_match("/^\s*((?i)NOW([+-])(?i)ICAL)\s*$/", $atts_months, $matches)) {
+            $b_months_syntax_is_correct = true;
+            /*
             self::write_log(sprintf("NOW[+-]ICAL: ICAL-YEARS & ICAL-MONTHS: USE-ICAL-YEARS=%s", self::_booltostr($b_use_ical_years)));
             self::write_log($a_ical_years);
             self::write_log(sprintf("NOW[+-]ICAL: YEARS & MONTHS:"));
             self::write_log($a_years);
             self::write_log($matches);
+            */
             $operator = $matches[2];
             $year_now = intval(date('Y'));
             $month_now = intval(date('m'));
@@ -1180,18 +1096,17 @@ class Icalyearbox_Parser {
                 unset($a_ical_years[$key]);
               }
             }
-          } else {
-            self::write_log("No MONTH matches!"); // TODO
           }
         }
       }
+      if (!$b_months_syntax_is_correct) {
+        $msg = esc_html(sprintf("The syntax of YEAR is incorrect. YEAR=\"%s\"", $atts_year));
+        return self::_error($msg);
+      }
     }
-    self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
-    self::write_log($a_ical_years);
-    self::write_log($a_ical_year_months);
     //
     //----------
-    // Add ical months for orhant years:
+    // Add ical months for orphaned years:
     if ($b_use_ical_years) {
       foreach ($a_ical_years as $year) {
         if (!array_key_exists($year, $a_ical_year_months)) {
@@ -1200,18 +1115,42 @@ class Icalyearbox_Parser {
       }
     }
     //
+    // Check for empty datasets:
+    if ($b_use_ical_years) {
+      if (empty($a_ical_years)) {
+        return self::_error(sprintf("No ICAL data found for YEAR definition. YEAR=\"%s\"", self::_getav($atts, 'year')));
+      }
+    } else {
+      if (empty($a_years)) {
+        return self::_error(sprintf("No years found for YEAR definition. YEAR=\"%s\"", self::_getav($atts, 'year')));
+      }
+    }
+    if ($b_use_ical_months) {
+      if (empty($a_ical_year_months)) {
+        return self::_error(sprintf("No ICAL data found for MONTHS definition. MONTHS=\"%s\"", self::_getav($atts, 'months')));
+      } else {
+        foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
+          if ((!array_key_exists($year, $a_ical_year_months)) or empty($a_ical_year_months[$year])) {
+            return self::_error(sprintf("No ICAL data found for this year. YEAR=\"%s\"", self::_getav($atts, 'year')));
+          }
+        }
+      }
+    } else {
+      if (empty($a_months)) {
+        return self::_error(sprintf("No months found for MONTHS definition. MONTHS=\"%s\"", self::_getav($atts, 'months')));
+      }
+    }
+    //
+    //----------
+    //
+    self::write_log(sprintf("B_USE_ICAL_YEARS=%s B_USE_ICAL_MONTHS=%s", self::_booltostr($b_use_ical_years), self::_booltostr($b_use_ical_months)));
+    /*
     self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
     self::write_log($a_ical_years);
     self::write_log($a_ical_year_months);
     self::write_log(sprintf("YEARS & MONTHS:"));
     self::write_log($a_years);
     self::write_log($a_months);
-    //
-    //----------
-    //
-    /*
-    self::write_log(sprintf("B_USE_ICAL_YEARS=%s B_USE_ICAL_MONTHS=%s", self::_booltostr($b_use_ical_years), self::_booltostr($b_use_ical_months)));
-    self::write_log($ical_spans->inspect());
     */
     //
     //----------
@@ -1223,169 +1162,14 @@ class Icalyearbox_Parser {
     foreach ($a_wdays as $wday) {
       array_push($a_wdays_first_chracter, mb_substr(__($wday, 'icalyearbox'), 0, 1));
     }
-    self::write_log($a_wdays_first_chracter);
+    //self::write_log($a_wdays_first_chracter);
     //
     //----------
     // Render calender.
-    //
     $doc = ($display == 'year'
       ? self::_render_as_years($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
       : self::_render_as_months($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
     );
     return $doc;
-    //
-    //----------
-    $offset = 0;
-    $match = NULL;
-    $a_pos = array();
-    $pos = NULL;
-    while (preg_match($pattern_open, $content, $matches, PREG_OFFSET_CAPTURE, $offset)) {
-      $match = $matches[0][0];
-      $pos = $matches[0][1];
-      self::write_log('POS=' . $pos);
-      // Find the closing brace.
-      $offset = $pos + strlen($match);
-      if (preg_match($pattern_close, $content, $matches, PREG_OFFSET_CAPTURE, $offset)) {
-        $match_close = $matches[0][0];
-        $pos_close = $matches[0][1];
-        $shortcode_content = substr($content, $pos + strlen($match), $pos_close - $pos - strlen($match));
-        $shortcode_complete = $match . $shortcode_content . $match_close;
-        $a_tag = self::_get_shortcode_tag($shortcode_content);
-        if ($a_tag === NULL) {
-          return self::_error("Cannot find shortcode tag inside shortcode!", $shortcode_complete, $pos, $content);
-        }
-        $tag_open = $a_tag[0];
-        $tag_name = $a_tag[1];
-        array_push($a_pos, array(
-          'position' => $pos,
-          'shortcode' => $shortcode_complete,
-          'content' => $shortcode_content,
-          'tag' => $tag_name,
-          'open' => $tag_open
-        ));
-        self::write_log('POS_CLOSE=' . $pos_close);
-        self::write_log('SHORTCODE=' . $shortcode_complete);
-        self::write_log('CONTENT=' . $shortcode_content);
-        self::write_log('TAG=' . $tag_name . ' OPEN=' . ($tag_open ? 'yes' : 'no'));
-      } else {
-        return self::_error("Cannot find closing brace for shortcode!", $match, $pos, $content);
-      }
-    }
-    //
-    //----------
-    // Find the last opening shortcode.
-    //
-    $index = count($a_pos) - 1;
-    while ($index >= 0) {
-      $open = $a_pos[$index]['open'];
-      if ($open) {
-        break;
-      }
-      $index--;
-    }
-    $last_open_index = $index;
-    //
-    if ($last_open_index >= 0) {
-      self::write_log('LAST-OPEN-INDEX=' . $last_open_index);
-      $pos = $a_pos[$last_open_index]['position'];
-      $shortcode_complete = $a_pos[$last_open_index]['shortcode'];
-      $shortcode_content = $a_pos[$last_open_index]['content'];
-      $tag_name = $a_pos[$last_open_index]['tag'];
-      $tag_open = $a_pos[$last_open_index]['open'];
-      //
-      //----------
-      // Check if we have a closing tag.
-      // This must be the next shortcode or it's not existing.
-      //
-      $has_closing_tag = false;
-      if ($last_open_index < (count($a_pos) - 1)) {
-        if (!$a_pos[$last_open_index + 1]['open'] and ($a_pos[$last_open_index + 1]['tag'] == $tag_name)) {
-          // We have a closing tag.
-          $has_closing_tag = true;
-        }
-      }
-      //
-      //----------
-      // Process the last found shortcode.
-      //
-      if (!$has_closing_tag) {
-        //
-        //----------
-        // This tag has no closing tag.
-        // 
-        $content_before = ($pos == 0 ? '' : substr($content, 0, $pos));
-        $content_after = substr($content, $pos + strlen($shortcode_complete));
-        // Evaluate shortcode.
-        $to_eval = $shortcode_complete;
-        $to_eval = preg_replace($pattern_open, '[', $to_eval);
-        $to_eval = preg_replace($pattern_close, ']', $to_eval);
-        self::write_log('HAS-NO-CLOSING:EVAL[' . $last_open_index . '] ->|' . $content_before . '|' . $to_eval . '|' . $content_after . '|');
-        if (function_exists('do_shortcode')) {
-          if ($atts['deconstruct']) {
-            $eval = str_repeat(" ", strlen($shortcode_complete));
-          } else {
-            $eval = do_shortcode($to_eval);
-          }
-        } else {
-          $eval = '';
-        }
-        if ($to_eval == $eval) {
-          return self::_error("Unknown shortcode!", $shortcode_complete, $pos, $content);
-        }
-        if ($atts['deconstruct']) {
-          $eval = str_repeat(" ", strlen($shortcode_complete));
-          if ($evaluate_stack !== NULL) {
-            array_push($evaluate_stack, array($pos, $pos + strlen($shortcode_complete)));
-          }
-        }
-        if ($last_open_index == 0) {
-          return $content_before . $eval . $content_after;
-        } else {
-          return self::parse($atts, $content_before . $eval . $content_after, $evaluate_stack);
-        }
-      } else {
-        //
-        //----------
-        // We have a closing tag.
-        //
-        $next_pos = $a_pos[$last_open_index + 1]['position'];
-        $next_shortcode_complete = $a_pos[$last_open_index + 1]['shortcode'];
-        $shortcode_complete = substr($content, $pos, $next_pos + strlen($next_shortcode_complete) - $pos);
-        self::write_log('HAS-CLOSING: SHORTCODE="' . $shortcode_complete . '"');
-        //
-        $content_before = ($pos == 0 ? '' : substr($content, 0, $pos));
-        $content_after = substr($content, $pos + strlen($shortcode_complete));
-        // Evaluate shortcode.
-        $to_eval = $shortcode_complete;
-        $to_eval = preg_replace($pattern_open, '[', $to_eval);
-        $to_eval = preg_replace($pattern_close, ']', $to_eval);
-        self::write_log('HAS-CLOSING:EVAL[' . $last_open_index . '] ->|' . $content_before . '|' . $to_eval . '|' . $content_after . '|');
-        if (function_exists('do_shortcode')) {
-          if ($atts['deconstruct']) {
-            $eval = str_repeat(" ", strlen($shortcode_complete));
-          } else {
-            $eval = do_shortcode($to_eval);
-          }
-        } else {
-          $eval = '';
-        }
-        if ($to_eval == $eval) {
-          return self::_error("Unknown shortcode!", $shortcode_complete, $pos, $content);
-        }
-        if ($atts['deconstruct']) {
-          $eval = str_repeat(" ", strlen($shortcode_complete));
-          if ($evaluate_stack !== NULL) {
-            array_push($evaluate_stack, array($pos, $pos + strlen($shortcode_complete)));
-          }
-        }
-        if ($last_open_index == 0) {
-          return $content_before . $eval . $content_after;
-        } else {
-          return self::parse($atts, $content_before . $eval . $content_after, $evaluate_stack);
-        }
-      }
-    }
-    return $content;
   } // parse
-
 } // class Icalyearbox_Parser
