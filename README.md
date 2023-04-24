@@ -5,12 +5,23 @@ You can make calendars as year overview or as separate months.
 
 Example: Official holydays in North Rhine-Westphalia, Germany, 2023.
 
-![Holydays, NRW, Germany, 2023](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-icalyearbox/master/readme/2023-feiertage-nrw.png?token=GHSAT0AAAAAACBWZNHKLWOC2UWXKLYFGZDIZCCXEVQ)
+![Holydays, NRW, Germany, 2023](readme/2023-feiertage-nrw.png)
 
 Sourcecode in Wordpress:
 ```
 [icalyearbox year="2023" months="all" ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-westfalen" type="event" display="year" description="mix" cache="1y"]
 ```
+
+Example: Booking calendar with month grid.
+
+![Holydays, NRW, Germany, 2023](readme/booking-cal-month-grid.png)
+
+Sourcecode in Wordpress:
+```
+[icalyearbox year="ical" months="now+ical" ical="PRIVATE-URL" type="booking" display="month" cache="1d"]
+```
+
+The ```"PRIVATE-URL"```, in this example, is realy not literally written as ```PRIVATE-URL```. In real it is a valid URL ```https://...```, not known by you.
 
 ## Usage and Syntax
 
@@ -19,7 +30,43 @@ Simply add a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/s
 The calendar shortcode starts with ```[icalyearbox ``` and ends with ```]```.
 Enclosed in this are the options to controll your calendar.
 
-Full Syntax: ```[icalyearbox OPTIONS]```
+**Full Syntax**: ```[icalyearbox OPTIONS]ICAL-DATA[/icalyearbox]```
+
+```ICAL-DATA``` may be empty: ```[icalyearbox OPTIONS][/icalyearbox]```
+
+**Short, handy, Syntax**: ```[icalyearbox OPTIONS]```
+
+### Full Syntax with ICAL Data
+
+Place your ICAL calendar data in-page.
+
+Example (Source code in Wordpress):
+
+```
+[icalyearbox year="ical" months="ical-1+1" ical="" type="event" display="year"]
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:by-hand
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+DTSTAMP:20230420T190655Z
+UID:66ec16fe-69ea-4c74-a263-906001bf8a01
+DTSTART;VALUE=DATE:20230527
+DESCRIPTION:Sample Day
+END:VEVENT
+END:VCALENDAR
+[/icalyearbox]
+```
+
+### Full Syntax versus Short and Multiple Calendars
+
+*Be prepared!*
+If you use more than one **icalyearbox** on one page, don't mix up the short and the full syntax, because the first opening shortcode ```[icalyearbox OPTIONS]``` eats up all page content until the next closing tag ```[/icalyearbox]```.
+
+Rules for multiple calendars on one page:
+  * Use only the short form.
+  * Xor use only the full form. You may let ```ICAL-DATA``` empty: ```[icalyearbox OPTIONS][/icalyearbox]```
 
 ### Options
 
@@ -39,36 +86,11 @@ Default: ```"event"```
 
 Example: ```type="booking"```
 
-**description**: (string) Allowed values: ```"none"```, ```"description"```, ```"summary"``` and ```"mix"```.
-Default: ```"none"```
-
-  * ```description="none"``` Create no hover tooltips for events.
-  * ```description="description"``` Take the events description for the tooltip. Technically is this the ```DESCRIPTION``` field from the ICAL entry.
-  * ```description="summary"``` Take the events summary for the tooltip. Technically is this the ```SUMMARY``` field from the ICAL entry.
-  * ```description="mix"``` Take the description for the tooltip. If the description is empty, then take the summary for the tooltip.
-
-Example: ```description="mix"```
-
-**cache**: (string) Allowed values: A positive number of seconds. Alternatively a combination of a number and the abbrevation for hour: ```h```, month: ```m```, day: ```d``` or year: ```y```.
-Default: ```"86400"``` (This is one day.) 
-
-The cache value defines the age of the cached ICAL data. After this time the ICAL data is reloaded.
-
-Example: ```cache="1y"```
-
 **ical**: (string) Allowed values: Loadable, space separated, URIs leading to ICAL data.
 Default: ```""``` (No external resources.)
 
 Example: ```ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-westfalen"```
 
-**align**: (string) Allowed values: ```"center"```, ```"left"``` and ```"right"```.
-Default: ```"center"```
-
-  * ```align="center"``` Centers the output in the page.
-  * ```align="left"``` Aligns the output to the left.
-  * ```align="right"``` Aligns the output to the right.
-
-Example: ```align="left"```
 
 **year**: (string) Allowed values:
   * The keyword ```"now"``` for the current year.
@@ -125,6 +147,35 @@ Examples:
   * ```month="ical"```
   * ```month="ical-1+1"```
   * ```month="now+ical"```
+
+**description**: (string) Allowed values: ```"none"```, ```"description"```, ```"summary"``` and ```"mix"```.
+Default: ```"none"```
+
+  * ```description="none"``` Create no hover tooltips for events.
+  * ```description="description"``` Take the events description for the tooltip. Technically is this the ```DESCRIPTION``` field from the ICAL entry.
+  * ```description="summary"``` Take the events summary for the tooltip. Technically is this the ```SUMMARY``` field from the ICAL entry.
+  * ```description="mix"``` Take the description for the tooltip. If the description is empty, then take the summary for the tooltip.
+
+If there is a description for an event, the day number is decorated (dotted underline).
+If you hover over these the description is shown.
+
+Example: ```description="mix"```
+
+**cache**: (string) Allowed values: A positive number of seconds. Alternatively a combination of a number and the abbrevation for hour: ```h```, month: ```m```, day: ```d``` or year: ```y```.
+Default: ```"86400"``` (This is one day.) 
+
+The cache value defines the age of the cached ICAL data. After this time the ICAL data is reloaded.
+
+Example: ```cache="1y"```
+
+**align**: (string) Allowed values: ```"center"```, ```"left"``` and ```"right"```.
+Default: ```"center"```
+
+  * ```align="center"``` Centers the output in the page.
+  * ```align="left"``` Aligns the output to the left.
+  * ```align="right"``` Aligns the output to the right.
+
+Example: ```align="left"```
 
 ## Installation
 
