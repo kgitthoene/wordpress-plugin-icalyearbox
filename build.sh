@@ -295,7 +295,52 @@ trap at_exit EXIT HUP INT QUIT TERM
 #----------
 # Internal Script Functions
 #
-clean() {}
+clean() {
+  #----------
+  # Clean language files.
+  [ "$SCRIPT_OPT_BUILD_ALL" = "true" -o "$SCRIPT_OPT_BUILD_LANGUAGES" = "true" ] && {
+    for BUILD_DIR in "$MYDIR/languages"; do
+      (
+        cd "$BUILD_DIR"
+        sh ./build.sh clean || { error "An error occured! BUILD_DIR='$BUILD_DIR'"; exit 1; }
+      )
+    done
+  }
+  #----------
+  # Clean minifyed Javascript files.
+  [ "$SCRIPT_OPT_BUILD_ALL" = "true" -o "$SCRIPT_OPT_BUILD_UGLIFY" = "true" ] && {
+    for BUILD_DIR in "$MYDIR/assets/js"; do
+      (
+        cd "$BUILD_DIR"
+        sh ./build.sh clean || { error "An error occured! BUILD_DIR='$BUILD_DIR'"; exit 1; }
+      )
+    done
+  }
+  #----------
+  # Clean compiled LESS files.
+  [ "$SCRIPT_OPT_BUILD_ALL" = "true" -o "$SCRIPT_OPT_BUILD_LESS" = "true" ] && {
+    for BUILD_DIR in "$MYDIR/assets/css"; do
+      (
+        cd "$BUILD_DIR"
+        sh ./build.sh clean || { error "An error occured! BUILD_DIR='$BUILD_DIR'"; exit 1; }
+      )
+    done
+  }
+  #----------
+  # Create zip file.
+  (
+    DISTDIR="$MYDIR"
+    TOKEN="icalyearbox"
+    # Change to root project directory.
+    cd "$DISTDIR"
+    # ZIP file name.
+    FN="${TOKEN}.zip"
+    # Check existence of distribution directory.
+    [ -d "$DISTDIR" ] || { error "Cannot find distribution directory! DISDIR='$DISTDIR'"; exit 1; }
+    # Remove ZIP file.
+    rm -f "$FN" || { error "Cannot remove ZIP file! FILE='$FN'"; exit 1; }
+  )
+}
 
 install() {
   #----------
@@ -348,23 +393,6 @@ install() {
       return 1
     fi
   )
-}
-
-deploy() {
-  #----------
-  # 2dn: deploy to local site.
-  DISTDIR="icalyearbox"
-  cd "$MYDIR"
-  FN="${DISTDIR}.zip"
-  DESTINATION=~www-data/SITES/wordpress-hausimsee-digamma.mooo.com/wp-content/plugins/icalyearbox
-  GROUP="www-data"
-  if cp "$FN" "$DESTINATION"; then
-    info "File copied to destination. DESTINATION='$DESTINATION'"
-    chgrp "$GROUP" "$DESTINATION/$FN"
-  else
-    error "Cannot copy file to destination! DESTINATION='$DESTINATION'"
-    return 1
-  fi
 }
 
 usage() {
@@ -438,7 +466,6 @@ check_tools zip git
 cat <&6 | while read ARG; do
   case "$ARG" in
     install|build) install; RC=$?; [ $RC = 0 ] || exit $RC;;
-    deploy) deploy; RC=$?; [ $RC = 0 ] || exit $RC;;
     clean) clean; RC=$?; [ $RC = 0 ] || exit $RC;;
     *) error "Unknown command! CMD='$ARG'"; exit 10;;
   esac

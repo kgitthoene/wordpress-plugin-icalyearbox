@@ -359,6 +359,7 @@ Usage: $MYNAME [OPTIONS] COMMAND [...]
 Commands:
   install -- Install project.
   build   -- Same as install.
+  clean   -- Remove created files.
 Options:
   -h, --help -- Print this text.
 EOF
