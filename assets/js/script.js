@@ -8,7 +8,7 @@ if (window.jQuery) {
   globalThis[Symbol.for('icalyearbox_storage')] = (function () {
     var defaults = {
       'debug': false, // false = no debug on console
-      'is_enabled': false,
+      'is_enabled': true,
       'token': 'icalyearbox'
     };
     var resize_timeout = null;
@@ -20,40 +20,13 @@ if (window.jQuery) {
     };
   })();
 
-  /*
   addEventListener("DOMContentLoaded", (event) => {
     (function ($) {
       var _g = globalThis[Symbol.for('icalyearbox_storage')];
       if (_g.defaults.is_enabled) {
         function resize() {
           try {
-            if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": HELLO"); }
-            // Work on year table.
-            $("table.icalyearbox-tag.yr-table").each(function () {
-              let nr_weekdays = $(this).find("div.icalyearbox-tag.wday").length;
-              if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": NR OF WEEKDAYS=" + nr_weekdays); }
-              var first_row_max_width = 0;
-              $(this).find("div.icalyearbox-tag.frow").each(function () {
-                let span_width = $(this).find("span").width();
-                first_row_max_width = (span_width > first_row_max_width ? Math.ceil(span_width) : first_row_max_width);
-              });
-              var calculated_table_width = 12 + first_row_max_width + 19 * nr_weekdays;
-              if (_g.defaults.debug) { console.log("plugin:" + _g.defaults.token + ": 1st ROW MAX WIDTH=" + first_row_max_width + " TABLE-WIDTH=" + calculated_table_width); }
-              $(this).attr('width', calculated_table_width);
-              if ($(this).find("div.icalyearbox-tag.square")) {
-                $(this).find(".square.cellc.icalyearbox-tag").css("width", "18px")
-                $(this).find(".square.cellc.icalyearbox-tag").css("height", "18px")
-              }
-            });
-            // Work on months.
-            $("table.icalyearbox-tag.mo-table").each(function () {
-              if ($(this).find("div.icalyearbox-tag.square.cellc")) {
-                var calculated_table_width = 19 * 7;
-                $(this).attr('width', calculated_table_width);
-                $(this).find(".square.cellc.icalyearbox-tag").css("width", "18px")
-                $(this).find(".square.cellc.icalyearbox-tag").css("height", "18px")
-              }
-            });
+            html5tooltips.refresh();
           }
           catch (e) { console.error("plugin:" + _g.defaults.token + ":EXCEPTION: " + e); }
         }  // resize
@@ -67,7 +40,6 @@ if (window.jQuery) {
       }
     })(jQuery);
   });
-  */
 } else {
   console.error("plugin:icalyearbox:ERROR: jQuery is undefined!");
 }
