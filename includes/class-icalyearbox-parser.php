@@ -205,14 +205,19 @@ class Icalyearbox_Parser {
     return NULL;
   } // _get_shortcode_tag
 
-  private static function _add_ical_events_to_ical_spans($description, $ical_lines, &$a_ical_events, &$ical_spans) {
+  private static function _add_ical_events_to_ical_spans($ical_url, $description, $ical_lines, &$a_ical_events, &$ical_spans) {
     foreach ($ical_lines as $ical_event_key => $ical_event) {
       if (preg_match('/^(\d{8})/', $ical_event->dtstart, $matches)) {
         $dt_start = $matches[1];
         $b_exclude_dtend = false;
         if (preg_match('/^\d{8}$/', $ical_event->dtstart) and preg_match('/^\d{8}$/', $ical_event->dtend)) {
           // In date format dtend is not inclusive!
+          // SEE:https://www.rfc-editor.org/rfc/rfc5545#section-3.6.1
+          // CITE:„The "DTEND" property for a "VEVENT" calendar component specifies the non-inclusive end of the event.“
           $b_exclude_dtend = true;
+          if(preg_match('/^http[s]{0,1}:\/\/(www\.){0,1}fewo-direkt\.de\/icalendar\//', $ical_url)) {
+            $b_exclude_dtend = false;
+          }
         }
         $dt_end = substr(strval($ical_event->dtend), 0, 8);
         $dt_end = (empty($dt_end) ? $dt_start : $dt_end);
@@ -686,7 +691,7 @@ class Icalyearbox_Parser {
             'defaultSpan' => 5));
           self::write_log(sprintf("ICAL-SIZE=%d", $ical->eventCount));
           if ($ical->eventCount > 0) {
-            self::_add_ical_events_to_ical_spans($description, $ical->events(), $a_ical_events, $ical_spans);
+            self::_add_ical_events_to_ical_spans($ical_url, $description, $ical->events(), $a_ical_events, $ical_spans);
           }
         }
       } catch (Exception $e) {
@@ -708,7 +713,7 @@ class Icalyearbox_Parser {
         'defaultSpan' => 5));
       self::write_log(sprintf("CONTENT-ICAL-SIZE=%d", $ical->eventCount));
       if ($ical->eventCount > 0) {
-        self::_add_ical_events_to_ical_spans($description, $ical->events(), $a_ical_events, $ical_spans);
+        self::_add_ical_events_to_ical_spans('', $description, $ical->events(), $a_ical_events, $ical_spans);
       }
     }
     //
