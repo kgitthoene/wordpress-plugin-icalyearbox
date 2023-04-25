@@ -519,8 +519,8 @@ class Icalyearbox_Parser {
                 if (empty($desc)) {
                   $mo_day_span = sprintf('<span class="icalyearbox-tag">%02d</span>', $month_day);
                 } else {
-                  //SEE:https://github.com/chinchang/hint.css
-                  $mo_day_span = sprintf('<span class="icalyearbox-tag icalyearbox-hint" aria-label="%s" role="tooltip">%02d</span>', esc_html($desc), $month_day);
+                  //SEE:https://github.com/ytiurin/html5tooltipsjs
+                  $mo_day_span = sprintf('<span class="icalyearbox-tag icalyearbox-hint" data-tooltip="%s">%02d</span>', esc_html($desc), $month_day);
                 }
                 $doc .= sprintf('<td class="icalyearbox-tag"><div class="icalyearbox-tag cellc square%s"%s>%s</div></td>',
                   $wday_class, $td_backgroud_image_style, $mo_day_span) . PHP_EOL;
