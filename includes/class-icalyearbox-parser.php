@@ -734,9 +734,9 @@ class Icalyearbox_Parser {
     }
     //----------
     // Make continuous list of months in a year:
-    foreach ($a_ical_year_months as $year => $a_months) {
-      $min = min($a_months);
-      $max = max($a_months);
+    foreach ($a_ical_year_months as $year => $a_i_months) {
+      $min = min($a_i_months);
+      $max = max($a_i_months);
       $a_cont_months = array();
       for ($m = $min; $m <= $max; $m++) {
         array_push($a_cont_months, $m);
@@ -1132,6 +1132,31 @@ class Icalyearbox_Parser {
     } else {
       if (empty($a_months)) {
         return self::_error(sprintf("No months found for MONTHS definition. MONTHS=\"%s\"", self::_getav($atts, 'months')));
+      }
+    }
+    //
+    //----------
+    // Make continous months, if display is 'month', $b_use_ical_months.
+    if ($b_use_ical_months) {
+      $a_disp_years = ($b_use_ical_years ? $a_ical_years : $a_years);
+      foreach ($a_disp_years as $year) {
+        $from_month = min($a_ical_year_months[$year]);
+        $to_month = max($a_ical_year_months[$year]);
+        $previous_year = $year - 1;
+        if (in_array($previous_year, $a_disp_years)) {
+          $from_month = 1;
+        }
+        $next_year = $year + 1;
+        if (in_array($next_year, $a_disp_years)) {
+          $to_month = 12;
+        }
+        if (($from_month != min($a_ical_year_months[$year])) or ($to_month != max($a_ical_year_months[$year]))) {
+          $a_new_months = array();
+          for ($i = $from_month; $i <= $to_month; $i++) {
+            array_push($a_new_months, $i);
+          }
+          $a_ical_year_months[$year] = $a_new_months;
+        }
       }
     }
     //
