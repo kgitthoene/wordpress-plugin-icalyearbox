@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 /**
  * Parser plugin class file.
  *
- * @package WordPress Plugin Recursive Shortcode/Includes
+ * @package WordPress Plugin Icalyearbox/Includes
  */
 class Icalyearbox_Datespan {
   private $_from;

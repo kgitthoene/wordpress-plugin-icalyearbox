@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 /**
  * Settings class file.
  *
- * @package WordPress Plugin Recursive Shortcode/Settings
+ * @package WordPress Plugin Icalyearbox/Settings
  */
 
 /**

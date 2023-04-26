@@ -1,9 +1,10 @@
 # wordpress-plugin-icalyearbox
 
 This software is a plugin for [Wordpress](https://wordpress.org/).
-You can make calendars as year overview or as separate months.
+You can create calendars as year overview or as separate months.
 
-Example: Official holydays in North Rhine-Westphalia, Germany, 2023.
+First example: Official holydays in North Rhine-Westphalia, Germany, 2023. \
+Month stripe style. Option: ```display="year"```
 
 ![Holydays, NRW, Germany, 2023](readme/2023-feiertage-nrw.png)
 
@@ -12,7 +13,10 @@ Sourcecode in Wordpress:
 [icalyearbox year="2023" months="all" ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-westfalen" type="event" display="year" description="mix" cache="1y"]
 ```
 
-Example: Booking calendar with month grid.
+Second Example: Booking calendar with months. \
+Display months in a grid. Option: ```display="month"``` \
+Booking style, i.e. half days on first and last day of a period. Option: ```type="booking"```
+
 
 ![Holydays, NRW, Germany, 2023](readme/booking-cal-month-grid.png)
 
@@ -21,14 +25,11 @@ Sourcecode in Wordpress:
 [icalyearbox year="ical" months="now+ical" ical="PRIVATE-URL" type="booking" display="month" cache="1d"]
 ```
 
-The ```"PRIVATE-URL"```, in this example, is realy not literally written as ```PRIVATE-URL```. In real it is a valid URL ```https://...```, not known by you.
+The ```"PRIVATE-URL"```, in this example, is realy not literally written as ```PRIVATE-URL```. In real it is a valid URL ```https://...```
 
 ## Usage and Syntax
 
-Simply add a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) to your Wordpress content.
-
-The calendar shortcode starts with ```[icalyearbox ``` and ends with ```]```.
-Enclosed in this are the options to controll your calendar.
+Icalyearbox is a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
 
 **Full Syntax**: ```[icalyearbox OPTIONS]ICAL-DATA[/icalyearbox]```
 
@@ -38,7 +39,7 @@ Enclosed in this are the options to controll your calendar.
 
 ### Full Syntax with ICAL Data
 
-Place your ICAL calendar data in-page.
+Place your ICAL data in-page.
 
 Example (Source code in Wordpress):
 
@@ -73,7 +74,7 @@ Rules for multiple calendars on one page:
 **display**: (string) Allowed values: ```"year"``` and ```"month"```.
 Default: ```"year"```
 
-  * ```display="year"``` creates a calendar in month stripe style. See example above.
+  * ```display="year"``` creates a calendar in month stripe style. See first example above.
   * ```display="month"``` creates a calendar in month grid style. See second example above.
 
 Example: ```display="month"```
@@ -89,6 +90,8 @@ Example: ```type="booking"```
 **ical**: (string) Allowed values: Loadable, space separated, URIs leading to ICAL data.
 Default: ```""``` (No external resources.)
 
+Multiple ICAL resources are merged (additive).
+
 Example: ```ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-westfalen"```
 
 
@@ -97,7 +100,7 @@ Example: ```ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-
   * The keyword ```"ical"``` for all years in the ICAL data.
   * The keyword ```"NUMBER"``` for the year represented by the number.
   * The keyword ```"now+NUMBER``` for all years from the current year to the current year plus ```NUMBER``` years (inclusive).
-  * The keyword ```"now-NUMBER``` for all years from the current year minus ```NUMBER``` (inclusive) to the current year.
+  * The keyword ```"now-NUMBER``` for all years from the current year minus ```NUMBER``` years (inclusive) to the current year.
   * The keyword ```"now-NUMBER1+NUMBER2``` for all years from the current year minus ```NUMBER1``` years (inclusive) to the current year plus ```NUMBER2``` years (inclusive).
   * The keyword ```"ical+NUMBER``` for all years in the ICAL data and ```NUMBER``` years after the ICAL data. (inclusive).
   * The keyword ```"ical-NUMBER``` for all years in the ICAL data and ```NUMBER``` years before the ICAL data. (inclusive).
@@ -106,11 +109,11 @@ Example: ```ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-
   * The keyword ```"NUMBER-NUMBER1``` for the year represented by ```NUMBER``` minus ```NUMBER1``` years (inclusive).
   * The keyword ```"NUMBER-NUMBER1+NUMBER2``` for all years from the year represented by ```NUMBER``` minus ```NUMBER1``` years (inclusive) to the year represented by ```NUMBER``` plus ```NUMBER2``` years (inclusive).
   * A period of years: ```"FROM--TO"```. ```FROM``` and ```TO``` may be a year (number) or the keyword ```now```.
-  * A list of comma separated list of years or a single year number. You may include the keyword ```now```, for the current year, in this list.
-
-List of displayed years.
+  * A list of comma separated years. You may include the keyword ```now```, for the current year, in this list.
 
 Default value: ```"now"```
+
+List of years to display.
 
 Examples:
   * ```year="2025"```
@@ -125,19 +128,24 @@ Examples:
   * The keyword ```"all"``` for all months in the year.
   * The keyword ```"now"``` for the current month.
   * The keyword ```"ical"``` for all months in the ICAL data.
+  * The keyword ```"NUMBER"``` for the month repesented by the number.
   * The keyword ```"now+NUMBER``` for all months from the current to the current month plus ```NUMBER``` months (inclusive).
   * The keyword ```"now-NUMBER``` for all months from the current minus ```NUMBER``` months (inclusive).
   * The keyword ```"now-NUMBER1+NUMBER2``` for all months from the current minus ```NUMBER1``` months (inclusive) to the current month plus ```NUMBER2``` months (inclusive).
   * The keyword ```"ical+NUMBER``` for all months from earliest ICAL month to the last ICAL month plus ```NUMBER``` months (inclusive).
   * The keyword ```"ical-NUMBER``` for all months from earliest ICAL month minus ```NUMBER``` months (inclusive) up to the latest ICAL month.
   * The keyword ```"ical-NUMBER1+NUMBER2``` for all months from earliest ICAL month minus ```NUMBER1``` months (inclusive) (inclusive) up to the last ICAL month plus ```NUMBER2``` months (inclusive).
-  * The keyword ```"now+ical``` for all months from the current to the last month from the ICAL data (inclusive).
+  * The keyword ```"now+ical``` for all months from the current (inclusive) to the last month from the ICAL data (inclusive).
   * The keyword ```"now-ical``` for the first month from the ICAL data (inclusive) up to the the current month (inclusive).
-  * A list of comma separated months or a single month number. You may include the keyword ```now```, for the current month, in this list.
-
-List of displayed months.
+  * A list of comma separated months. You may include the keyword ```now```, for the current month, in this list.
 
 Default value: ```"all"```
+
+List of month to display. \
+Month numbers start from 1 (January) to 12 (Dezember).
+
+If you add or subtract months from another month (plus / minus number syntax) the result is limited to the year.
+I.e. with this you can't go beyond January or Dezember of the same year.
 
 Examples:
   * ```month="now"```

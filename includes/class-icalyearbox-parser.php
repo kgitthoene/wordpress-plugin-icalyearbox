@@ -28,7 +28,7 @@ class Icalyearbox_Parser {
    * @access  private
    * @since   1.0.0
    */
-  private static $_enable_debugging = true;
+  private static $_enable_debugging = false;
   private static $_log_initialized = false;
   private static $_log_class = null;
 
@@ -1136,7 +1136,7 @@ class Icalyearbox_Parser {
     }
     //
     //----------
-    // Make continous months, if display is 'month', $b_use_ical_months.
+    // Make continous months, if $b_use_ical_months == true
     if ($b_use_ical_months) {
       $a_disp_years = ($b_use_ical_years ? $a_ical_years : $a_years);
       foreach ($a_disp_years as $year) {

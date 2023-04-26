@@ -38,7 +38,7 @@ class Icalyearbox {
    * @access  private
    * @since   1.0.0
    */
-  private static $_instance = null; //TODO //phpcs:ignore
+  private static $_instance = null;
 
   /**
    * Default shortcode parameters.
@@ -56,7 +56,7 @@ class Icalyearbox {
    * @access  private
    * @since   1.0.0
    */
-  private static $_enable_debugging = true; //TODO //phpcs:ignore
+  private static $_enable_debugging = false;
   private static $_log_initialized = false;
   private static $_log_class = null;
 
