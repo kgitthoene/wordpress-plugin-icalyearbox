@@ -29,7 +29,7 @@ The ```"PRIVATE-URL"```, in this example, is realy not literally written as ```P
 
 ## Usage and Syntax
 
-Icalyearbox is a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
+Icalyearbox is used as a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
 
 **Full Syntax**: ```[icalyearbox OPTIONS]ICAL-DATA[/icalyearbox]```
 
@@ -71,7 +71,7 @@ Rules for multiple calendars on one page:
 
 ### Options
 
-**display**: (string) Allowed values: ```"year"``` and ```"month"```.
+**<u>display</u>**: (string) Allowed values: ```"year"``` and ```"month"```.
 Default: ```"year"```
 
   * ```display="year"``` creates a calendar in month stripe style. See first example above.
@@ -79,7 +79,7 @@ Default: ```"year"```
 
 Example: ```display="month"```
 
-**type**: (string) Allowed values: ```"event"``` and ```"booking"```.
+**<u>type</u>**: (string) Allowed values: ```"event"``` and ```"booking"```.
 Default: ```"event"```
 
   * ```type="event"``` Creates for all days a full background image. See first example.
@@ -87,7 +87,7 @@ Default: ```"event"```
 
 Example: ```type="booking"```
 
-**ical**: (string) Allowed values: Loadable, space separated, URIs leading to ICAL data.
+**<u>ical</u>**: (string) Allowed values: Loadable, space separated, URIs leading to ICAL data.
 Default: ```""``` (No external resources.)
 
 Multiple ICAL resources are merged (additive).
@@ -95,7 +95,7 @@ Multiple ICAL resources are merged (additive).
 Example: ```ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-westfalen"```
 
 
-**year**: (string) Allowed values:
+**<u>year</u>**: (string) Allowed values:
   * The keyword ```"now"``` for the current year.
   * The keyword ```"ical"``` for all years in the ICAL data.
   * The keyword ```"NUMBER"``` for the year represented by the number.
@@ -124,7 +124,7 @@ Examples:
   * ```year="ical-1"```
   * ```year="now-1+2"```
 
-**months**: (string) Allowed values:
+**<u>months</u>**: (string) Allowed values:
   * The keyword ```"all"``` for all months in the year.
   * The keyword ```"now"``` for the current month.
   * The keyword ```"ical"``` for all months in the ICAL data.
@@ -156,7 +156,7 @@ Examples:
   * ```month="ical-1+1"```
   * ```month="now+ical"```
 
-**description**: (string) Allowed values: ```"none"```, ```"description"```, ```"summary"``` and ```"mix"```.
+**<u>description</u>**: (string) Allowed values: ```"none"```, ```"description"```, ```"summary"``` and ```"mix"```.
 Default: ```"none"```
 
   * ```description="none"``` Create no hover tooltips for events.
@@ -169,14 +169,14 @@ If you hover over these the description is shown.
 
 Example: ```description="mix"```
 
-**cache**: (string) Allowed values: A positive number of seconds. Alternatively a combination of a number and the abbrevation for hour: ```h```, month: ```m```, day: ```d``` or year: ```y```.
+**<u>cache</u>**: (string) Allowed values: A positive number of seconds. Alternatively a combination of a number and the abbrevation for hour: ```h```, month: ```m```, day: ```d``` or year: ```y```.
 Default: ```"86400"``` (This is one day.) 
 
 The cache value defines the age of the cached ICAL data. After this time the ICAL data is reloaded.
 
 Example: ```cache="1y"```
 
-**align**: (string) Allowed values: ```"center"```, ```"left"``` and ```"right"```.
+**<u>align</u>**: (string) Allowed values: ```"center"```, ```"left"``` and ```"right"```.
 Default: ```"center"```
 
   * ```align="center"``` Centers the output in the page.
