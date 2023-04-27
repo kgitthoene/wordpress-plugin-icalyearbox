@@ -378,18 +378,43 @@ install() {
   (
     DISTDIR="$MYDIR"
     TOKEN="icalyearbox"
-    # Change to root project directory.
-    cd "$DISTDIR"
-    # Make ZIP file name.
-    FN="${TOKEN}.zip"
     # Check existence of distribution directory.
     [ -d "$DISTDIR" ] || { error "Cannot find distribution directory! DISDIR='$DISTDIR'"; exit 1; }
+    # Change to root project directory.
+    cd "$DISTDIR"
+    VERSION=`cat version`
+    # Make ZIP file name.
+    FN="${TOKEN}.zip"
     # Create ZIP file.
     rm -f "$FN"
-    if ( cd "$DISTDIR"; git ls-files | zip -q "$FN" -@ ); then
-      info "ZIP file ready. FILE='$FN'"
+    if TMPDIR=`mktemp -p . -d`; then
+      trap at_exit EXIT HUP INT QUIT TERM && \
+      (
+        ZIPDIR="$TMPDIR/$TOKEN"
+        mkdir -p "$ZIPDIR" || { error "Cannot create ZIP-directory! ZIPDIR='$ZIPDIR'"; exit 1; }
+        git ls-files | while read FILE; do
+          [ "$FILE" != "$FN" ] && {
+            DN=`dirname "$FILE"`
+            [ "$DN" != "." ] && { [ -d "$ZIPDIR/$DN" ] || mkdir -p "$ZIPDIR/$DN" || { error "Cannot create directory! DIR='$ZIPDIR/$DN'"; exit 1; } }
+            cp "$FILE" "$ZIPDIR/$DN" || { error "Cannot copy file! FILE='$FILE'"; exit 1; }
+          }
+        done
+        (
+          cd "$TMPDIR"
+          ZIPFN="$FN"
+          [ -n "$VERSION" ] && {
+            ZIPFN="${TOKEN}.${VERSION}.zip"
+          }
+          zip -q -r "$DISTDIR/$ZIPFN" "$TOKEN" || { error "Cannot create ZIP-file! FILE='$FN'"; exit 1; }
+          info "ZIP file ready. FILE='$ZIPFN'"
+        )
+        [ -n "$VERSION" ] && {
+          ln -sf "${TOKEN}.${VERSION}.zip" "$FN"
+          info "ZIP file without version ready. FILE='$FN'"
+        }
+      )
     else
-      error "Cannot create ZIP file!"
+      echo "ERROR -- Cannot create temporary directory! CURRENT-DIR=`pwd`" >&2
       return 1
     fi
   )
