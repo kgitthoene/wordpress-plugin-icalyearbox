@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
  */
 
 
-include 'Idearia-Logger.php';
+include 'class-icalyearbox-logger.php';
 
 
 /**
@@ -165,8 +165,8 @@ class Icalyearbox {
         if (!self::$_directories_initialized) {
           self::_init_directories();
         }
-        if (class_exists('Idearia\Logger')) {
-          self::$_log_class = 'Idearia\Logger';
+        if (class_exists('Icalyearbox_Logger')) {
+          self::$_log_class = 'Icalyearbox_Logger';
           self::$_log_class::$log_level = 'debug';
           self::$_log_class::$write_log = true;
           self::$_log_class::$log_dir = self::$_my_log_directory;
@@ -239,9 +239,6 @@ class Icalyearbox {
   private static function default_shortcode_params() {
     if (self::$_default_shortcode_params === null) {
       self::$_default_shortcode_params = array(
-        'open' => '\[',
-        'close' => '\]',
-        'deconstruct' => false,
         'year' => "now", // List of years to show.
         //'recent' => 21, // Display this days before today. TODO: Not used.
         'months' => "all", // List of months to print.

@@ -78,12 +78,12 @@ class Logger {
     /**
      * Absolute path of the log file, built at run time
      */
-    private static $log_file_path = '';
+    protected static $log_file_path = '';
 
     /**
      * Where should we write/print the output to? Built at run time
      */
-    private static $output_streams = [];
+    protected static $output_streams = [];
 
     /**
      * Whether the init() function has already been called

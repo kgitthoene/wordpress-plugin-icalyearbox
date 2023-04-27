@@ -28,7 +28,7 @@ class Icalyearbox_Parser {
    * @access  private
    * @since   1.0.0
    */
-  private static $_enable_debugging = false;
+  private static $_enable_debugging = false; // false = Log only error messages.
   private static $_log_initialized = false;
   private static $_log_class = null;
 
@@ -39,6 +39,9 @@ class Icalyearbox_Parser {
   private static $_my_cache_directory = null;
 
   private static $_cache_reload_timeout = 86400; // [s] -- 86400 = one day
+
+  private static $_shortcut_src = '';
+  private static $_content_src = '';
 
   /* ---------------------------------------------------------------------
    * Add log function.
@@ -61,42 +64,45 @@ class Icalyearbox_Parser {
       }
       self::$_directories_initialized = true;
     }
-  }
-
+  } // _init_directories
 
   private static function _init_log() {
     if (!self::$_log_initialized) {
-      if (self::$_enable_debugging) {
-        if (!self::$_directories_initialized) {
-          self::_init_directories();
-        }
-        if (class_exists('Idearia\Logger')) {
-          self::$_log_class = 'Idearia\Logger';
-          self::$_log_class::$log_level = 'debug';
-          self::$_log_class::$write_log = true;
-          self::$_log_class::$log_dir = self::$_my_log_directory;
-          self::$_log_class::$log_file_name = self::$token;
-          self::$_log_class::$log_file_extension = 'log';
-          self::$_log_class::$print_log = false;
-        }
+      if (!self::$_directories_initialized) {
+        self::_init_directories();
+      }
+      if (class_exists('Icalyearbox_Logger')) {
+        self::$_log_class = 'Icalyearbox_Logger';
+        self::$_log_class::$log_level = 'debug';
+        self::$_log_class::$write_log = true;
+        self::$_log_class::$log_dir = self::$_my_log_directory;
+        self::$_log_class::$log_file_name = self::$token;
+        self::$_log_class::$log_file_extension = 'log';
+        self::$_log_class::$print_log = false;
       }
       self::$_log_initialized = true;
     }
-  } // self::_init_log
+  } // _init_log
 
-  public static function write_log($log = NULL) {
-    if (self::$_enable_debugging) {
+  public static function write_log($log = NULL, $is_error = false, $bn = '', $func = '', $line = -1) {
+    if (self::$_enable_debugging or $is_error) {
       self::_init_directories();
       self::_init_log();
-      $bn = basename(__FILE__);
-      $msg = '[' . $bn . ':' . __LINE__ . '] ' . ((is_array($log) || is_object($log)) ? print_r($log, true) : $log);
+      $bn = (empty($bn) ? basename(debug_backtrace()[1]['file']) : $bn);
+      $func = (empty($func) ? debug_backtrace()[1]['function'] : $func);
+      $line = ($line == -1 ? intval(debug_backtrace()[0]['line']) : $line);
+      $msg = sprintf('[%s:%d:%s] %s', $bn, $line, $func, ((is_array($log) || is_object($log)) ? print_r($log, true) : $log));
       if (is_null(self::$_log_class)) {
         error_log($msg . PHP_EOL);
       } else {
-        self::$_log_class::debug($msg);
+        if ($is_error) {
+          self::$_log_class::error($msg);
+        } else {
+          self::$_log_class::debug($msg);
+        }
       }
     }
-  } // self::write_log
+  } // write_log
 
   /**
    * Render an error message as output (HTML).
@@ -105,17 +111,15 @@ class Icalyearbox_Parser {
    * @return  String HTML output.
    * @since   1.0.0
    */
-  private static function _error($msg, $sc = NULL, $sc_pos = NULL, $content = NULL) {
-    if ($sc != NULL and $sc_pos != NULL and $content != NULL) {
-      $cn = substr($content, 0, $sc_pos) . '<span style="background-color:#AA000F; color:white;">' . esc_html(substr($content, $sc_pos, strlen($sc))) . '</span>' . esc_html(substr($content, $sc_pos + strlen($sc)));
-    } else {
-      $cn = NULL;
+  private static function _error($msg) {
+    self::write_log($msg, true, basename(debug_backtrace()[1]['file']), debug_backtrace()[1]['function'], intval(debug_backtrace()[0]['line']));
+    $src = '';
+    if(!empty(self::$_shortcut_src)) {
+      $src = '<br />' . self::$_shortcut_src;
     }
-    return
-      '<div style="unicode-bidi: embed; font-family: monospace; font-size:12px; color:black; background-color:#E0E0E0;">' .
-      '[icalyearbox::ERROR -- ' . esc_html($msg) . ($sc_pos === NULL ? '' : ' POSITION=' . esc_html($sc_pos)) . ($sc === NULL ? '' : ' SHORTCODE="' . esc_html($sc) . '"') . "]\n" .
-      ($cn === NULL ? '' : 'CONTENT="' . esc_html($cn) . '"') .
-      '</div>';
+    $rv = '<div style="unicode-bidi: embed; font-family: monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">' .
+      'Plugin Icalyearbox::ERROR -- ' . esc_html($msg) . $src . '</div>';
+    return $rv;
   } // _error
 
   private static function _set_year($match, &$year) {
@@ -175,23 +179,6 @@ class Icalyearbox_Parser {
     $c = preg_replace('/<p>([^<]*?)<\/p>/i', "$1\n", $c);
     return trim($c);
   } // _purecontent
-
-  /**
-   * Get name and state (OPEN, CLOSE) of a shortcode from shortcode content.
-   *
-   * @access  private
-   * @return  Array With elements 0 => (true, false) - Is OPEN tag. 1 => String Tag name.
-   * @since   1.0.0
-   */
-  private static function _get_shortcode_tag($shortcode_content) {
-    if (preg_match('|^\s*/\s*(\S+)|', $shortcode_content, $matches)) {
-      return array(false, $matches[1]);
-    }
-    if (preg_match('/^\s*(\S+)/', $shortcode_content, $matches)) {
-      return array(true, $matches[1]);
-    }
-    return NULL;
-  } // _get_shortcode_tag
 
   private static function _add_ical_events_to_ical_spans($ical_url, $description, $ical_lines, &$a_ical_events, &$ical_spans) {
     foreach ($ical_lines as $ical_event_key => $ical_event) {
@@ -549,13 +536,24 @@ class Icalyearbox_Parser {
     self::_init_directories();
     self::_init_log(self::$_my_log_directory);
     //----------
-    $pattern_open = '/(' . $atts['open'] . ')/';
-    $pattern_close = '/(' . $atts['close'] . ')/';
+    self::$_content_src = $content;
     $content = self::_purecontent($content);
     $has_content = !empty($content);
     self::write_log("CONTENT='" . $content . "'");
-    self::write_log("OPEN='" . $pattern_open . "'");
-    self::write_log("CLOSE='" . $pattern_close . "'");
+    //
+    //----------
+    // Construct original shortcut source code.
+    $shortcut_src = '[' . self::$token;
+    $a_atts_keys = array_keys($atts);
+    foreach ($a_atts_keys as $key) {
+      $shortcut_src .= ' ' . $key . '="' . $atts[$key] . '"';
+    }
+    $shortcut_src .= ']';
+    if (!empty($content)) {
+      $shortcut_src .= "<br />" . self::$_content_src;
+      $shortcut_src .= '[/' . self::$token . ']';
+    }
+    self::$_shortcut_src = $shortcut_src;
     //
     //----------
     // Get alignment.
