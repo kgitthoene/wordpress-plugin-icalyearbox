@@ -393,11 +393,14 @@ install() {
         ZIPDIR="$TMPDIR/$TOKEN"
         mkdir -p "$ZIPDIR" || { error "Cannot create ZIP-directory! ZIPDIR='$ZIPDIR'"; exit 1; }
         git ls-files | while read FILE; do
-          [ "$FILE" != "$FN" ] && {
-            DN=`dirname "$FILE"`
-            [ "$DN" != "." ] && { [ -d "$ZIPDIR/$DN" ] || mkdir -p "$ZIPDIR/$DN" || { error "Cannot create directory! DIR='$ZIPDIR/$DN'"; exit 1; } }
-            cp "$FILE" "$ZIPDIR/$DN" || { error "Cannot copy file! FILE='$FILE'"; exit 1; }
-          }
+          case "$FILE" in
+            *.zip) ;;
+            *)
+              DN=`dirname "$FILE"`
+              [ "$DN" != "." ] && { [ -d "$ZIPDIR/$DN" ] || mkdir -p "$ZIPDIR/$DN" || { error "Cannot create directory! DIR='$ZIPDIR/$DN'"; exit 1; } }
+              cp "$FILE" "$ZIPDIR/$DN" || { error "Cannot copy file! FILE='$FILE'"; exit 1; }
+              ;;
+          esac
         done
         (
           cd "$TMPDIR"
@@ -405,6 +408,7 @@ install() {
           [ -n "$VERSION" ] && {
             ZIPFN="${TOKEN}.${VERSION}.zip"
           }
+          rm -f "$DISTDIR/$ZIPFN"
           zip -q -r "$DISTDIR/$ZIPFN" "$TOKEN" || { error "Cannot create ZIP-file! FILE='$FN'"; exit 1; }
           info "ZIP file ready. FILE='$ZIPFN'"
         )
