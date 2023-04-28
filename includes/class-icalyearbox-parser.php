@@ -28,7 +28,7 @@ class Icalyearbox_Parser {
    * @access  private
    * @since   1.0.0
    */
-  private static $_enable_debugging = false; // false = Log only error messages.
+  private static $_enable_debugging = true; // false = Log only error messages.
   private static $_log_initialized = false;
   private static $_log_class = null;
 
@@ -114,7 +114,7 @@ class Icalyearbox_Parser {
   private static function _error($msg) {
     self::write_log($msg, true, basename(debug_backtrace()[1]['file']), debug_backtrace()[1]['function'], intval(debug_backtrace()[0]['line']));
     $src = '';
-    if(!empty(self::$_shortcut_src)) {
+    if (!empty(self::$_shortcut_src)) {
       $src = '<br />' . self::$_shortcut_src;
     }
     $rv = '<div style="unicode-bidi: embed; font-family: monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">' .
@@ -197,7 +197,9 @@ class Icalyearbox_Parser {
         }
         $dt_end = substr(strval($ical_event->dtend), 0, 8);
         $dt_end = (empty($dt_end) ? $dt_start : $dt_end);
-        $dt_start = (empty($dt_start) ? $dt_end : $dt_start);
+        if($dt_start == $dt_end) {
+          $b_exclude_dtend = false;
+        }
         if (empty($dt_start) or empty($dt_end)) {
           self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' DTEND='%s'", strval($dt_start), strval($dt_end)));
         } else {
@@ -220,8 +222,9 @@ class Icalyearbox_Parser {
           if ($b_exclude_dtend) {
             $to = $to->modify('-1 day');
           }
-          $ical_spans->add(new Icalyearbox_Datespan($from, $to, $dt_description));
-          //self::write_log(sprintf("[%s] ICAL-DTSTART=%s DTEND=%s", $ical_event_key, $dt_start, $dt_end));
+          $span = new Icalyearbox_Datespan($from, $to, $dt_description);
+          $ical_spans->add($span);
+          self::write_log(sprintf("[%s] FROM=%s TO=%s SPAN='%s'", $ical_event_key, $from->format('c'), $to->format('c'), $span->inspect()));
         }
       } else {
         self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' EMPTY OR WRONG FORMAT!", strval($dt_start)));
@@ -312,6 +315,9 @@ class Icalyearbox_Parser {
                 case Icalyearbox_Datespans::IS_IN_SPAN:
                   $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
                   break;
+                case Icalyearbox_Datespans::IS_SPLIT:
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  break;
                 case Icalyearbox_Datespans::IS_FREE:
                   break;
               }
@@ -325,6 +331,10 @@ class Icalyearbox_Parser {
                   break;
                 case Icalyearbox_Datespans::IS_IN_SPAN:
                   $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  break;
+                case Icalyearbox_Datespans::IS_SPLIT:
+                  self::write_log(sprintf("SPLIT: %04d%02d%02d", $year, $month, $month_day));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/split-background.svg', self::$_my_plugin_directory . '/index.php'));
                   break;
                 case Icalyearbox_Datespans::IS_FREE:
                   break;
@@ -474,6 +484,10 @@ class Icalyearbox_Parser {
                     case Icalyearbox_Datespans::IS_IN_SPAN:
                       $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
                       break;
+                    case Icalyearbox_Datespans::IS_SPLIT:
+                      self::write_log(sprintf("SPLIT! DATE='%s'", $dt_this_date->format('c')));
+                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/split-background.svg', self::$_my_plugin_directory . '/index.php'));
+                      break;
                     case Icalyearbox_Datespans::IS_FREE:
                       break;
                   }
@@ -554,13 +568,14 @@ class Icalyearbox_Parser {
       $shortcut_src .= '[/' . self::$token . ']';
     }
     self::$_shortcut_src = $shortcut_src;
+    self::write_log(sprintf(""));
     //
     //----------
     // Get alignment.
     $align = (in_array($atts['align'], ['left', 'center', 'right']) ? $atts['align'] : 'center');
     //
     // Get calendar type.
-    $type = (in_array($atts['type'], ['booking', 'event']) ? $atts['type'] : 'event');
+    $type = (in_array($atts['type'], ['booking-split', 'booking', 'event']) ? $atts['type'] : 'event');
     //
     // Get calendar display type.
     $display = (in_array($atts['display'], ['month', 'year']) ? $atts['display'] : 'year');

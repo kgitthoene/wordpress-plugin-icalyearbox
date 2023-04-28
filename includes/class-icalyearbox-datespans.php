@@ -25,13 +25,8 @@ class Icalyearbox_Datespan {
   public function __construct($from, $to, $description = "") {
     if (is_a($from, 'DateTime') and is_a($to, 'DateTime')) {
       $this->_description = $description;
-      if ($from <= $to) {
-        $this->_from = $from;
-        $this->_to = $to;
-      } else {
-        $this->_from = $to;
-        $this->_to = $from;
-      }
+      $this->_from = $from;
+      $this->_to = $to;
     } else {
       throw new ErrorException("Parameters must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
     }
@@ -69,17 +64,21 @@ class Icalyearbox_Datespan {
 
   public function position($dt, $type = 'event') {
     if (is_a($dt, 'DateTime')) {
-      if ($type = 'booking') {
+      if (($type == 'booking') or (($type == 'booking-split'))) {
         if (($dt == $this->_from) and ($dt == $this->_to)) {
+          Icalyearbox_Parser::write_log(sprintf("position: IN_SPAN TYPE='%s' DAY=%s FROM=%s TO=%s", $type, $dt->format('c'), $this->_from->format('c'), $this->_to->format('c')));
           return Icalyearbox_Datespans::IS_IN_SPAN;
         }
         if ($dt == $this->_to) {
+          Icalyearbox_Parser::write_log(sprintf("position: IS_END TYPE='%s' DAY=%s FROM=%s TO=%s", $type, $dt->format('c'), $this->_from->format('c'), $this->_to->format('c')));
           return Icalyearbox_Datespans::IS_END;
         }
         if ($dt == $this->_from) {
+          Icalyearbox_Parser::write_log(sprintf("position: IS_START TYPE='%s' DAY=%s FROM=%s TO=%s", $type, $dt->format('c'), $this->_from->format('c'), $this->_to->format('c')));
           return Icalyearbox_Datespans::IS_START;
         }
         if (($dt > $this->_from) and ($dt < $this->_to)) {
+          Icalyearbox_Parser::write_log(sprintf("position: IN_SPAN TYPE='%s' DAY=%s FROM=%s TO=%s", $type, $dt->format('c'), $this->_from->format('c'), $this->_to->format('c')));
           return Icalyearbox_Datespans::IS_IN_SPAN;
         }
       } else {
@@ -108,8 +107,9 @@ class Icalyearbox_Datespans {
   public const IS_OUTSIDE = -1;
   public const IS_START = 0;
   public const IS_IN_SPAN = 1;
-  public const IS_FREE = 2;
-  public const IS_END = 3;
+  public const IS_SPLIT = 2;
+  public const IS_FREE = 3;
+  public const IS_END = 4;
 
   private $_raw_spans;
   private $_spans;
@@ -121,7 +121,7 @@ class Icalyearbox_Datespans {
 
   public function add($span) {
     if (is_a($span, 'Icalyearbox_Datespan')) {
-      array_push($this->_raw_spans, $span);
+      array_push($this->_raw_spans, clone $span);
       $b_is_found = false;
       foreach ($this->_spans as $saved_span) {
         if ($saved_span->add($span)) {
@@ -140,25 +140,64 @@ class Icalyearbox_Datespans {
   public function position($dt, $type = 'event') {
     if (is_a($dt, 'DateTime')) {
       $search_counter = 0;
-      if ($type == 'booking') {
-        foreach ($this->_spans as $span) {
+      if ($type == 'booking-split') {
+        $a_positions = array();
+        $nr = 0;
+        foreach ($this->_raw_spans as $key => $span) {
           $pos = $span->position($dt, $type);
-          switch ($pos) {
-            case self::IS_START:
-            case self::IS_END:
-            case self::IS_IN_SPAN:
-              return $pos;
+          if ($dt->format('c') == '2023-08-05T00:00:00+00:00') {
+            Icalyearbox_Parser::write_log(sprintf("[%d] POS=%d DAY=%s SPAN='%s'", $key, $pos, $dt->format('c'), $span->inspect()));
           }
-        }
-      } else {
-        foreach ($this->_raw_spans as $span) {
-          $search_counter++;
-          $pos = $span->position($dt, $type);
           switch ($pos) {
+            case self::IS_SPLIT:
+              break;
+              return $pos;
             case self::IS_START:
             case self::IS_END:
             case self::IS_IN_SPAN:
-              return $pos;
+              if (!in_array($pos, $a_positions)) {
+                array_push($a_positions, $pos);
+              }
+          }
+          $nr++;
+        }
+        if (count($a_positions) > 1) {
+          Icalyearbox_Parser::write_log(sprintf("position: COUNT=%d DAY=%s %d='%s' TYPE='%s'", $nr, $dt->format('c'), count($a_positions), implode(', ', $a_positions), $type));
+        }
+        if (in_array(self::IS_START, $a_positions) and in_array(self::IS_END, $a_positions)) {
+          return self::IS_SPLIT;
+        }
+        if (in_array(self::IS_IN_SPAN, $a_positions)) {
+          return self::IS_IN_SPAN;
+        }
+        if (in_array(self::IS_START, $a_positions)) {
+          return self::IS_START;
+        }
+        if (in_array(self::IS_END, $a_positions)) {
+          return self::IS_END;
+        }
+        return self::IS_FREE;
+      } else {
+        if ($type == 'booking') {
+          foreach ($this->_spans as $span) {
+            $pos = $span->position($dt, $type);
+            switch ($pos) {
+              case self::IS_START:
+              case self::IS_END:
+              case self::IS_IN_SPAN:
+                return $pos;
+            }
+          }
+        } else {
+          foreach ($this->_raw_spans as $span) {
+            $search_counter++;
+            $pos = $span->position($dt, $type);
+            switch ($pos) {
+              case self::IS_START:
+              case self::IS_END:
+              case self::IS_IN_SPAN:
+                return $pos;
+            }
           }
         }
       }

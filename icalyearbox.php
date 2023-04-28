@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Icalyearbox
- * Version: 1.0.1
+ * Version: 1.0.0
  * Plugin URI: https://github.com/kgitthoene/wordpress-plugin-icalyearbox
  * Description: Write shortcuts using other shortcodes.
  * Author: Kai Thoene

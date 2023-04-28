@@ -412,10 +412,6 @@ install() {
           zip -q -r "$DISTDIR/$ZIPFN" "$TOKEN" || { error "Cannot create ZIP-file! FILE='$FN'"; exit 1; }
           info "ZIP file ready. FILE='$ZIPFN'"
         )
-        [ -n "$VERSION" ] && {
-          ln -sf "${TOKEN}.${VERSION}.zip" "$FN"
-          info "ZIP file without version ready. FILE='$FN'"
-        }
       )
     else
       echo "ERROR -- Cannot create temporary directory! CURRENT-DIR=`pwd`" >&2
