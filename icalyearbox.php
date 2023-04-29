@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: Icalyearbox
+ * Plugin Name: YetAnotherWPICALCalendar
  * Version: 1.0.0
- * Plugin URI: https://github.com/kgitthoene/wordpress-plugin-icalyearbox
+ * Plugin URI: https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar
  * Description: Write shortcuts using other shortcodes.
  * Author: Kai Thoene
  * Author URI: https://github.com/kgitthoene/
@@ -11,7 +11,7 @@
  * Requires at least: 4.0
  * Tested up to: 4.0
  *
- * Text Domain: icalyearbox
+ * Text Domain: yetanotherwpicalcalendar
  * Domain Path: /languages
  *
  * @package WordPress
@@ -46,33 +46,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Load plugin class files.
-require_once 'includes/class-icalyearbox.php';
-require_once 'includes/class-icalyearbox-parser.php';
+require_once 'includes/class-yetanotherwpicalcalendar.php';
+require_once 'includes/class-yetanotherwpicalcalendar-parser.php';
 /*
 TODO Add settings, if useful.
-require_once 'includes/class-icalyearbox-settings.php';
+require_once 'includes/class-yetanotherwpicalcalendar-settings.php';
 */
 
 // Load plugin libraries.
-require_once 'includes/lib/class-icalyearbox-admin-api.php';
-require_once 'includes/lib/class-icalyearbox-post-type.php';
-require_once 'includes/lib/class-icalyearbox-taxonomy.php';
+require_once 'includes/lib/class-yetanotherwpicalcalendar-admin-api.php';
+require_once 'includes/lib/class-yetanotherwpicalcalendar-post-type.php';
+require_once 'includes/lib/class-yetanotherwpicalcalendar-taxonomy.php';
 
 /**
- * Returns the main instance of Icalyearbox to prevent the need to use globals.
+ * Returns the main instance of YetAnotherWPICALCalendar to prevent the need to use globals.
  *
  * @since  1.0.0
- * @return object Icalyearbox
+ * @return object YetAnotherWPICALCalendar
  */
-function Icalyearbox() {
-	$instance = Icalyearbox::instance( __FILE__, '1.0.0' );
+function YetAnotherWPICALCalendar() {
+	$instance = YetAnotherWPICALCalendar::instance( __FILE__, '1.0.0' );
 	/*
 	TODO: Add settings, if useful.
 	if ( is_null( $instance->settings ) ) {
-		$instance->settings = Icalyearbox_Settings::instance( $instance );
+		$instance->settings = YetAnotherWPICALCalendar_Settings::instance( $instance );
 	}
 	*/
 	return $instance;
-}  // Icalyearbox
+}  // YetAnotherWPICALCalendar
 
-Icalyearbox();
+YetAnotherWPICALCalendar();

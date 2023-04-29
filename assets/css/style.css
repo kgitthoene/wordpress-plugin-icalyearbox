@@ -1,19 +1,25 @@
-.icalyearbox {
+/**
+ * Wordpress Plugin YetAnotherWPICALCalendar (LESS/CSS Component)
+ *
+ * @license MIT https://en.wikipedia.org/wiki/MIT_License
+ * @author  Kai Thoene <k.git.thoene@gmx.net>
+ */
+.yetanotherwpicalcalendar {
   padding: 5px;
   overflow-x: auto;
   font-size: 12px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: normal;
 }
-.icalyearbox div.mo-column {
+.yetanotherwpicalcalendar div.mo-column {
   display: flex;
 }
-.icalyearbox.mo-grid {
+.yetanotherwpicalcalendar.mo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
   grid-column-gap: 5px;
 }
-.icalyearbox table {
+.yetanotherwpicalcalendar table {
   border-width: 1px;
   border-spacing: 2px;
   border-style: solid solid solid solid;
@@ -23,43 +29,43 @@
   margin: 0 auto;
   box-sizing: unset;
 }
-.icalyearbox table.yr-table {
+.yetanotherwpicalcalendar table.yr-table {
   /* Placeholder for a table containing a year. */
 }
-.icalyearbox table.mo-table {
+.yetanotherwpicalcalendar table.mo-table {
   margin-bottom: 5px;
 }
-.icalyearbox table.left {
+.yetanotherwpicalcalendar table.left {
   float: left;
 }
-.icalyearbox table.right {
+.yetanotherwpicalcalendar table.right {
   float: right;
 }
-.icalyearbox table tr {
+.yetanotherwpicalcalendar table tr {
   box-sizing: unset;
 }
-.icalyearbox table tr.yr-header {
+.yetanotherwpicalcalendar table tr.yr-header {
   border-bottom: 2px solid #BFBFBF;
 }
-.icalyearbox table tr.mo-header {
+.yetanotherwpicalcalendar table tr.mo-header {
   border-bottom: 2px solid #BFBFBF;
 }
-.icalyearbox table tr.blank,
-.icalyearbox table tr.blank td {
+.yetanotherwpicalcalendar table tr.blank,
+.yetanotherwpicalcalendar table tr.blank td {
   border: 0;
   background: none;
 }
-.icalyearbox table th {
+.yetanotherwpicalcalendar table th {
   border: 1px solid #BFBFBF;
   height: 100%;
   padding: 0;
   text-align: center;
   box-sizing: unset;
 }
-.icalyearbox table th.wday {
+.yetanotherwpicalcalendar table th.wday {
   width: 16px;
 }
-.icalyearbox table th .cellc {
+.yetanotherwpicalcalendar table th .cellc {
   background-color: #F0F5F7;
   width: 100%;
   height: 18px;
@@ -71,20 +77,20 @@
   margin: 0;
   box-sizing: unset;
 }
-.icalyearbox table th .wkend {
+.yetanotherwpicalcalendar table th .wkend {
   background-color: #D6DBEA;
 }
-.icalyearbox table th .alt {
+.yetanotherwpicalcalendar table th .alt {
   background-color: #D6DBEA;
 }
-.icalyearbox table th .plain {
+.yetanotherwpicalcalendar table th .plain {
   background: none;
 }
-.icalyearbox table th .cellc .yr-span {
+.yetanotherwpicalcalendar table th .cellc .yr-span {
   margin-left: 6px;
   margin-right: 6px;
 }
-.icalyearbox table td {
+.yetanotherwpicalcalendar table td {
   width: 18px;
   height: 18px;
   position: relative;
@@ -98,17 +104,17 @@
       }
       */
 }
-.icalyearbox table td:after {
+.yetanotherwpicalcalendar table td:after {
   content: '';
   display: block;
   margin-top: 100%;
 }
-.icalyearbox table td.hidden {
+.yetanotherwpicalcalendar table td.hidden {
   background-color: transparent;
   border: 1px solid transparent;
   visibility: hidden;
 }
-.icalyearbox table td .cellc {
+.yetanotherwpicalcalendar table td .cellc {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -121,26 +127,26 @@
   box-sizing: unset;
   color: #00000080 !important;
 }
-.icalyearbox table td .cellc:after,
-.icalyearbox table td .cellc:before {
+.yetanotherwpicalcalendar table td .cellc:after,
+.yetanotherwpicalcalendar table td .cellc:before {
   box-sizing: unset;
 }
-.icalyearbox table td .wkend {
+.yetanotherwpicalcalendar table td .wkend {
   background-color: #EAF0F0;
 }
-.icalyearbox table td .blank {
+.yetanotherwpicalcalendar table td .blank {
   background-color: #CDD2E2;
 }
-.icalyearbox table td .today {
+.yetanotherwpicalcalendar table td .today {
   background-color: #ffea70;
 }
-.icalyearbox table a.link {
+.yetanotherwpicalcalendar table a.link {
   border-bottom: 0 !important;
   /*color: #00000080 !important;*/
   text-decoration: none;
   box-sizing: unset;
 }
-.icalyearbox .icalyearbox-hint {
+.yetanotherwpicalcalendar .yetanotherwpicalcalendar-hint {
   cursor: pointer;
   border-bottom: 1px dotted black;
 }
@@ -156,7 +162,7 @@
   max-width: 200px;
   /*font-weight: bold;*/
 }
-.icalyearbox-reset-this {
+.yetanotherwpicalcalendar-reset-this {
   animation: none;
   animation-delay: 0;
   animation-direction: normal;

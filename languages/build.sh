@@ -310,7 +310,7 @@ install() {
     # 1st: create PO files.
     cd "$MYDIR"
     ruby ./create-po-files.rb; RC=$?; [ $RC = 0 ] || { error "Cannot create PO files!"; exit $RC; }
-    cp icalyearbox-en_GB.po icalyearbox.po
+    cp yetanotherwpicalcalendar-en_GB.po yetanotherwpicalcalendar.po
     #----------
     # 2nd: Create MO files
     check_tools msgfmt

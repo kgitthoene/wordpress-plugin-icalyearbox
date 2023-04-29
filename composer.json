@@ -1,12 +1,12 @@
 {
-	"name": "kgitthoene/wordpress-plugin-icalyearbox",
+	"name": "kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar",
 	"license": "MIT",
 	"description": "A WordPress plugin create yearboxes with ical data.",
 	"keywords": [
 		"wordpress", "wp", "calendar ical year yearbox"
 	],
 	"support": {
-		"issues": "https://github.com/kgitthoene/wordpress-plugin-icalyearbox/issues"
+		"issues": "https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/issues"
 	},
 	"require": {
 		"php": ">=5.4",

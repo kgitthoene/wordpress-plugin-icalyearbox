@@ -1,7 +1,7 @@
-# Icalyearbox - Create calandars with ICS/ICAL data
+# Yet Another WP ICAL Calendar - Create calendars with ICAL data.
 Contributors: kgitthoene
 Author URI: https://github.com/kgitthoene/
-Plugin URI: https://github.com/kgitthoene/wordpress-plugin-icalyearbox/
+Plugin URI: https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/
 Tags: ics ical yearbox calendar year month booking
 Donate link: 
 Requires at least: 4.9.0
@@ -9,47 +9,47 @@ Tested up to: 6.2
 Stable tag: 6.2
 Requires PHP: 7.0
 License: X11
-License URI: https://github.com/kgitthoene/wordpress-plugin-icalyearbox/blob/master/LICENSE
+License URI: https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/blob/master/LICENSE
 
-You can create calendars, filled with in-page or external ICS/ICAL data, as year overview or as separate months.
+You can create calendars, filled with in-page or external ICAL data, as month stripes (year overview) or as separate months.
 
 ## Description
 
 This software is a plugin for [WordPress](https://wordpress.org/).
 You can create calendars as year overview or as separate months.
-These calendars are filled with in-page or external ICS/ICAL data.
+These calendars are filled with in-page or external ICAL data.
 
-Icalyearbox is used as a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
+YetAnotherWPICALCalendar is used as a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
 
-**Full Syntax**: `[icalyearbox OPTIONS]ICAL-DATA[/icalyearbox]`
+**Full Syntax**: `[yetanotherwpicalcalendar OPTIONS]ICAL-DATA[/yetanotherwpicalcalendar]`
 
-`ICAL-DATA` may be empty: `[icalyearbox OPTIONS][/icalyearbox]`
+`ICAL-DATA` may be empty: `[yetanotherwpicalcalendar OPTIONS][/yetanotherwpicalcalendar]`
 
-**Short, handy, Syntax**: `[icalyearbox OPTIONS]`
+**Short, handy, Syntax**: `[yetanotherwpicalcalendar OPTIONS]`
 
-Full documentation, all options, full examples: [https://github.com/kgitthoene/wordpress-plugin-icalyearbox](https://github.com/kgitthoene/wordpress-plugin-icalyearbox)
+Full documentation, all options, full examples: [https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar)
 
 ### Examples
 
 First example: Official holydays in North Rhine-Westphalia, Germany, 2023. \
 Month stripe style. Option: `display="year"`
 
-![First example with month stripes.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-icalyearbox/master/readme/2023-feiertage-nrw.png)
+![First example with month stripes.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/master/readme/2023-feiertage-nrw.png)
 
 Second Example: Booking calendar with months. \
 Display months in a grid. Option: `display="month"` \
 Booking style, i.e. half days on first and last day of a period. Option: `type="booking"`
 
-![Second example with separate months.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-icalyearbox/master/readme/booking-cal-month-grid.png)
+![Second example with separate months.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/master/readme/booking-cal-month-grid.png)
 
 ### Links
 
-* [Documentation](https://github.com/kgitthoene/wordpress-plugin-icalyearbox/)
-* [Support forum/Report bugs](https://github.com/kgitthoene/wordpress-plugin-icalyearbox/issues)
+* [Documentation](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/)
+* [Support forum/Report bugs](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/issues)
 
 ## Installation
 
-1. Extract the zipped file and upload the folder `icalyearbox` to to `/wp-content/plugins/` directory.
+1. Extract the zipped file and upload the folder `yetanotherwpicalcalendar` to to `/wp-content/plugins/` directory.
 1. Activate the plugin through the `Plugins` menu in WordPress.
 
 ## Frequently Asked Questions
@@ -71,13 +71,18 @@ Simply omit DTEND and DURATION.
 
 ## Screenshots
 
-1. ![First example with month stripes.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-icalyearbox/master/readme/2023-feiertage-nrw.png)
-2. ![Second example with separate months.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-icalyearbox/master/readme/booking-cal-month-grid.png)
+1. ![First example with month stripes.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/master/readme/2023-feiertage-nrw.png)
+2. ![Second example with separate months.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/master/readme/booking-cal-month-grid.png)
 
 ## Changelog
 
 ### 1.0
 * Initial release.
+
+## Used Software and Attribution
+
+The design was insprired by the [yearbox Plugin](https://www.dokuwiki.org/plugin:yearbox) for [DokuWiki](https://www.dokuwiki.org/).
+This plugin is based on [ytiurin/html5tooltipsjs](https://github.com/ytiurin/html5tooltipsjs) (Javascript / CSS Tooltips), [u01jmg3/ics-parser](https://github.com/u01jmg3/ics-parser) (ICS / ICAL Parser), [Idearia/php-logger](https://github.com/Idearia/php-logger) (Logging, Debugging).
 
 ## License
 

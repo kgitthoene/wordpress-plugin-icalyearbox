@@ -1,4 +1,4 @@
-# wordpress-plugin-icalyearbox
+# wordpress-plugin-yet-another-wp-ical-calendar
 
 This software is a plugin for [Wordpress](https://wordpress.org/).
 You can create calendars as year overview or as separate months.
@@ -10,7 +10,7 @@ Month stripe style. Option: ```display="year"```
 
 Sourcecode in Wordpress:
 ```
-[icalyearbox year="2023" months="all" ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-westfalen" type="event" display="year" description="mix" cache="1y"]
+[yetanotherwpicalcalendar year="2023" months="all" ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-westfalen" type="event" display="year" description="mix" cache="1y"]
 ```
 
 Second Example: Booking calendar with months. \
@@ -22,20 +22,20 @@ Booking style, i.e. half days on first and last day of a period. Option: ```type
 
 Sourcecode in Wordpress:
 ```
-[icalyearbox year="ical" months="now+ical" ical="PRIVATE-URL" type="booking" display="month" cache="1d"]
+[yetanotherwpicalcalendar year="ical" months="now+ical" ical="PRIVATE-URL" type="booking" display="month" cache="1d"]
 ```
 
 The ```"PRIVATE-URL"```, in this example, is realy not literally written as ```PRIVATE-URL```. In real it is a valid URL ```https://...```
 
 ## Usage and Syntax
 
-Icalyearbox is used as a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
+YetAnotherWPICALCalendar is used as a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
 
-**Full Syntax**: ```[icalyearbox OPTIONS]ICAL-DATA[/icalyearbox]```
+**Full Syntax**: ```[yetanotherwpicalcalendar OPTIONS]ICAL-DATA[/yetanotherwpicalcalendar]```
 
-```ICAL-DATA``` may be empty: ```[icalyearbox OPTIONS][/icalyearbox]```
+```ICAL-DATA``` may be empty: ```[yetanotherwpicalcalendar OPTIONS][/yetanotherwpicalcalendar]```
 
-**Short, handy, Syntax**: ```[icalyearbox OPTIONS]```
+**Short, handy, Syntax**: ```[yetanotherwpicalcalendar OPTIONS]```
 
 ### Full Syntax with ICAL Data
 
@@ -44,7 +44,7 @@ Place your ICAL data in-page.
 Example (Source code in Wordpress):
 
 ```
-[icalyearbox year="ical" months="ical-1+1" ical="" type="event" display="year"]
+[yetanotherwpicalcalendar year="ical" months="ical-1+1" ical="" type="event" display="year"]
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:by-hand
@@ -57,17 +57,17 @@ DTSTART;VALUE=DATE:20230527
 DESCRIPTION:Sample Day
 END:VEVENT
 END:VCALENDAR
-[/icalyearbox]
+[/yetanotherwpicalcalendar]
 ```
 
 ### Full Syntax versus Short and Multiple Calendars
 
 *Be prepared!*
-If you use more than one **icalyearbox** on one page, don't mix up the short and the full syntax, because the first opening shortcode ```[icalyearbox OPTIONS]``` eats up all page content until the next closing tag ```[/icalyearbox]```.
+If you use more than one **yetanotherwpicalcalendar** on one page, don't mix up the short and the full syntax, because the first opening shortcode ```[yetanotherwpicalcalendar OPTIONS]``` eats up all page content until the next closing tag ```[/yetanotherwpicalcalendar]```.
 
 Rules for multiple calendars on one page:
   * Use only the short form.
-  * Xor use only the full form. You may let ```ICAL-DATA``` empty: ```[icalyearbox OPTIONS][/icalyearbox]```
+  * Xor use only the full form. You may let ```ICAL-DATA``` empty: ```[yetanotherwpicalcalendar OPTIONS][/yetanotherwpicalcalendar]```
 
 ### Options
 
@@ -193,9 +193,9 @@ See also: [How to Install a WordPress Plugin - Step by Step for Beginners](https
 
 ### Manual Installation
 
-Download: [https://github.com/kgitthoene/wordpress-plugin-icalyearbox/zipball/master/](https://github.com/kgitthoene/wordpress-plugin-icalyearbox/zipball/master/)
+Download: [https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/zipball/master/](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/zipball/master/)
 
-Extract the zip file and rename the extracted folder to ```icalyearbox```.
+Extract the zip file and rename the extracted folder to ```yetanotherwpicalcalendar```.
 Place this folder in ```WORDPRESS-SERVER-ROOT/wp-content/plugins/```
 
 Activate the plugin via Wordpress Dashboard.

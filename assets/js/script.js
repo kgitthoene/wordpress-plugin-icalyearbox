@@ -1,15 +1,15 @@
 /**
- * Wordpress Plugin icalyearbox (Javascript Component)
+ * Wordpress Plugin YetAnotherWPICALCalendar (Javascript Component)
  *
  * @license MIT https://en.wikipedia.org/wiki/MIT_License
  * @author  Kai Thoene <k.git.thoene@gmx.net>
  */
 if (window.jQuery) {
-  globalThis[Symbol.for('icalyearbox_storage')] = (function () {
+  globalThis[Symbol.for('yetanotherwpicalcalendar_storage')] = (function () {
     var defaults = {
       'debug': false, // false = no debug on console
       'is_enabled': true,
-      'token': 'icalyearbox'
+      'token': 'yetanotherwpicalcalendar'
     };
     var resize_timeout = null;
     return {
@@ -22,7 +22,7 @@ if (window.jQuery) {
 
   addEventListener("DOMContentLoaded", (event) => {
     (function ($) {
-      var _g = globalThis[Symbol.for('icalyearbox_storage')];
+      var _g = globalThis[Symbol.for('yetanotherwpicalcalendar_storage')];
       if (_g.defaults.is_enabled) {
         function resize() {
           try {
@@ -41,5 +41,5 @@ if (window.jQuery) {
     })(jQuery);
   });
 } else {
-  console.error("plugin:icalyearbox:ERROR: jQuery is undefined!");
+  console.error("plugin:yetanotherwpicalcalendar:ERROR: jQuery is undefined!");
 }

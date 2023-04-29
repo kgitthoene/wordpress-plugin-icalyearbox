@@ -330,7 +330,7 @@ clean() {
   # Create zip file.
   (
     DISTDIR="$MYDIR"
-    TOKEN="icalyearbox"
+    TOKEN="yetanotherwpicalcalendar"
     # Change to root project directory.
     cd "$DISTDIR"
     # ZIP file name.
@@ -377,7 +377,7 @@ install() {
   # Create zip file.
   (
     DISTDIR="$MYDIR"
-    TOKEN="icalyearbox"
+    TOKEN="yetanotherwpicalcalendar"
     # Check existence of distribution directory.
     [ -d "$DISTDIR" ] || { error "Cannot find distribution directory! DISDIR='$DISTDIR'"; exit 1; }
     # Change to root project directory.

@@ -1,0 +1,72 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: yetanotherwpicalcalendar\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-04-29 18:59:08 +0200\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Kai Thoene <k.git.thoene@gmx.de>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: .\n"
+
+msgid "Monday"
+msgstr "pirmadienis"
+
+msgid "Tuesday"
+msgstr "antredienis"
+
+msgid "Wednesday"
+msgstr "trečiadienis"
+
+msgid "Thursday"
+msgstr "ketvirtadienis"
+
+msgid "Friday"
+msgstr "penktadienis"
+
+msgid "Saturday"
+msgstr "šeštadienis"
+
+msgid "Sunday"
+msgstr "sekmadienis"
+
+msgid "Jan"
+msgstr "Saus"
+
+msgid "Feb"
+msgstr "vas"
+
+msgid "Mar"
+msgstr "kovas"
+
+msgid "Apr"
+msgstr "bal"
+
+msgid "May"
+msgstr "geg"
+
+msgid "June"
+msgstr "birz"
+
+msgid "July"
+msgstr "liepa"
+
+msgid "Aug"
+msgstr "rugp"
+
+msgid "Sept"
+msgstr "rugs"
+
+msgid "Oct"
+msgstr "spalis"
+
+msgid "Nov"
+msgstr "lapkr"
+
+msgid "Dec"
+msgstr "gr"
+

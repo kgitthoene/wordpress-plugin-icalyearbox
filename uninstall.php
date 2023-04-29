@@ -6,7 +6,7 @@
  * Ideally you will add all your clean-up scripts here
  * that will clean-up unused meta, options, etc. in the database.
  *
- * @package WordPress Plugin Icalyearbox
+ * @package WordPress Plugin YetAnotherWPICALCalendar
  */
 
 // If plugin is not being uninstalled, exit (do nothing).
