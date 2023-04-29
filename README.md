@@ -17,8 +17,7 @@ Second Example: Booking calendar with months. \
 Display months in a grid. Option: ```display="month"``` \
 Booking style, i.e. half days on first and last day of a period. Option: ```type="booking"```
 
-
-![Holydays, NRW, Germany, 2023](readme/booking-cal-month-grid.png)
+![Booking Month Grid](readme/booking-cal-month-grid.png)
 
 Sourcecode in Wordpress:
 ```
@@ -26,6 +25,17 @@ Sourcecode in Wordpress:
 ```
 
 The ```"PRIVATE-URL"```, in this example, is realy not literally written as ```PRIVATE-URL```. In real it is a valid URL ```https://...```
+
+Third example: Booking calendar with splits. \
+Similar to the booking style, i.e. half days on first and last day of a period. But, if periods meet at same day, two triangles with a gap. \
+Option: ```type="booking-split"```
+
+![Booking Month Split Periods](readme/booking-split-cal-month.png)
+
+Sourcecode in Wordpress:
+```
+[yetanotherwpicalcalendar year="ical" months="now+ical" ical="PRIVATE-URL" type="booking-split" display="month" cache="1d"]
+```
 
 ## Usage and Syntax
 
@@ -79,11 +89,12 @@ Default: ```"year"```
 
 Example: ```display="month"```
 
-**<u>type</u>**: (string) Allowed values: ```"event"``` and ```"booking"```.
+**<u>type</u>**: (string) Allowed values: ```"event"```, ```"booking"``` and ```"booking-split"```.
 Default: ```"event"```
 
   * ```type="event"``` Creates for all days a full background image. See first example.
   * ```type="booking"``` Creates for the first and last day in a period a half background image. Inbetween a full background image. See second example.
+  * ```type="booking-split"``` Like ```"booking"```, but if one preriod ends the same day, another period beginns, make a background image with two triangles with a gap in between. See third example.
 
 Example: ```type="booking"```
 

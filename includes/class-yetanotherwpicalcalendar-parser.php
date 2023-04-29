@@ -197,7 +197,7 @@ class YetAnotherWPICALCalendar_Parser {
         }
         $dt_end = substr(strval($ical_event->dtend), 0, 8);
         $dt_end = (empty($dt_end) ? $dt_start : $dt_end);
-        if($dt_start == $dt_end) {
+        if ($dt_start == $dt_end) {
           $b_exclude_dtend = false;
         }
         if (empty($dt_start) or empty($dt_end)) {
@@ -238,7 +238,7 @@ class YetAnotherWPICALCalendar_Parser {
    * @return  String
    * @since   1.0.0
    */
-  private static function _render_as_years($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
+  private static function _render_as_years($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
     $day_now = self::_strtodatetime(sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     // Calc start week day and width for all years:
@@ -366,11 +366,18 @@ class YetAnotherWPICALCalendar_Parser {
               $a_desc = $ical_spans->description($dt_this_date);
               $desc = (count($a_desc) ? implode(', ', $a_desc) : '');
             }
+            //----------
+            // If we have an calendar ID, then add an onClick-event.
+            $onclick_for_day = '';
+            if (!empty($id)) {
+              $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%04d%02d%02d\'); return false"', esc_html($id), $year, $month, $month_day);
+            }
+            //----------
             if (empty($desc)) {
-              $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag">%02d</span>', $month_day);
+              $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-day"%s>%02d</span>', $onclick_for_day, $month_day);
             } else {
               //SEE:https://github.com/ytiurin/html5tooltipsjs
-              $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-hint" data-tooltip="%s">%02d</span>', esc_html($desc), $month_day);
+              $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-day yetanotherwpicalcalendar-hint"%s data-tooltip="%s">%02d</span>', $onclick_for_day, esc_html($desc), $month_day);
             }
             $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square%s"%s>%s</div></td>',
               $wday_class, $td_backgroud_image_style, $mo_day_span) . PHP_EOL;
@@ -397,7 +404,7 @@ class YetAnotherWPICALCalendar_Parser {
    * @return  String
    * @since   1.0.0
    */
-  private static function _render_as_months($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
+  private static function _render_as_months($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
     $day_now = self::_strtodatetime(sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     // Calc start week day and width for all years:
@@ -511,11 +518,17 @@ class YetAnotherWPICALCalendar_Parser {
                   $a_desc = $ical_spans->description($dt_this_date);
                   $desc = (count($a_desc) ? implode(', ', $a_desc) : '');
                 }
+                //----------
+                // If we have an calendar ID, then add an onClick-event.
+                $onclick_for_day = '';
+                if (!empty($id)) {
+                  $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%04d%02d%02d\'); return false"', esc_html($id), $year, $month, $month_day);
+                }
                 if (empty($desc)) {
-                  $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag">%02d</span>', $month_day);
+                  $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-day"%s>%02d</span>', $onclick_for_day, $month_day);
                 } else {
                   //SEE:https://github.com/ytiurin/html5tooltipsjs
-                  $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-hint" data-tooltip="%s">%02d</span>', esc_html($desc), $month_day);
+                  $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-day yetanotherwpicalcalendar-hint"%s data-tooltip="%s">%02d</span>', $onclick_for_day, esc_html($desc), $month_day);
                 }
                 $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square%s"%s>%s</div></td>',
                   $wday_class, $td_backgroud_image_style, $mo_day_span) . PHP_EOL;
@@ -569,6 +582,10 @@ class YetAnotherWPICALCalendar_Parser {
     }
     self::$_shortcut_src = $shortcut_src;
     self::write_log(sprintf(""));
+    //
+    //----------
+    // Get ID.
+    $id = self::_getav($atts, 'id');
     //
     //----------
     // Get alignment.
@@ -1199,8 +1216,8 @@ class YetAnotherWPICALCalendar_Parser {
     //----------
     // Render calender.
     $doc = ($display == 'year'
-      ? self::_render_as_years($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
-      : self::_render_as_months($align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
+      ? self::_render_as_years($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
+      : self::_render_as_months($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
     );
     return $doc;
   } // parse
