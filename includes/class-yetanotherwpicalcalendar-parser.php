@@ -28,7 +28,7 @@ class YetAnotherWPICALCalendar_Parser {
    * @access  private
    * @since   1.0.0
    */
-  private static $_enable_debugging = false; // false = Log only error messages.
+  private static $_enable_debugging = true; // false = Log only error messages.
   private static $_log_initialized = false;
   private static $_log_class = null;
 
