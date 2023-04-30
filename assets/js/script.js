@@ -212,27 +212,32 @@ if (window.jQuery) {
       form.submit();
     }
 
-    function cb_success(data, status) {
-      console.log("POST SUCCESS / DATA='" + JSON.stringify(data) + "' STATUS=" + status);
-    }  // cb_success
+    function post_cb(jqXHR, status, data = {}, error_thrown = '') {
+      console.log("[POST-CB] STATUS='" + status + "' DATA='" + JSON.stringify(data) + " ERROR-THROWN='" + error_thrown + "'");
+    } // post_cb
 
-    function cb_error(jqXHR, status, error_thrown) {
-      console.error("POST ERROR -- STATUS=" + status);
-    }  // cb_error
+    function post_cb_success(data, status, jqXHR) {
+      post_cb(jqXHR, status, data);
+    }  // post_cb_success
 
-    function post(uri, object, callback) {
+    function post_cb_error(jqXHR, status, error_thrown) {
+      post_cb(jqXHR, status, {}, error_thrown);
+    }  // post_cb_error
+
+    function post(uri, object) {
       jQuery(function ($) {
         $.ajax({
           url: uri,
           data: object,
           method: 'POST',
-          success: cb_success,
-          error: cb_error,
+          success: post_cb_success,
+          error: post_cb_error,
         });
       });
-    }
+    }  // post
 
-    function vanilla_post(uri, object, callback) {
+    /*
+    function vanilla_javascript_wp_post(uri, object, callback) {
       var request = new XMLHttpRequest();
       request.open('POST', uri, true);
       request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;');
@@ -253,17 +258,18 @@ if (window.jQuery) {
       let object_size = object.length;
       var nr = 1;
       for (var key in object) {
-        url_encoded_data += ((nr > 1) ? '&' : '') + encodeURI(key) + '=' + encodeURI(object[key]);
+        url_encoded_data += ((nr > 1) ? '&' : '') + encodeURIComponent(key) + '=' + encodeURIComponent(object[key]);
         nr++;
       }
       request.send(url_encoded_data);
-    }
+    }  // vanilla_javascript_wp_post
+    */
 
     function annotate(id = '', day = '') {
       console.log(defaults.token + "::annotate ID='" + id + "' DAY='" + day + "'");
-      let obj = { action: 'yetanotherwpicalcalendar_add_annotation', id: id, day: day };
-      post('/wp-admin/admin-ajax.php', obj, ajax_callback);
-      vanilla_post('/wp-admin/admin-ajax.php', obj, ajax_callback);
+      let obj = { action: 'yetanotherwpicalcalendar_add_annotation', id: id, day: day, uml: 'äöüß&=' };
+      post('/wp-admin/admin-ajax.php', obj);
+      //vanilla_post('/wp-admin/admin-ajax.php', obj, ajax_callback);
     } // annotate
 
     return {

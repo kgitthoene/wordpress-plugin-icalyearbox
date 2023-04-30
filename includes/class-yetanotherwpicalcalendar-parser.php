@@ -34,6 +34,7 @@ class YetAnotherWPICALCalendar_Parser {
 
   private static $_directories_initialized = false;
   public static $token = 'yetanotherwpicalcalendar';
+  public static $token_annotation = 'yetanotherwpicalcalendar-annotation';
   private static $_my_plugin_directory = null;
   private static $_my_log_directory = null;
   private static $_my_cache_directory = null;
@@ -1221,4 +1222,40 @@ class YetAnotherWPICALCalendar_Parser {
     );
     return $doc;
   } // parse
+
+  public static function parse_annotation($atts, $content, &$evaluate_stack = NULL, $token = 'yetanotherwpicalcalendar') {
+    date_default_timezone_set("Europe/Berlin");
+    //----------
+    self::_init_directories();
+    self::_init_log(self::$_my_log_directory);
+    //----------
+    self::$_content_src = $content;
+    $content = self::_purecontent($content);
+    $has_content = !empty($content);
+    self::write_log("CONTENT='" . $content . "'");
+    //
+    //----------
+    // Construct original shortcut source code.
+    $shortcut_src = '[' . self::$token_annotation;
+    $a_atts_keys = array_keys($atts);
+    foreach ($a_atts_keys as $key) {
+      $shortcut_src .= ' ' . $key . '="' . $atts[$key] . '"';
+    }
+    $shortcut_src .= ']';
+    if (!empty($content)) {
+      $shortcut_src .= "<br />" . self::$_content_src;
+      $shortcut_src .= '[/' . self::$token_annotation . ']';
+    }
+    self::$_shortcut_src = $shortcut_src;
+    self::write_log(sprintf(""));
+    //
+    //----------
+    // Get ID.
+    $id = self::_getav($atts, 'id');
+    //
+    //----------
+    // Render calender.
+    $doc = "ANNOTATION";
+    return $doc;
+  } // parse_annotation
 } // class YetAnotherWPICALCalendar_Parser

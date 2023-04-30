@@ -47,7 +47,8 @@ class YetAnotherWPICALCalendar {
    * @access  private
    * @since   1.0.0
    */
-  private static $_default_shortcode_params = null;
+  private static $_default_yetanotherwpicalcalendar_params = null;
+  private static $_default_yetanotherwpicalcalendar_annatation_params = null;
 
   /**
    * The debug trigger.
@@ -238,9 +239,9 @@ class YetAnotherWPICALCalendar {
    *
    * @return Array Associative Array with default parameters.
    */
-  private static function default_shortcode_params() {
-    if (self::$_default_shortcode_params === null) {
-      self::$_default_shortcode_params = array(
+  private static function default_yetanotherwpicalcalendar_params() {
+    if (self::$_default_yetanotherwpicalcalendar_params === null) {
+      self::$_default_yetanotherwpicalcalendar_params = array(
         'id' => '', // ID of this calendar.
         'year' => "now", // List of years to show.
         //'recent' => 21, // Display this days before today. TODO: Not used.
@@ -255,8 +256,17 @@ class YetAnotherWPICALCalendar {
         'description' => 'none', // [ 'mix', 'description', 'summary', 'none' ] / Add description to event. TODO: Documentation.
       );
     }
-    return self::$_default_shortcode_params;
-  } // default_shortcode_params
+    return self::$_default_yetanotherwpicalcalendar_params;
+  } // default_yetanotherwpicalcalendar_params
+
+  private static function default_yetanotherwpicalcalendar_annatation_params() {
+    if (self::$_default_yetanotherwpicalcalendar_annatation_params === null) {
+      self::$_default_yetanotherwpicalcalendar_annatation_params = array(
+        'id' => '', // ID of this calendar.
+      );
+    }
+    return self::$_default_yetanotherwpicalcalendar_annatation_params;
+  } // default_yetanotherwpicalcalendar_annatation_params
 
   /**
    * Register post type function.
@@ -462,12 +472,24 @@ class YetAnotherWPICALCalendar {
     self::_init_log();
     //----------    
     if (function_exists('shortcode_atts')) {
-      $atts = shortcode_atts(self::default_shortcode_params(), $atts);
+      $atts = shortcode_atts(self::default_yetanotherwpicalcalendar_params(), $atts);
     }
     self::write_log($atts);
     $eval = YetAnotherWPICALCalendar_Parser::parse($atts, $content, $evaluate_stack, self::$token);
     return $eval;
   } // yetanotherwpicalcalendar_func
+
+  public static function yetanotherwpicalcalendar_annotation_func($atts = array(), $content = null) {
+    self::_init_directories();
+    self::_init_log();
+    //----------    
+    if (function_exists('shortcode_atts')) {
+      $atts = shortcode_atts(self::default_yetanotherwpicalcalendar_annatation_params(), $atts);
+    }
+    self::write_log($atts);
+    $eval = YetAnotherWPICALCalendar_Parser::parse_annotation($atts, $content, $evaluate_stack, self::$token);
+    return $eval;
+  } // yetanotherwpicalcalendar_annotation_func
 
   public static function handle_annotation_post() {
     //status_header(200);
@@ -494,4 +516,5 @@ background: rgba(255, 165, 0, 0.73);
  */
 if (function_exists('add_shortcode')) {
   add_shortcode('yetanotherwpicalcalendar', array('YetAnotherWPICALCalendar', 'yetanotherwpicalcalendar_func'));
+  add_shortcode('yetanotherwpicalcalendar-annotation', array('YetAnotherWPICALCalendar', 'yetanotherwpicalcalendar_annotation_func'));
 }
