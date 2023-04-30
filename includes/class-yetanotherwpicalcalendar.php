@@ -56,7 +56,7 @@ class YetAnotherWPICALCalendar {
    * @access  private
    * @since   1.0.0
    */
-  private static $_enable_debugging = false;
+  private static $_enable_debugging = true;
   private static $_log_initialized = false;
   private static $_log_class = null;
 
@@ -150,48 +150,47 @@ class YetAnotherWPICALCalendar {
       if (!is_dir(self::$_my_log_directory)) {
         mkdir(self::$_my_log_directory, 0777, true);
       }
-      // Create cache directory.
-      self::$_my_cache_directory = self::$_my_plugin_directory . '/cache';
-      if (!is_dir(self::$_my_cache_directory)) {
-        mkdir(self::$_my_cache_directory);
-      }
       self::$_directories_initialized = true;
     }
-  }
+  } // _init_directories
 
   private static function _init_log() {
     if (!self::$_log_initialized) {
-      if (self::$_enable_debugging) {
-        if (!self::$_directories_initialized) {
-          self::_init_directories();
-        }
-        if (class_exists('YetAnotherWPICALCalendar_Logger')) {
-          self::$_log_class = 'YetAnotherWPICALCalendar_Logger';
-          self::$_log_class::$log_level = 'debug';
-          self::$_log_class::$write_log = true;
-          self::$_log_class::$log_dir = self::$_my_log_directory;
-          self::$_log_class::$log_file_name = self::$token;
-          self::$_log_class::$log_file_extension = 'log';
-          self::$_log_class::$print_log = false;
-        }
+      if (!self::$_directories_initialized) {
+        self::_init_directories();
+      }
+      if (class_exists('YetAnotherWPICALCalendar_Logger')) {
+        self::$_log_class = 'YetAnotherWPICALCalendar_Logger';
+        self::$_log_class::$log_level = 'debug';
+        self::$_log_class::$write_log = true;
+        self::$_log_class::$log_dir = self::$_my_log_directory;
+        self::$_log_class::$log_file_name = self::$token;
+        self::$_log_class::$log_file_extension = 'log';
+        self::$_log_class::$print_log = false;
       }
       self::$_log_initialized = true;
     }
-  } // self::_init_log
+  } // _init_log
 
-  public static function write_log($log = NULL) {
-    if (self::$_enable_debugging) {
+  public static function write_log($log = NULL, $is_error = false, $bn = '', $func = '', $line = -1) {
+    if (self::$_enable_debugging or $is_error) {
       self::_init_directories();
       self::_init_log();
-      $bn = basename(__FILE__);
-      $msg = '[' . $bn . ':' . __LINE__ . '] ' . ((is_array($log) || is_object($log)) ? print_r($log, true) : $log);
+      $bn = (empty($bn) ? basename(debug_backtrace()[1]['file']) : $bn);
+      $func = (empty($func) ? debug_backtrace()[1]['function'] : $func);
+      $line = ($line == -1 ? intval(debug_backtrace()[0]['line']) : $line);
+      $msg = sprintf('[%s:%d:%s] %s', $bn, $line, $func, ((is_array($log) || is_object($log)) ? print_r($log, true) : $log));
       if (is_null(self::$_log_class)) {
         error_log($msg . PHP_EOL);
       } else {
-        self::$_log_class::debug($msg);
+        if ($is_error) {
+          self::$_log_class::error($msg);
+        } else {
+          self::$_log_class::debug($msg);
+        }
       }
     }
-  } // self::write_log
+  } // write_log
 
   /**
    * Constructor funtion.
@@ -201,7 +200,6 @@ class YetAnotherWPICALCalendar {
    */
   public function __construct($file = '', $version = '1.0.0') {
     $this->_version = $version;
-    //self::$token = 'yetanotherwpicalcalendar';
 
     // Load plugin environment variables.
     $this->file = $file;
@@ -229,6 +227,10 @@ class YetAnotherWPICALCalendar {
     // Handle localisation.
     $this->load_plugin_textdomain();
     add_action('init', array($this, 'load_localisation'), 0);
+
+    // Create POST handler action.
+    self::write_log(sprintf("Register POST handler."));
+    add_action('wp_ajax_yetanotherwpicalcalendar_add_annotation', array($this, 'handle_annotation_post'));
   } // __construct
 
   /**
@@ -239,6 +241,7 @@ class YetAnotherWPICALCalendar {
   private static function default_shortcode_params() {
     if (self::$_default_shortcode_params === null) {
       self::$_default_shortcode_params = array(
+        'id' => '', // ID of this calendar.
         'year' => "now", // List of years to show.
         //'recent' => 21, // Display this days before today. TODO: Not used.
         'months' => "all", // List of months to print.
@@ -307,10 +310,10 @@ class YetAnotherWPICALCalendar {
    * @since   1.0.0
    */
   public function enqueue_styles() {
-    wp_register_style(self::$token . '-microtip', esc_url($this->assets_url) . 'css/microtip.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-microtip');
     wp_register_style(self::$token . '-frontend', esc_url($this->assets_url) . 'css/frontend.min.css', array(), $this->_version);
     wp_enqueue_style(self::$token . '-frontend');
+    wp_register_style(self::$token . '-hystmodal', esc_url($this->assets_url) . 'css/hystmodal.min.css', array(), $this->_version);
+    wp_enqueue_style(self::$token . '-hystmodal');
     wp_register_style(self::$token . '-style', esc_url($this->assets_url) . 'css/style.min.css', array(), $this->_version);
     wp_enqueue_style(self::$token . '-style');
   } // enqueue_styles
@@ -327,6 +330,8 @@ class YetAnotherWPICALCalendar {
     wp_enqueue_script(self::$token . '-frontend');
     wp_register_script(self::$token . '-html5tooltips', esc_url($this->assets_url) . 'js/html5tooltips.1.7.3' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
     wp_enqueue_script(self::$token . '-html5tooltips');
+    wp_register_script(self::$token . '-hystmodal', esc_url($this->assets_url) . 'js/hystmodal' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(self::$token . '-hystmodal');
     wp_register_script(self::$token . '-script', esc_url($this->assets_url) . 'js/script' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
     wp_enqueue_script(self::$token . '-script');
   } // enqueue_scripts
@@ -463,6 +468,20 @@ class YetAnotherWPICALCalendar {
     $eval = YetAnotherWPICALCalendar_Parser::parse($atts, $content, $evaluate_stack, self::$token);
     return $eval;
   } // yetanotherwpicalcalendar_func
+
+  public static function handle_annotation_post() {
+    //status_header(200);
+    //request handlers should exit() when they complete their task
+    foreach($_POST as $key => $value) {
+      self::write_log(sprintf("POST['%s']='%s'", $key, $value));
+    }
+    //self::write_log(sprintf("REQUEST-DATA='%s'", strval(implode(', ', $_REQUEST))));
+    //exit("Server received '{$_REQUEST['data']}' from your browser.");
+    //exit("POSTHELO");
+    wp_send_json(array( 'status' => 'WP-OK'));
+    //----------
+    wp_die();
+  }
 } // class YetAnotherWPICALCalendar
 
 /*
