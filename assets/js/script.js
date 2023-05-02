@@ -5,289 +5,279 @@
  * @author  Kai Thoene <k.git.thoene@gmx.net>
  */
 if (window.jQuery) {
+  //
+  //----------
+  // Storage for Annotations.
+  if (typeof globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')] === 'undefined') {
+    globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')] = (function () {
+      var modals = {};
+      var data = {};
+      var post_state = {};
+      var abort = {};
+      var save = {};
+      var annotations = {};
 
-  class JSHelper {
-    static getKeyByValue(obj_p, val_p) {
-      return Object.keys(obj_p).find(key => obj_p[key] === val_p);
-    }  // getKeyByValue
-  }  // class JSHelper
+      function format_day(d) {
+        var year = d.substr(0, 4);
+        var month = parseInt(d.substr(4, 2));
+        var day = parseInt(d.substr(6, 2));
+        return day + '.' + month + '.' + year;
+      }  // format_day
 
-  globalThis[Symbol.for('yetanotherwpicalcalendar_storage')] = (function () {
-    /*
-     * Example:
-    
-        return AJAXHelper.post('/ajax', {
-          cmd: 'ping',
-          uuid: '(my-uuid)'
-        }, ajax_callback);
-    
-        function ajax_callback() {
-          var build_number, cmd, data, e;
-          if (this.readyState === 4 && this.status === 200) {
-            console.log("[ajax_callback] THIS=" + this + " READYSTATE=" + this.readyState + " STATUS=" + this.status + " RESPONSETEXT=" + this.responseText);
-            try {
-              data = JSON.parse(this.responseText);
-            } catch (_error) {
-              const now = new Date();
-              const daytime = sprintf("%02d:%02d:%02d.%03d", now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-              const msg = sprintf("%s [CLICK] JAVASCRIPT-EXCEPTION='%s'", daytime, _error);
-              return console.error(msg);
-            }
-          } else {
-            const now = new Date();
-            const daytime = sprintf("%02d:%02d:%02d.%03d", now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-            const msg = sprintf("%s [ajax_callback] NOT-READY! STATE=%f STATUS=%f", daytime, this.readyState, this.status);
-            return console.error(msg);
+      return {
+        modals: modals,
+        data: data,
+        post_state: post_state,
+        abort: abort,
+        save: save,
+        annotations: annotations,
+        //
+        format_day: format_day,
+      };
+    })();
+  }
+  //
+  //----------
+  // Storage for Calendar Stuff.
+  if (typeof globalThis[Symbol.for('yetanotherwpicalcalendar_storage')] === 'undefined') {
+    globalThis[Symbol.for('yetanotherwpicalcalendar_storage')] = (function () {
+      var defaults = {
+        'debug': false, // false = no debug on console
+        'is_enabled': true,
+        'token': 'yetanotherwpicalcalendar'
+      };
+      var resize_timeout = null;
+      var AJAX = {
+        RUNNING: 0,
+        FAIL: 1,
+        DONE: 2,
+        FINAL: 4,
+      };
+
+      function is_empty(s = '') {
+        return (!s || s.length === 0);
+      } // is_empty
+
+      function is_null(v = null) {
+        return (v == null);
+      } // is_null
+
+      function resize() {
+        try {
+          html5tooltips.refresh();
+        }
+        catch (e) { console.error("plugin:" + _g.defaults.token + ":EXCEPTION: " + e); }
+      }  // resize
+
+      /**
+       * sends a request to the specified url from a form. this will change the window location.
+       * @param {string} path the path to send the post request to
+       * @param {object} params the parameters to add to the url
+       * @param {string} [method=post] the method to use on the form
+       */
+      function _post(path, params, method = 'post') {
+        // The rest of this code assumes you are not using a library.
+        // It can be made less verbose if you use one.
+        const form = document.createElement('form');
+        form.method = method;
+        form.action = path;
+        for (const key in params) {
+          if (params.hasOwnProperty(key)) {
+            const hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = key;
+            hiddenField.value = params[key];
+            form.appendChild(hiddenField);
           }
-        };
-     */
-    class AJAXHelper {
-      static debug = false;
-      static retry_time = 10000;
-
-      static daytime() {
-        const now = new Date();
-        return ("0" + now.getHours() + ":").slice(-3) + ("0" + now.getMinutes() + ":").slice(-3) + ("0" + now.getSeconds() + ":").slice(-3);
+        }
+        document.body.appendChild(form);
+        form.submit();
       }
 
-      static daytime_ms() {
-        const now = new Date();
-        return ("0" + now.getHours() + ":").slice(-3) + ("0" + now.getMinutes() + ":").slice(-3) + ("0" + now.getSeconds() + ":").slice(-3) + ("00" + now.getMilliseconds()).slice(-3);
-      }
+      function post_cb(jqXHR, status, data = {}, error_thrown = '') {
+        console.log("[POST-CB] STATUS='" + status + "' DATA='" + JSON.stringify(data) + " ERROR-THROWN='" + error_thrown + "'");
+      } // post_cb
 
-      static datedaytime_fn() {
-        const now = new Date();
-        return ("000" + now.getFullYear()).slice(-4) + ("0" + (now.getMonth() + 1)).slice(-2) + ("0" + now.getDate()).slice(-2) + "." + ("0" + now.getHours()).slice(-2) + ("0" + now.getMinutes()).slice(-2) + ("0" + now.getSeconds()).slice(-2);
-      }
+      function post_cb_success(data, status, jqXHR) {
+        post_cb(jqXHR, status, data);
+      }  // post_cb_success
 
-      static get(retries_p) {
-        if ((retries_p != parseInt(retries_p, 10)) || (retries_p < 0)) {
-          retries_p = 10;
-        }
-        var xmlhttp = false;
-        for (var i = 0; i < AJAXHelper.XMLHttpFactories.length; i++) {
-          try {
-            xmlhttp = AJAXHelper.XMLHttpFactories[i]();
-          }
-          catch (e) {
-            continue;
-          }
-          break;
-        }
-        xmlhttp.retries = retries_p;
-        return xmlhttp;
-      }  // get
+      function post_cb_error(jqXHR, status, error_thrown) {
+        post_cb(jqXHR, status, {}, error_thrown);
+      }  // post_cb_error
 
-      static post(uri_p, hash_p, callback_p) {
-        const async = true;
-        var data = null;
-        if ((typeof (hash_p) == 'object') && (hash_p !== undefined)) {
-          data = JSON.stringify(hash_p);
-        }
-        var method = 'POST';
-        this.async = async;
-        if (AJAXHelper.debug) { console.log(this.daytime_ms() + " [AJAXHelper.post] METHOD='" + method + "' URI='" + uri_p + "' DATA='" + data + "'"); }
-        var xhttp = AJAXHelper.get();
-        if (!xhttp) return;
-        xhttp.open(method, uri_p, async);
-        //xhttp.setRequestHeader('Content-Type', 'application/json; encoding=UTF-8');
-        xhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; encoding=UTF-8');
-        if (AJAXHelper.debug) { console.log(this.daytime_ms() + " [AJAXHelper.post] 'Content-Type', 'application/x-www-form-urlencoded;'"); }
-        if (async) { xhttp.timeout = 10000; }
-        xhttp.ontimeout = function () { if (AJAXHelper.debug) { console.error(AJAXHelper.daytime_ms() + " [AJAXHelper.post::TIMEOUT](URI='" + uri_p + "', (" + (typeof callback_p) + "))"); } };
-        xhttp.onreadystatechange = callback_p;
-        xhttp.onerror = function () {
-          if (AJAXHelper.debug || true) { console.error(AJAXHelper.daytime_ms() + " [AJAXHelper.post::ERROR](URI='" + uri_p + "', (" + (typeof callback_p) + ")) RETRIES-LEFT=" + this.retries); }
-          if (this.retries > 0) {
-            setTimeout(function () {
-              if (AJAXHelper.debug) { console.log(AJAXHelper.daytime_ms() + " [AJAXHelper.post] RESEND RETRIES-LEFT=" + this.retries + " URI='" + uri_p + "' DATA='" + data + "' ASYNC=" + async.toString()); }
-              --this.retries;
-              this.open(method, uri_p, async);
-              this.send(data);
-            }.bind(this), AJAXHelper.retry_time);
-          }
-          else {
-            if (AJAXHelper.debug) { console.error(AJAXHelper.daytime_ms() + " [AJAXHelper.post::ERROR](URI='" + uri_p + "', (" + (typeof callback_p) + ")) GIVE UP|"); }
-          }
-        };
-        xhttp.async = async;
-        xhttp.data = data;
-        xhttp.send(xhttp.data);
-        return xhttp;
+      function post(uri, object, cb_success = null, cb_error = null) {
+        jQuery(function ($) {
+          return $.ajax({
+            url: uri,
+            data: object,
+            method: 'POST',
+            success: (is_null(cb_success) ? post_cb_success : cb_success),
+            error: (is_null(cb_error) ? post_cb_error : cb_error),
+          });
+        });
       }  // post
 
-      static stringify(obj_p) {
-        var result;
-        var cache = [];
-        result = JSON.stringify(obj_p, function (key, value) {
-          if (typeof value === 'object' && value !== null) {
-            if (cache.indexOf(value) !== -1) {
-              // Circular reference found, discard key
-              return;
+      //
+      //----------
+      // Load Annotations from Database:
+      function load_annotations(id_selector = "") {
+        var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+        jQuery(function ($) {
+          $(id_selector + ".yetanotherwpicalcalendar-annotation").each(function (idx) {
+            let id = $(this).attr('id');
+            //console.log("Try to load annotation from ID='" + id + "'");
+            if (is_empty(id)) {
+              $(this).html('<div style="border-left:4px solid red;">&nbsp;No ID for annotations given!</div>');
+            } else {
+              let obj = { action: 'yetanotherwpicalcalendar_get_annotations', id: id };
+              $.ajax({
+                url: '/wp-admin/admin-ajax.php',
+                data: obj,
+                method: 'POST'
+              })
+                .done(function (data, status, jqXHR) {
+                  //console.log("[" + idx + ":LOAD DONE] ID='" + data.id + "'");
+                  var b_is_ok = false;
+                  if (status == 'success') {
+                    let rc = data.status;
+                    b_is_ok = (rc == 'OK');
+                  }
+                  if (b_is_ok) {
+                    let id = data.id;
+                    let a_an = data.annotations;
+                    $(this).html(data.doc);
+                    _ga.annotations[id] = a_an;
+                  }
+                }.bind(this))
+                .fail(function (jqXHR, status, error_thrown) {
+                  let id = $(this).attr('id');
+                  $(this).html('<div style="unicode-bidi:embed; font-family:monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">'
+                    + 'Plugin YetAnotherWPICALCalendar::ERROR -- Cannot get annotations! STATUS="' + status + '" ERROR="' + error_thrown + '"'
+                    + '<br />[yetanotherwpicalcalendar-annotation id="' + id + '"]'
+                    + '"</div>');
+                }.bind(this));
             }
-            // Store value in our collection
-            cache.push(value);
-          }
-          return value;
+          });
         });
-        cache = null;  // Enable garbage collection
-        return result;
-      }  // stringify
+      }  // load_annotations
 
-      static s4() {
-        return Math.floor((1 + Math.random()) * 0x10000)
-          .toString(16)
-          .substring(1);
-      }  // s4
-
-      static guid4() {
-        return (AJAXHelper.s4() + AJAXHelper.s4() + '-' + AJAXHelper.s4() + '-' + AJAXHelper.s4() + '-' + AJAXHelper.s4() + '-' + AJAXHelper.s4() + AJAXHelper.s4() + AJAXHelper.s4());
-      }  // guid4
-
-      static uid128() {
-        return (AJAXHelper.s4() + AJAXHelper.s4());
-      } // guid4
-    }  // class AJAXHelper
-    AJAXHelper.XMLHttpFactories = [
-      function () { return new XMLHttpRequest() },
-      function () { return new ActiveXObject("Msxml2.XMLHTTP") },
-      function () { return new ActiveXObject("Msxml3.XMLHTTP") },
-      function () { return new ActiveXObject("Microsoft.XMLHTTP") }
-    ];
-    AJAXHelper.debug = true;
-    //----------
-
-    var defaults = {
-      'debug': false, // false = no debug on console
-      'is_enabled': true,
-      'token': 'yetanotherwpicalcalendar'
-    };
-
-    var resize_timeout = null;
-
-    function resize() {
-      try {
-        html5tooltips.refresh();
-      }
-      catch (e) { console.error("plugin:" + _g.defaults.token + ":EXCEPTION: " + e); }
-    }  // resize
-
-    function ajax_callback() {
-      if (this.readyState === 4) {
-        if (this.status === 200) {
-          console.log("[ajax_callback] THIS=" + this + " READYSTATE=" + this.readyState + " STATUS=" + this.status + " RESPONSETEXT='" + this.responseText + "'");
-          try {
-            //data = JSON.parse(this.responseText);
-          } catch (e) {
-            return console.error("[ajax_callback] EXCEPTION='" + e + "'");
+      function annotate(id = '', day = '') {
+        //console.log(defaults.token + "::annotate ID='" + id + "' DAY='" + day + "'");
+        jQuery(function ($) {
+          var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+          //console.log("GA ->:");
+          //console.log(_ga);
+          modal = _ga.modals['annotation'];
+          // Find existing annotation:
+          note = '';
+          if (id in _ga.annotations) {
+            for (var i = 0; i < _ga.annotations[id].length; i++) {
+              anno = _ga.annotations[id][i];
+              if (anno.day == day) {
+                note = anno.note;
+                break;
+              }
+            }
           }
-        } else {
-          return console.error("[ajax_callback] NOT-READY! STATE=" + this.readyState + " STATUS=" + this.status);
-        }
-      }
-    } // ajax_callback
-
-    /**
-     * sends a request to the specified url from a form. this will change the window location.
-     * @param {string} path the path to send the post request to
-     * @param {object} params the parameters to add to the url
-     * @param {string} [method=post] the method to use on the form
-     */
-    function _post(path, params, method = 'post') {
-      // The rest of this code assumes you are not using a library.
-      // It can be made less verbose if you use one.
-      const form = document.createElement('form');
-      form.method = method;
-      form.action = path;
-      for (const key in params) {
-        if (params.hasOwnProperty(key)) {
-          const hiddenField = document.createElement('input');
-          hiddenField.type = 'hidden';
-          hiddenField.name = key;
-          hiddenField.value = params[key];
-          form.appendChild(hiddenField);
-        }
-      }
-      document.body.appendChild(form);
-      form.submit();
-    }
-
-    function post_cb(jqXHR, status, data = {}, error_thrown = '') {
-      console.log("[POST-CB] STATUS='" + status + "' DATA='" + JSON.stringify(data) + " ERROR-THROWN='" + error_thrown + "'");
-    } // post_cb
-
-    function post_cb_success(data, status, jqXHR) {
-      post_cb(jqXHR, status, data);
-    }  // post_cb_success
-
-    function post_cb_error(jqXHR, status, error_thrown) {
-      post_cb(jqXHR, status, {}, error_thrown);
-    }  // post_cb_error
-
-    function post(uri, object) {
-      jQuery(function ($) {
-        $.ajax({
-          url: uri,
-          data: object,
-          method: 'POST',
-          success: post_cb_success,
-          error: post_cb_error,
+          //
+          _ga.data['annotation'] = { id: id, day: day, note: note };
+          _ga.post_state['annotation'] = null;
+          modal.open();
+          setTimeout(function () {
+            //console.log("FOCUS");
+            $("#annotation-note").focus();
+          }, 100);
         });
-      });
-    }  // post
+      } // annotate
 
-    /*
-    function vanilla_javascript_wp_post(uri, object, callback) {
-      var request = new XMLHttpRequest();
-      request.open('POST', uri, true);
-      request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded;');
-      request.onreadystatechange = callback;
-      request.onload = function () {
-        if (this.status >= 200 && this.status < 400) {
-          // If successful
-          console.log(this.response);
-        } else {
-          // If fail
-          console.log(this.response);
-        }
+      function ajax_write_annotation() {
+        var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+        jQuery(function ($) {
+          let data = _ga.data['annotation'];
+          let obj = { action: 'yetanotherwpicalcalendar_add_annotation', id: data.id, day: data.day, note: data.note };
+          //
+          //----------
+          // Watch for result:
+          _ga.post_state['annotation'] = AJAX.RUNNING;
+          let resultInterval = setInterval(function () {
+            if ((_ga.post_state['annotation'] != null) && (_ga.post_state['annotation'] != AJAX.RUNNING)) {
+              //console.log("POST-STATE=" + _ga.post_state['annotation'] + " ID=" + this.id);
+              switch (_ga.post_state['annotation']) {
+                case 1:
+                  clearInterval(resultInterval);
+                  $("#" + this.id + "-cal-msg").html('<div style="unicode-bidi:embed; font-family:monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">'
+                    + 'Plugin YetAnotherWPICALCalendar::ERROR -- Cannot write annotation! DAY="' + this.day + '"'
+                    + '<br />[yetanotherwpicalcalendar-annotation id="' + this.id + '"]'
+                    + '"</div>');
+                  $("#" + this.id + "-cal-msg").css('display', 'block');
+                  break;
+                case 2:
+                  clearInterval(resultInterval);
+                  load_annotations("#" + this.id);
+                  break;
+              }
+            }
+          }.bind(data), 100);
+          //
+          $.ajax({
+            url: '/wp-admin/admin-ajax.php',
+            data: obj,
+            method: 'POST'
+          })
+            .done(function (data, status, jqXHR) {
+              //console.log("[ajax_write_annotation:DONE] ID='" + this.id + "' DATA='" + JSON.stringify(data) + "'");
+              var b_is_ok = false;
+              if (status == 'success') {
+                let rc = data['status'];
+                b_is_ok = (rc == 'OK');
+              }
+              _ga.post_state['annotation'] = AJAX.DONE;
+            }.bind(data))
+            .fail(function (jqXHR, status, error_thrown) {
+              //$('#annotation-msg').text('[FAIL] Press Abbruch');
+              //console.log("[ajax_write_annotation:FAIL] ID='" + this.id + "'");
+              _ga.post_state['annotation'] = AJAX.FAIL;
+            }.bind(data));
+        });
+      }  // ajax_write_annotation
+
+      function delete_annotation(id, day) {
+        var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+        //console.log("[delete_annotation:ENTRY] ID='" + id + "' DAY='" + day + "'");
+        _ga.data['annotation'].id = id;
+        _ga.data['annotation'].day = day;
+        _ga.data['annotation'].note = '';
+        ajax_write_annotation();
+      }  // delete_annotation
+
+      return {
+        // exported variables:
+        defaults: defaults,
+        resize_timeout: resize_timeout,
+        AJAX: AJAX,
+        // exported functions:
+        is_empty: is_empty,
+        is_null: is_null,
+        resize: resize,
+        post_cb: post_cb,
+        post: post,
+        load_annotations: load_annotations,
+        annotate: annotate,
+        ajax_write_annotation: ajax_write_annotation,
+        delete_annotation: delete_annotation,
       };
-      request.onerror = function () {
-        // Connection error
-      };
-      var url_encoded_data = '';
-      let object_size = object.length;
-      var nr = 1;
-      for (var key in object) {
-        url_encoded_data += ((nr > 1) ? '&' : '') + encodeURIComponent(key) + '=' + encodeURIComponent(object[key]);
-        nr++;
-      }
-      request.send(url_encoded_data);
-    }  // vanilla_javascript_wp_post
-    */
-
-    function annotate(id = '', day = '') {
-      console.log(defaults.token + "::annotate ID='" + id + "' DAY='" + day + "'");
-      let obj = { action: 'yetanotherwpicalcalendar_add_annotation', id: id, day: day, uml: 'äöüß&=' };
-      post('/wp-admin/admin-ajax.php', obj);
-      //vanilla_post('/wp-admin/admin-ajax.php', obj, ajax_callback);
-    } // annotate
-
-    return {
-      // exported variables:
-      defaults: defaults,
-      resize_timeout: resize_timeout,
-      // exported functions:
-      resize: resize,
-      annotate: annotate,
-    };
-  })();
+    })();
+  }
 
   addEventListener("DOMContentLoaded", (event) => {
     (function ($) {
       var _g = globalThis[Symbol.for('yetanotherwpicalcalendar_storage')];
+      var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
       if (_g.defaults.is_enabled) {
 
         yetanotherwpicalcalendar_annotate = _g.annotate;
+        yetanotherwpicalcalendar_del_annotation = _g.delete_annotation
 
         $(window).resize(function () {
           if (_g.resize_timeout != null) { clearTimeout(_g.resize_timeout); }
@@ -295,6 +285,71 @@ if (window.jQuery) {
         });
 
         _g.resize();
+        _g.load_annotations();
+
+        //----------
+        // Create modal dialog:
+        _ga.modals['annotation'] = new tingle.modal({
+          footer: true,
+          stickyFooter: false,
+          closeMethods: ['overlay', 'button', 'escape'],
+          closeLabel: "Close",
+          cssClass: [],
+          onOpen: function () {
+            //console.log('modal open');
+            _ga.abort['annotation'] = false;
+            _ga.save['annotation'] = false;
+            $('#annotation-day').text(_ga.format_day(_ga.data['annotation'].day));
+            $('#annotation-note').val(_ga.data['annotation'].note);
+            $('#annotation-msg').css('display', 'none');
+            // Transfer data to form:
+            // TODO:$("#annotation-fname").val(_ga.data['annotation'].day);
+          },
+          onClose: function () {
+            //console.log('modal closed');
+            if (_ga.post_state['annotation'] == null) {
+              _ga.post_state['annotation'] = _g.AJAX.FINAL;
+            }
+          },
+          beforeClose: function () {
+            if (_ga.abort['annotation']) {
+              _ga.abort['annotation'] = false;
+            }
+            if (_ga.save['annotation']) {
+              _ga.save['annotation'] = false;
+              _ga.data['annotation'].note = $('#annotation-note').val();
+              _g.ajax_write_annotation();
+              // e.g. save content before closing the modal
+            }
+            return true;
+          }
+        });
+        _ga.data['annotation'] = {};
+        _ga.post_state['annotation'] = null;
+        // set content
+        _ga.modals['annotation'].setContent('<div style="padding:0;">'
+          + '<div><strong style="border-bottom:1px dotted gray;">Notiz bearbeiten</strong></div>'
+          + '<form action="#">'
+          + '<div id="annotation-calendar-id" style="display:none;"></div>'
+          + 'Vom <span id="annotation-day"></span>:<br />'
+          + '<textarea id="annotation-note" rows="5" cols="50"></textarea>'
+          + '</form>'
+          + '<div id="annotation-msg" style="display:none;><div class="loader"></div></div>'
+          + '</div>');
+        _ga.modals['annotation'].addFooterBtn('Speichern', 'tingle-btn tingle-btn--primary tingle-btn--pull-right', function () {
+          _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+          $('#annotation-msg').css('display', 'block');
+          // here goes some logic
+          _ga.save['annotation'] = true;
+          _ga.modals['annotation'].close();
+        });
+        _ga.modals['annotation'].addFooterBtn('Abbruch', 'tingle-btn tingle-btn--pull-right', function () {
+          _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+          // here goes some logic
+          _ga.abort['annotation'] = true;
+          _ga.modals['annotation'].close();
+        });
+
       }
     })(jQuery);
   });

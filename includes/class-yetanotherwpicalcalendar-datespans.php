@@ -66,19 +66,15 @@ class YetAnotherWPICALCalendar_Datespan {
     if (is_a($dt, 'DateTime')) {
       if (($type == 'booking') or (($type == 'booking-split'))) {
         if (($dt == $this->_from) and ($dt == $this->_to)) {
-          YetAnotherWPICALCalendar_Parser::write_log(sprintf("position: IN_SPAN TYPE='%s' DAY=%s FROM=%s TO=%s", $type, $dt->format('c'), $this->_from->format('c'), $this->_to->format('c')));
           return YetAnotherWPICALCalendar_Datespans::IS_IN_SPAN;
         }
         if ($dt == $this->_to) {
-          YetAnotherWPICALCalendar_Parser::write_log(sprintf("position: IS_END TYPE='%s' DAY=%s FROM=%s TO=%s", $type, $dt->format('c'), $this->_from->format('c'), $this->_to->format('c')));
           return YetAnotherWPICALCalendar_Datespans::IS_END;
         }
         if ($dt == $this->_from) {
-          YetAnotherWPICALCalendar_Parser::write_log(sprintf("position: IS_START TYPE='%s' DAY=%s FROM=%s TO=%s", $type, $dt->format('c'), $this->_from->format('c'), $this->_to->format('c')));
           return YetAnotherWPICALCalendar_Datespans::IS_START;
         }
         if (($dt > $this->_from) and ($dt < $this->_to)) {
-          YetAnotherWPICALCalendar_Parser::write_log(sprintf("position: IN_SPAN TYPE='%s' DAY=%s FROM=%s TO=%s", $type, $dt->format('c'), $this->_from->format('c'), $this->_to->format('c')));
           return YetAnotherWPICALCalendar_Datespans::IS_IN_SPAN;
         }
       } else {
@@ -145,9 +141,6 @@ class YetAnotherWPICALCalendar_Datespans {
         $nr = 0;
         foreach ($this->_raw_spans as $key => $span) {
           $pos = $span->position($dt, $type);
-          if ($dt->format('c') == '2023-08-05T00:00:00+00:00') {
-            YetAnotherWPICALCalendar_Parser::write_log(sprintf("[%d] POS=%d DAY=%s SPAN='%s'", $key, $pos, $dt->format('c'), $span->inspect()));
-          }
           switch ($pos) {
             case self::IS_SPLIT:
               break;
@@ -160,9 +153,6 @@ class YetAnotherWPICALCalendar_Datespans {
               }
           }
           $nr++;
-        }
-        if (count($a_positions) > 1) {
-          YetAnotherWPICALCalendar_Parser::write_log(sprintf("position: COUNT=%d DAY=%s %d='%s' TYPE='%s'", $nr, $dt->format('c'), count($a_positions), implode(', ', $a_positions), $type));
         }
         if (in_array(self::IS_START, $a_positions) and in_array(self::IS_END, $a_positions)) {
           return self::IS_SPLIT;

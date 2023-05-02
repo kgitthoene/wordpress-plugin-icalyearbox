@@ -28,7 +28,7 @@ class YetAnotherWPICALCalendar_Parser {
    * @access  private
    * @since   1.0.0
    */
-  private static $_enable_debugging = false; // false = Log only error messages.
+  private static $_enable_debugging = true; // false = Log only error messages.
   private static $_log_initialized = false;
   private static $_log_class = null;
 
@@ -225,7 +225,7 @@ class YetAnotherWPICALCalendar_Parser {
           }
           $span = new YetAnotherWPICALCalendar_Datespan($from, $to, $dt_description);
           $ical_spans->add($span);
-          self::write_log(sprintf("[%s] FROM=%s TO=%s SPAN='%s'", $ical_event_key, $from->format('c'), $to->format('c'), $span->inspect()));
+          //self::write_log(sprintf("[%s] FROM=%s TO=%s SPAN='%s'", $ical_event_key, $from->format('c'), $to->format('c'), $span->inspect()));
         }
       } else {
         self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' EMPTY OR WRONG FORMAT!", strval($dt_start)));
@@ -266,13 +266,13 @@ class YetAnotherWPICALCalendar_Parser {
     $approximated_table_width_in_pixels = 50 + 19 * $calendar_width;
     //
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
-      self::write_log(sprintf("RENDER YEAR=%d TYPE='%s'", $year, $type));
-      self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
+      //self::write_log(sprintf("RENDER YEAR=%d TYPE='%s'", $year, $type));
+      //self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
       //
-      $doc .= sprintf('<div class="yetanotherwpicalcalendar-reset-this"><div class="yetanotherwpicalcalendar yetanotherwpicalcalendar-tag" year="%d"><table class="yetanotherwpicalcalendar-tag yr-table%s" width="%dpx"><tbody>',
-        $year, ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels) . PHP_EOL;
+      $doc .= sprintf('<div class="yetanotherwpicalcalendar-reset-this"><div class="yetanotherwpicalcalendar" id="%s" year="%d"><div id="%s-cal-msg" style=display:none;"></div><table class="yr-table%s" width="%dpx"><tbody>',
+        $id, $id, $year, ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels) . PHP_EOL;
       // Table header:
-      $doc .= sprintf('<tr class="yetanotherwpicalcalendar-tag yr-header"><th class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc plain frow"><span class="yetanotherwpicalcalendar-tag yr-span">%04d</span></div></th>', $year) . PHP_EOL;
+      $doc .= sprintf('<tr class="yr-header"><th><div class="cellc plain frow"><span class="yr-span">%04d</span></div></th>', $year) . PHP_EOL;
       for ($i = 0; $i < $calendar_width; $i++) {
         $offset = ($i % 7);
         $offset = ($offset == 0 ? 7 : $offset);
@@ -281,7 +281,7 @@ class YetAnotherWPICALCalendar_Parser {
         if ($wday_index >= 5) {
           $wday_class = ' wkend';
         }
-        $doc .= sprintf('<th class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$wday_index]) . PHP_EOL;
+        $doc .= sprintf('<th><div class="cellc square wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$wday_index]) . PHP_EOL;
       }
       $doc .= '</tr>' . PHP_EOL;
       // Table body (months):
@@ -292,7 +292,7 @@ class YetAnotherWPICALCalendar_Parser {
         $month_starts_with_wday = ($month_starts_with_wday == 0 ? 7 : $month_starts_with_wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         // Month name:
-        $doc .= sprintf('<tr class="yetanotherwpicalcalendar-tag"><th><div class="yetanotherwpicalcalendar-tag cellc frow%s"><span class="mo-span">%s</span></div></th>',
+        $doc .= sprintf('<tr><th><div class="cellc frow%s"><span class="mo-span">%s</span></div></th>',
           (($nr_month_counter % 2) == 1 ? ' alt' : ''),
           __($a_months_abr[$month - 1], 'yetanotherwpicalcalendar')) . PHP_EOL;
         //self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
@@ -334,7 +334,7 @@ class YetAnotherWPICALCalendar_Parser {
                   $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
                   break;
                 case YetAnotherWPICALCalendar_Datespans::IS_SPLIT:
-                  self::write_log(sprintf("SPLIT: %04d%02d%02d", $year, $month, $month_day));
+                  //self::write_log(sprintf("SPLIT: %04d%02d%02d", $year, $month, $month_day));
                   $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/split-background.svg', self::$_my_plugin_directory . '/index.php'));
                   break;
                 case YetAnotherWPICALCalendar_Datespans::IS_FREE:
@@ -370,24 +370,28 @@ class YetAnotherWPICALCalendar_Parser {
             //----------
             // If we have an calendar ID, then add an onClick-event.
             $onclick_for_day = '';
-            if (!empty($id)) {
-              $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%04d%02d%02d\'); return false"', esc_html($id), $year, $month, $month_day);
+            $onclick_for_day_class = '';
+            if ((!empty($id)) and is_user_logged_in()) {
+              $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%04d%02d%02d\'); return false"',
+                esc_html($id), $year, $month, $month_day);
+              $onclick_for_day_class = ' pointer';
             }
             //----------
             if (empty($desc)) {
-              $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-day"%s>%02d</span>', $onclick_for_day, $month_day);
+              $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-day%s"%s>%02d</span>', $onclick_for_day_class, $onclick_for_day, $month_day);
             } else {
               //SEE:https://github.com/ytiurin/html5tooltipsjs
-              $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-day yetanotherwpicalcalendar-hint"%s data-tooltip="%s">%02d</span>', $onclick_for_day, esc_html($desc), $month_day);
+              $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-day yetanotherwpicalcalendar-tooltip%s"%s data-tooltip="%s">%02d</span>',
+                $onclick_for_day_class, $onclick_for_day, esc_html($desc), $month_day);
             }
-            $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square%s"%s>%s</div></td>',
+            $doc .= sprintf('<td><div class="cellc square%s"%s>%s</div></td>',
               $wday_class, $td_backgroud_image_style, $mo_day_span) . PHP_EOL;
             /*
-            $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square%s"%s><a href="#" class="yetanotherwpicalcalendar-tag link" title="%02d.%02d.%04d%s" rel="nofollow">%02d</a></div></td>',
+            $doc .= sprintf('<td><div class="cellc square%s"%s><a href="#" class="link" title="%02d.%02d.%04d%s" rel="nofollow">%02d</a></div></td>',
             $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $desc, $month_day) . PHP_EOL;
             */
           } else {
-            $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square blank">&nbsp;</div></td>') . PHP_EOL;
+            $doc .= sprintf('<td><div class="cellc square blank">&nbsp;</div></td>') . PHP_EOL;
           }
         }
         $doc .= '</tr>' . PHP_EOL;
@@ -423,7 +427,7 @@ class YetAnotherWPICALCalendar_Parser {
     }
     $approximated_table_width_in_pixels = 19 * 7;
     //
-    $doc .= sprintf('<div class="yetanotherwpicalcalendar-reset-this"><div class="yetanotherwpicalcalendar yetanotherwpicalcalendar-tag mo-grid">') . PHP_EOL;
+    $doc .= sprintf('<div class="yetanotherwpicalcalendar-reset-this"><div id="%s-cal-msg" style=display:none;"></div><div id="%s" class="yetanotherwpicalcalendar mo-grid">', $id, $id) . PHP_EOL;
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       self::write_log(sprintf("RENDER AS MONTHS YEAR=%d", $year));
       self::write_log(sprintf("%04d: WIDTH=%d HEIGHT=%d DIR='%s' DESCRIPTION=%s", $year, 7, $calendar_height, self::$_my_plugin_directory, self::_booltostr($description)));
@@ -431,18 +435,18 @@ class YetAnotherWPICALCalendar_Parser {
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
         //
         // Table body (months):
-        $doc .= sprintf('<div class="yetanotherwpicalcalendar-tag mo-column"><table class="yetanotherwpicalcalendar-tag mo-table%s" width="%dpx" year-mo="%04d%02d"><tbody>',
+        $doc .= sprintf('<div class="mo-column"><table class="mo-table%s" width="%dpx" year-mo="%04d%02d"><tbody>',
           ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels, $year, $month) . PHP_EOL;
         // Table header:
-        $doc .= sprintf('<tr class="yetanotherwpicalcalendar-tag"><th class="yetanotherwpicalcalendar-tag" colspan="7"><div class="yetanotherwpicalcalendar-tag cellc plain"><span class="yetanotherwpicalcalendar-tag yr-span">%s&nbsp;&nbsp;%04d</span></div></th></tr>',
+        $doc .= sprintf('<tr><th colspan="7"><div class="cellc plain"><span class="yr-span">%s&nbsp;&nbsp;%04d</span></div></th></tr>',
           __($a_months_names[$month - 1], 'yetanotherwpicalcalendar'), $year) . PHP_EOL;
-        $doc .= sprintf('<tr class="yetanotherwpicalcalendar-tag mo-header">') . PHP_EOL;
+        $doc .= sprintf('<tr class="mo-header">') . PHP_EOL;
         for ($i = 0; $i < 7; $i++) {
           $wday_class = '';
           if ($i >= 5) {
             $wday_class = ' wkend';
           }
-          $doc .= sprintf('<th class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$i]) . PHP_EOL;
+          $doc .= sprintf('<th><div class="cellc square wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$i]) . PHP_EOL;
         }
         $doc .= '</tr>' . PHP_EOL;
         $month_first_day = self::_strtodatetime(sprintf("%04d%02d01", $year, $month));
@@ -454,15 +458,15 @@ class YetAnotherWPICALCalendar_Parser {
         $month_height = ceil(($nr_mdays + $month_starts_with_wday - 1) / 7.0);
         for ($y = 1; $y <= $calendar_height; $y++) {
           // Render week.
-          $doc .= sprintf('<tr class="yetanotherwpicalcalendar-tag">') . PHP_EOL;
+          $doc .= sprintf('<tr>') . PHP_EOL;
           for ($i = 0; $i < 7; $i++) {
             if ($y > $month_height) {
-              $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag hidden"><div class="yetanotherwpicalcalendar-tag cellc square">&nbsp;</div></td>') . PHP_EOL;
+              $doc .= sprintf('<td class="hidden"><div class="cellc square">&nbsp;</div></td>') . PHP_EOL;
             } else {
               $month_index++;
               $wday = $i + 1;
               if (($month_index < $month_starts_with_wday) or ($month_day > $nr_mdays)) {
-                $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square blank">&nbsp;</div></td>') . PHP_EOL;
+                $doc .= sprintf('<td><div class="cellc square blank">&nbsp;</div></td>') . PHP_EOL;
               } else {
                 $dt_this_date = self::_strtodatetime(sprintf("%04d%02d%02d", $year, $month, $month_day));
                 $pos = $ical_spans->position($dt_this_date, $type);
@@ -522,19 +526,25 @@ class YetAnotherWPICALCalendar_Parser {
                 //----------
                 // If we have an calendar ID, then add an onClick-event.
                 $onclick_for_day = '';
-                if (!empty($id)) {
-                  $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%04d%02d%02d\'); return false"', esc_html($id), $year, $month, $month_day);
+                $onclick_for_day_class = '';
+                if ((!empty($id)) and is_user_logged_in()) {
+                  $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%04d%02d%02d\'); return false"',
+                    esc_html($id), $year, $month, $month_day);
+                  $onclick_for_day_class = ' pointer';
                 }
+                //----------
                 if (empty($desc)) {
-                  $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-day"%s>%02d</span>', $onclick_for_day, $month_day);
+                  $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-day%s"%s>%02d</span>',
+                    $onclick_for_day_class, $onclick_for_day, $month_day);
                 } else {
                   //SEE:https://github.com/ytiurin/html5tooltipsjs
-                  $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-tag yetanotherwpicalcalendar-day yetanotherwpicalcalendar-hint"%s data-tooltip="%s">%02d</span>', $onclick_for_day, esc_html($desc), $month_day);
+                  $mo_day_span = sprintf('<span class="yetanotherwpicalcalendar-day yetanotherwpicalcalendar-tooltip%s"%s data-tooltip="%s">%02d</span>',
+                    $onclick_for_day_class, $onclick_for_day, esc_html($desc), $month_day);
                 }
-                $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square%s"%s>%s</div></td>',
+                $doc .= sprintf('<td><div class="cellc square%s"%s>%s</div></td>',
                   $wday_class, $td_backgroud_image_style, $mo_day_span) . PHP_EOL;
                 /*
-                $doc .= sprintf('<td class="yetanotherwpicalcalendar-tag"><div class="yetanotherwpicalcalendar-tag cellc square%s"%s><a href="#" class="yetanotherwpicalcalendar-tag link" title="%02d.%02d.%04d%s" rel="nofollow">%02d</a></div></td>',
+                $doc .= sprintf('<td><div class="cellc square%s"%s><a href="#" class="link" title="%02d.%02d.%04d%s" rel="nofollow">%02d</a></div></td>',
                 $wday_class, $td_backgroud_image_style, $month_day, $month, $year, $desc, $month_day) . PHP_EOL;
                 */
                 $month_day++;
@@ -550,6 +560,64 @@ class YetAnotherWPICALCalendar_Parser {
     $doc .= '</div></div>' . PHP_EOL;
     return $doc;
   } // _render_as_months
+
+  private static function _add_month(
+    $month,
+    $year,
+    &$a_years,
+    $b_use_ical_months, &$a_ical_year_months, &$a_months) {
+    self::write_log(sprintf("_add_month: MONTH=%d YEAR=%d", $month, $year));
+    // Add year.
+    if (!array_search($year, $a_years)) {
+      array_push($a_years, $year);
+      if ($b_use_ical_months and (!array_key_exists($year, $a_ical_year_months))) {
+        $a_ical_year_months[$year] = array();
+      }
+    }
+    // Add month.
+    if ($b_use_ical_months) {
+      if (!array_search($month, $a_ical_year_months[$year])) {
+        array_push($a_ical_year_months[$year], $month);
+        sort($a_ical_year_months[$year], SORT_NUMERIC);
+      }
+    } else {
+      if (!array_search($month, $a_months)) {
+        array_push($a_months, $month);
+        sort($a_months, SORT_NUMERIC);
+      }
+    }
+  } // _add_month
+
+  private static function _add_months_outside_this_year(
+    $nr_months,
+    $year,
+    &$a_years,
+    $b_use_ical_months, &$a_ical_year_months, &$a_months) {
+    if ($nr_months > 0) {
+      $current_year = $year + 1;
+      $current_month = 0;
+      for ($i = 1; $i <= $nr_months; $i++) {
+        $current_month++;
+        if ($current_month == 13) {
+          $current_month = 1;
+          $current_year++;
+        }
+        self::_add_month($current_month, $current_year, $a_years, $b_use_ical_months, $a_ical_year_months, $a_months);
+      }
+    }
+    if ($nr_months < 0) {
+      $current_year = $year - 1;
+      $current_month = 13;
+      for ($i = 0; $i > $nr_months; $i--) {
+        $current_month--;
+        if ($current_month == 0) {
+          $current_month = 12;
+          $current_year--;
+        }
+        self::_add_month($current_month, $current_year, $a_years, $b_use_ical_months, $a_ical_year_months, $a_months);
+      }
+    }
+  } // _add_months_outside_this_year
 
   /**
    * Parse strings with shortcodes.
@@ -943,9 +1011,11 @@ class YetAnotherWPICALCalendar_Parser {
                   if ($offset >= 0) {
                     $from = min($a_ical_year_months[$year]);
                     $to = min([12, max($a_ical_year_months[$year]) + $offset]);
+                    $over_months = max([0, max($a_ical_year_months[$year]) + $offset - 12]);
                   } else {
                     $from = max([1, min($a_ical_year_months[$year]) + $offset]);
                     $to = max($a_ical_year_months[$year]);
+                    $over_months = min([0, min($a_ical_year_months[$year]) + $offset]);
                   }
                   if ($from > $to) {
                     self::_swap_values($from, $to);
@@ -955,6 +1025,17 @@ class YetAnotherWPICALCalendar_Parser {
                     array_push($a_new_months, $month);
                   }
                   $a_ical_year_months[$year] = $a_new_months;
+                  if ($b_use_ical_years) {
+                    self::_add_months_outside_this_year($over_months,
+                      $year,
+                      $a_ical_years,
+                      $b_use_ical_months, $a_ical_year_months, $a_months);
+                  } else {
+                    self::_add_months_outside_this_year($over_months,
+                      $year,
+                      $a_years,
+                      $b_use_ical_months, $a_ical_year_months, $a_months);
+                  }
                 } else {
                   return self::_error(sprintf("No ICAL data found for this year! YEAR=\"%s\"", $year));
                 }
@@ -972,11 +1053,35 @@ class YetAnotherWPICALCalendar_Parser {
                   }
                   $from = max([1, min($a_ical_year_months[$year]) + $offset1]);
                   $to = min([12, max($a_ical_year_months[$year]) + $offset2]);
+                  $over_months1 = min([0, min($a_ical_year_months[$year]) + $offset1]);
+                  $over_months2 = max([0, max($a_ical_year_months[$year]) + $offset2 - 12]);
                   $a_new_months = array();
                   for ($month = $from; $month <= $to; $month++) {
                     array_push($a_new_months, $month);
                   }
                   $a_ical_year_months[$year] = $a_new_months;
+                  if ($b_use_ical_years) {
+                    self::_add_months_outside_this_year($over_months1,
+                      $year,
+                      $a_ical_years,
+                      $b_use_ical_months, $a_ical_year_months, $a_months);
+                  } else {
+                    self::_add_months_outside_this_year($over_months1,
+                      $year,
+                      $a_years,
+                      $b_use_ical_months, $a_ical_year_months, $a_months);
+                  }
+                  if ($b_use_ical_years) {
+                    self::_add_months_outside_this_year($over_months2,
+                      $year,
+                      $a_ical_years,
+                      $b_use_ical_months, $a_ical_year_months, $a_months);
+                  } else {
+                    self::_add_months_outside_this_year($over_months2,
+                      $year,
+                      $a_years,
+                      $b_use_ical_months, $a_ical_year_months, $a_months);
+                  }
                 } else {
                   return self::_error(sprintf("No ICAL data found for this year! YEAR=\"%s\"", $year));
                 }
@@ -1057,7 +1162,7 @@ class YetAnotherWPICALCalendar_Parser {
           }
         } else {
           // now[+-]ical
-          if (preg_match("/^\s*((?i)NOW([+-])(?i)ICAL)\s*$/", $atts_months, $matches)) {
+          if (preg_match("/^\s*((?i)NOW([+-])(?i)ICAL)(([+-])[1-9][0-9]*){0,1}\s*$/", $atts_months, $matches)) {
             $b_months_syntax_is_correct = true;
             /*
             self::write_log(sprintf("NOW[+-]ICAL: ICAL-YEARS & ICAL-MONTHS: USE-ICAL-YEARS=%s", self::_booltostr($b_use_ical_years)));
@@ -1069,6 +1174,14 @@ class YetAnotherWPICALCalendar_Parser {
             $operator = $matches[2];
             $year_now = intval(date('Y'));
             $month_now = intval(date('m'));
+            $operator2 = '+';
+            $offset = 0;
+            self::write_log("NOW+ICAL:");
+            self::write_log($matches);
+            if (count($matches) == 5) {
+              $operator2 = $matches[4];
+              $offset = intval($matches[3]);
+            }
             $b_is_ok = false;
             // Correct months in current year:
             foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
@@ -1119,6 +1232,69 @@ class YetAnotherWPICALCalendar_Parser {
               }
               while (($key = array_pop($a_keys_to_remove)) != null) {
                 unset($a_ical_years[$key]);
+              }
+              self::write_log($a_ical_years);
+              // Remove all months not in years.
+              if ($b_use_ical_months) {
+                $a_years_to_remove = [];
+                foreach ($a_ical_year_months as $year => $months) {
+                  if (!in_array($year, $a_ical_years)) {
+                    array_push($a_years_to_remove, $year);
+                    self::write_log(sprintf("YEARTOREMOVE=%s", $year));
+                  }
+                }
+                foreach ($a_years_to_remove as $year) {
+                  unset($a_ical_year_months[$year]);
+                }
+              }
+            }
+            // Add extra months:
+            if ($offset != 0) {
+              self::write_log(sprintf("OFFSET=%d", $offset));
+              if ($offset > 0) {
+                $year = max($b_use_ical_years ? $a_ical_years : $a_years);
+                self::write_log(sprintf("OFFSET: MAX-YEAR=%d ICAL-MONTHS=%s", $year, self::_booltostr($b_use_ical_months)));
+                $a_month_array_reference = ($b_use_ical_months ? $a_ical_year_months[$year] : $a_months);
+                $max_month = max($a_month_array_reference);
+                $over_months = max([0, $max_month + $offset - 12]);
+                $to = min([12, $max_month + $offset]);
+                self::write_log(sprintf("OFFSET: OVER-MONTHS=%d MAX-MONTH=%d TO=%d", $over_months, $max_month, $to));
+                for ($m = $max_month + 1; $m <= $to; $m++) {
+                  if (!in_array($m, $a_month_array_reference)) {
+                    array_push($a_month_array_reference, $m);
+                  }
+                }
+                sort($a_month_array_reference, SORT_NUMERIC);
+              } else {
+                $year = min($b_use_ical_years ? $a_ical_years : $a_years);
+                self::write_log(sprintf("OFFSET: MIN-YEAR=%d ICAL-MONTHS=%s", $year, self::_booltostr($b_use_ical_months)));
+                $a_month_array_reference = ($b_use_ical_months ? $a_ical_year_months[$year] : $a_months);
+                $min_month = min($a_month_array_reference);
+                $over_months = min([0, $min_month + $offset]);
+                $from = max([1, $min_month + $offset]);
+                self::write_log(sprintf("OFFSET: OVER-MONTHS=%d MIN-MONTH=%d FROM=%d", $over_months, $min_month, $from));
+                for ($m = $from; $m < $min_month; $m++) {
+                  if (!in_array($m, $a_month_array_reference)) {
+                    array_push($a_month_array_reference, $m);
+                  }
+                }
+                sort($a_month_array_reference, SORT_NUMERIC);
+              }
+              if ($b_use_ical_months) {
+                $a_ical_year_months[$year] = $a_month_array_reference;
+              } else {
+                $a_months = $a_month_array_reference;
+              }
+              if ($b_use_ical_years) {
+                self::_add_months_outside_this_year($over_months,
+                  $year,
+                  $a_ical_years,
+                  $b_use_ical_months, $a_ical_year_months, $a_months);
+              } else {
+                self::_add_months_outside_this_year($over_months,
+                  $year,
+                  $a_years,
+                  $b_use_ical_months, $a_ical_year_months, $a_months);
               }
             }
           }
@@ -1192,16 +1368,26 @@ class YetAnotherWPICALCalendar_Parser {
     }
     //
     //----------
+    // Sort years:
+    if ($b_use_ical_years) {
+      sort($a_ical_years, SORT_NUMERIC);
+    } else {
+      sort($a_years, SORT_NUMERIC);
+    }
+    //
+    //----------
     //
     self::write_log(sprintf("B_USE_ICAL_YEARS=%s B_USE_ICAL_MONTHS=%s", self::_booltostr($b_use_ical_years), self::_booltostr($b_use_ical_months)));
-    /*
-    self::write_log(sprintf("ICAL-YEARS & ICAL-MONTHS:"));
-    self::write_log($a_ical_years);
-    self::write_log($a_ical_year_months);
-    self::write_log(sprintf("YEARS & MONTHS:"));
-    self::write_log($a_years);
-    self::write_log($a_months);
-    */
+    if ($b_use_ical_years) {
+      self::write_log($a_ical_years);
+    } else {
+      self::write_log($a_years);
+    }
+    if ($b_use_ical_months) {
+      self::write_log($a_ical_year_months);
+    } else {
+      self::write_log($a_months);
+    }
     //
     //----------
     // Get first character for each day in a week.
@@ -1223,7 +1409,11 @@ class YetAnotherWPICALCalendar_Parser {
     return $doc;
   } // parse
 
-  public static function parse_annotation($atts, $content, &$evaluate_stack = NULL, $token = 'yetanotherwpicalcalendar') {
+  public static function get_annotations() {
+    return array();
+  } // get_annotations
+
+  public static function parse_annotation($atts, $content, &$evaluate_stack = NULL, $token = 'yetanotherwpicalcalendar-annotation') {
     date_default_timezone_set("Europe/Berlin");
     //----------
     self::_init_directories();
@@ -1255,7 +1445,11 @@ class YetAnotherWPICALCalendar_Parser {
     //
     //----------
     // Render calender.
-    $doc = "ANNOTATION";
+    $doc = '';
+    if (!empty($id)) {
+      $id_modal = $id . '_modal';
+      $doc = sprintf('<div class="yetanotherwpicalcalendar-annotation" id="%s"><div class="loader"></div></div>', $id);
+    }
     return $doc;
   } // parse_annotation
 } // class YetAnotherWPICALCalendar_Parser

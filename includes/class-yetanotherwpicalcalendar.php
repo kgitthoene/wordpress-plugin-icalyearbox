@@ -14,6 +14,8 @@ if (!defined('ABSPATH')) {
 
 include 'class-yetanotherwpicalcalendar-logger.php';
 
+require_once 'SleekDB/Store.php';
+
 
 /**
  * Main plugin class file.
@@ -65,7 +67,13 @@ class YetAnotherWPICALCalendar {
   public static $token = 'yetanotherwpicalcalendar';
   private static $_my_plugin_directory = null;
   private static $_my_log_directory = null;
-  private static $_my_cache_directory = null;
+  private static $_my_database_directory = null;
+
+  /**
+   * SleekDB Annotations Store Variables.
+   */
+  private static $_db_annotations_store = null;
+  private static $_db_query_builder = null;
 
   /**
    * Local instance of YetAnotherWPICALCalendar_Admin_API
@@ -151,6 +159,11 @@ class YetAnotherWPICALCalendar {
       if (!is_dir(self::$_my_log_directory)) {
         mkdir(self::$_my_log_directory, 0777, true);
       }
+      // Create database directory.
+      self::$_my_database_directory = self::$_my_plugin_directory . '/db';
+      if (!is_dir(self::$_my_database_directory)) {
+        mkdir(self::$_my_database_directory, 0777, true);
+      }
       self::$_directories_initialized = true;
     }
   } // _init_directories
@@ -229,9 +242,11 @@ class YetAnotherWPICALCalendar {
     $this->load_plugin_textdomain();
     add_action('init', array($this, 'load_localisation'), 0);
 
-    // Create POST handler action.
+    // Create AJAX POST handler action.
     self::write_log(sprintf("Register POST handler."));
-    add_action('wp_ajax_yetanotherwpicalcalendar_add_annotation', array($this, 'handle_annotation_post'));
+    add_action('wp_ajax_yetanotherwpicalcalendar_add_annotation', array($this, 'handle_annotation_add'));
+    add_action('wp_ajax_yetanotherwpicalcalendar_get_annotations', array($this, 'handle_annotation_get_annotations'));
+    add_action('wp_ajax_nopriv_yetanotherwpicalcalendar_get_annotations', array($this, 'handle_annotation_get_annotations'));
   } // __construct
 
   /**
@@ -322,8 +337,18 @@ class YetAnotherWPICALCalendar {
   public function enqueue_styles() {
     wp_register_style(self::$token . '-frontend', esc_url($this->assets_url) . 'css/frontend.min.css', array(), $this->_version);
     wp_enqueue_style(self::$token . '-frontend');
-    wp_register_style(self::$token . '-hystmodal', esc_url($this->assets_url) . 'css/hystmodal.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-hystmodal');
+    /*
+    // SEE:https://picturepan2.github.io/spectre/getting-started/installation.html
+    wp_register_style(self::$token . '-spectre', esc_url($this->assets_url) . 'css/spectre.min.css', array(), $this->_version);
+    wp_enqueue_style(self::$token . '-spectre');
+    wp_register_style(self::$token . '-spectre-exp', esc_url($this->assets_url) . 'css/spectre-exp.min.css', array(), $this->_version);
+    wp_enqueue_style(self::$token . '-spectre-exp');
+    wp_register_style(self::$token . '-spectre-icons', esc_url($this->assets_url) . 'css/spectre-icons.min.css', array(), $this->_version);
+    wp_enqueue_style(self::$token . '-spectre-icons');
+    */
+    // SEE:https://github.com/AddMoreScripts/hystModal
+    wp_register_style(self::$token . '-tingle', esc_url($this->assets_url) . 'css/tingle.min.css', array(), $this->_version);
+    wp_enqueue_style(self::$token . '-tingle');
     wp_register_style(self::$token . '-style', esc_url($this->assets_url) . 'css/style.min.css', array(), $this->_version);
     wp_enqueue_style(self::$token . '-style');
   } // enqueue_styles
@@ -340,8 +365,8 @@ class YetAnotherWPICALCalendar {
     wp_enqueue_script(self::$token . '-frontend');
     wp_register_script(self::$token . '-html5tooltips', esc_url($this->assets_url) . 'js/html5tooltips.1.7.3' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
     wp_enqueue_script(self::$token . '-html5tooltips');
-    wp_register_script(self::$token . '-hystmodal', esc_url($this->assets_url) . 'js/hystmodal' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
-    wp_enqueue_script(self::$token . '-hystmodal');
+    wp_register_script(self::$token . '-tingle', esc_url($this->assets_url) . 'js/tingle' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(self::$token . '-tingle');
     wp_register_script(self::$token . '-script', esc_url($this->assets_url) . 'js/script' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
     wp_enqueue_script(self::$token . '-script');
   } // enqueue_scripts
@@ -491,19 +516,112 @@ class YetAnotherWPICALCalendar {
     return $eval;
   } // yetanotherwpicalcalendar_annotation_func
 
-  public static function handle_annotation_post() {
+  public static function handle_annotation_add() {
     //status_header(200);
     //request handlers should exit() when they complete their task
-    foreach($_POST as $key => $value) {
+    self::write_log(sprintf("POST='%s'", json_encode($_POST)));
+    $id = '(unset)';
+    $day = '(unset)';
+    $is_all_keys_found = true;
+    foreach (['id', 'day'] as $key) {
+      if (!array_key_exists($key, $_POST)) {
+        $is_all_keys_found = false;
+        break;
+      } else {
+        self::write_log(sprintf("POST['%s']='%s'", $key, $_POST[$key]));
+        if (empty($_POST[$key])) {
+          self::write_log(sprintf("POST['%s']='%s' IS EMPTY!", $key, $_POST[$key]));
+          $is_all_keys_found = false;
+          break;
+        }
+      }
+    }
+    if ($is_all_keys_found) {
+      try {
+        $id = $_POST['id'];
+        $day = $_POST['day'];
+        $note = array_key_exists('note', $_POST) ? $_POST['note'] : '';
+        if (is_null(self::$_db_annotations_store)) {
+          self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
+          self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
+        }
+        // Remove before save.
+        self::$_db_annotations_store->deleteBy([['id', '=', $id], ['day', '=', $day]]);
+        if (!empty($note)) {
+          // Save if not empty.
+          self::$_db_annotations_store->insert(['id' => $id, 'day' => $day, 'note' => $note]);
+        }
+        wp_send_json(['status' => 'OK', 'id' => $id, 'day' => $day]);
+      } catch (Exception $e) {
+        self::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
+        wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => $e->getMessage()]);
+      }
+    } else {
+      wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => 'Missing keys!']);
+    }
+    //----------
+    wp_die();
+  } // handle_annotation_add
+
+  public static function handle_annotation_get_annotations() {
+    //status_header(200);
+    //request handlers should exit() when they complete their task
+    $id = '';
+    foreach ($_POST as $key => $value) {
       self::write_log(sprintf("POST['%s']='%s'", $key, $value));
+      if ($key == 'id') {
+        $id = $value;
+      }
+    }
+    $a_annotations = array();
+    // TODO:Translation
+    $doc = '';
+    $msg_no_anno = '<div style="border-left:10px solid rgb(0,212,255); padding:3px 6px 3px 6px; font-size:80%; line-height:14px;">Für den Kalender mit ID="' . $id . '" wurden keine Anmerkungen gefunden.</div>';
+    try {
+      if (!empty($id)) {
+        if (is_null(self::$_db_annotations_store)) {
+          self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
+          self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
+        }
+        $db_anno = self::$_db_query_builder
+          ->where(['id', '=', $id])
+          ->orderBy(['day' => 'asc'])
+          ->getQuery()
+          ->fetch();
+        $a_annotations = $db_anno;
+        //
+        //----------
+        // Render annotations:
+        foreach ($db_anno as $anno) {
+          $wastebasket = is_user_logged_in()
+            ? sprintf('<img class="wastebasket" src="%s" onclick="yetanotherwpicalcalendar_del_annotation(\'%s\', \'%s\'); return false"> ',
+              plugins_url('/assets/img/wastebasket.svg', self::$_my_plugin_directory . '/index.php'), esc_html($anno['id']), esc_html($anno['day']))
+            : '';
+          $click_to_edit = is_user_logged_in()
+            ? sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%s\'); return false"', esc_html($anno['id']), esc_html($anno['day']))
+            : '';
+          $click_to_edit_class = is_user_logged_in() ? ' class="pointer"' : '';
+          $doc .= sprintf('<div>%s<span%s%s>%s: %s</span></div>', $wastebasket, $click_to_edit_class, $click_to_edit, esc_html($anno['day']), esc_html(str_replace("\n", ' / ', $anno['note'])));
+        }
+      }
+    } catch (Exception $e) {
+      self::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
+      wp_send_json(array('status' => 'FAIL',
+        'id' => $id,
+        'annotations' => $a_annotations,
+        'doc' => $e->getMessage(),
+        'error' => $e->getMessage()));
     }
     //self::write_log(sprintf("REQUEST-DATA='%s'", strval(implode(', ', $_REQUEST))));
     //exit("Server received '{$_REQUEST['data']}' from your browser.");
     //exit("POSTHELO");
-    wp_send_json(array( 'status' => 'WP-OK'));
+    wp_send_json(array('status' => 'OK',
+      'id' => $id,
+      'annotations' => $a_annotations,
+      'doc' => (empty($a_annotations) ? $msg_no_anno : $doc)));
     //----------
     wp_die();
-  }
+  } // handle_annotation_get_annotations
 } // class YetAnotherWPICALCalendar
 
 /*
