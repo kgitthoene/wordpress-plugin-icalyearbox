@@ -12,9 +12,9 @@ if (!defined('ABSPATH')) {
  */
 
 
-include 'class-ics-parser-event.php';
-include 'class-ics-parser-ical.php';
-include 'class-yetanotherwpicalcalendar-datespans.php';
+require_once 'class-ics-parser-event.php';
+require_once 'class-ics-parser-ical.php';
+require_once 'class-yetanotherwpicalcalendar-datespans.php';
 
 
 /**
@@ -156,31 +156,6 @@ class YetAnotherWPICALCalendar_Parser {
     return false;
   } // _set_month
 
-  private static function _swap_values(&$x, &$y) {
-    $tmp = $x;
-    $x = $y;
-    $y = $tmp;
-  } // _swap_values
-
-  private static function _booltostr($b) {
-    return $b ? 'true' : 'false';
-  } // _booltostr
-
-  private static function _strtodatetime($ymd) {
-    $dt = DateTime::createFromFormat('Ymd His e', $ymd . '000000 UTC');
-    return $dt;
-  } // _strtodatetime
-
-  private static function _getav($a, $k) {
-    return array_key_exists($k, $a) ? trim(strval($a[$k])) : '';
-  } // _getav
-
-  private static function _purecontent($c) {
-    $c = preg_replace('/<br\s\/>/i', "\n", $c);
-    $c = preg_replace('/<p>([^<]*?)<\/p>/i', "$1\n", $c);
-    return trim($c);
-  } // _purecontent
-
   private static function _add_ical_events_to_ical_spans($ical_url, $description, $ical_lines, &$a_ical_events, &$ical_spans) {
     foreach ($ical_lines as $ical_event_key => $ical_event) {
       if (preg_match('/^(\d{8})/', $ical_event->dtstart, $matches)) {
@@ -218,8 +193,8 @@ class YetAnotherWPICALCalendar_Parser {
               $dt_description = (!empty($ical_event->description) ? $ical_event->description : (!empty($ical_event->summary) ? $ical_event->summary : ''));
               break;
           }
-          $from = self::_strtodatetime($dt_start);
-          $to = self::_strtodatetime($dt_end);
+          $from = YAICALHelper::strtodatetime($dt_start);
+          $to = YAICALHelper::strtodatetime($dt_end);
           if ($b_exclude_dtend) {
             $to = $to->modify('-1 day');
           }
@@ -240,7 +215,7 @@ class YetAnotherWPICALCalendar_Parser {
    * @since   1.0.0
    */
   private static function _render_as_years($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
-    $day_now = self::_strtodatetime(sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
+    $day_now = YAICALHelper::strtodatetime(sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     // Calc start week day and width for all years:
     $calendar_starts_with_wday = 8;
@@ -248,14 +223,14 @@ class YetAnotherWPICALCalendar_Parser {
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       // Determine witch month has the „earliest“ weekday.
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
-        $month_first_day = self::_strtodatetime(sprintf("%04d%02d01", $year, $month));
+        $month_first_day = YAICALHelper::strtodatetime(sprintf("%04d%02d01", $year, $month));
         $wday = $month_first_day->format('w');
         $wday = ($wday == 0 ? 7 : $wday);
         $calendar_starts_with_wday = ($wday < $calendar_starts_with_wday ? $wday : $calendar_starts_with_wday);
       }
       // Determine the „width“ of the calendar.
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
-        $month_first_day = self::_strtodatetime(sprintf("%04d%02d01", $year, $month));
+        $month_first_day = YAICALHelper::strtodatetime(sprintf("%04d%02d01", $year, $month));
         $wday = $month_first_day->format('w');
         $wday = ($wday == 0 ? 7 : $wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
@@ -287,7 +262,7 @@ class YetAnotherWPICALCalendar_Parser {
       // Table body (months):
       $nr_month_counter = 0;
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
-        $month_first_day = self::_strtodatetime(sprintf("%04d%02d01", $year, $month));
+        $month_first_day = YAICALHelper::strtodatetime(sprintf("%04d%02d01", $year, $month));
         $month_starts_with_wday = $month_first_day->format('w');
         $month_starts_with_wday = ($month_starts_with_wday == 0 ? 7 : $month_starts_with_wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
@@ -301,7 +276,7 @@ class YetAnotherWPICALCalendar_Parser {
           $wday = ($wday == 0 ? 7 : $wday);
           $month_day = $i - ($month_starts_with_wday - $calendar_starts_with_wday) + 1;
           if (($month_day >= 1) and ($month_day <= $nr_mdays)) {
-            $dt_this_date = self::_strtodatetime(sprintf("%04d%02d%02d", $year, $month, $month_day));
+            $dt_this_date = YAICALHelper::strtodatetime(sprintf("%04d%02d%02d", $year, $month, $month_day));
             $pos = $ical_spans->position($dt_this_date, $type);
             //self::write_log(sprintf("%04d%02d%02d: DATE='%s' POS=%d", $year, $month, $month_day, $dt_this_date->format('c'), $pos));
             $td_backgroud_image_style = '';
@@ -410,14 +385,14 @@ class YetAnotherWPICALCalendar_Parser {
    * @since   1.0.0
    */
   private static function _render_as_months($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
-    $day_now = self::_strtodatetime(sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
+    $day_now = YAICALHelper::strtodatetime(sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     // Calc start week day and width for all years:
     $calendar_height = 4;
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       // Determine the „height“ of the calendar.
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
-        $month_first_day = self::_strtodatetime(sprintf("%04d%02d01", $year, $month));
+        $month_first_day = YAICALHelper::strtodatetime(sprintf("%04d%02d01", $year, $month));
         $wday = $month_first_day->format('w');
         $wday = ($wday == 0 ? 7 : $wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
@@ -430,7 +405,7 @@ class YetAnotherWPICALCalendar_Parser {
     $doc .= sprintf('<div class="yetanotherwpicalcalendar-reset-this"><div id="%s-cal-msg" style=display:none;"></div><div id="%s" class="yetanotherwpicalcalendar mo-grid">', $id, $id) . PHP_EOL;
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
       self::write_log(sprintf("RENDER AS MONTHS YEAR=%d", $year));
-      self::write_log(sprintf("%04d: WIDTH=%d HEIGHT=%d DIR='%s' DESCRIPTION=%s", $year, 7, $calendar_height, self::$_my_plugin_directory, self::_booltostr($description)));
+      self::write_log(sprintf("%04d: WIDTH=%d HEIGHT=%d DIR='%s' DESCRIPTION=%s", $year, 7, $calendar_height, self::$_my_plugin_directory, YAICALHelper::booltostr($description)));
       $nr_month_counter = 0;
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
         //
@@ -449,7 +424,7 @@ class YetAnotherWPICALCalendar_Parser {
           $doc .= sprintf('<th><div class="cellc square wday%s">%s</div></th>', $wday_class, $a_wdays_first_chracter[$i]) . PHP_EOL;
         }
         $doc .= '</tr>' . PHP_EOL;
-        $month_first_day = self::_strtodatetime(sprintf("%04d%02d01", $year, $month));
+        $month_first_day = YAICALHelper::strtodatetime(sprintf("%04d%02d01", $year, $month));
         $month_starts_with_wday = $month_first_day->format('w');
         $month_starts_with_wday = ($month_starts_with_wday == 0 ? 7 : $month_starts_with_wday);
         $nr_mdays = cal_days_in_month(CAL_GREGORIAN, $month, $year);
@@ -468,7 +443,7 @@ class YetAnotherWPICALCalendar_Parser {
               if (($month_index < $month_starts_with_wday) or ($month_day > $nr_mdays)) {
                 $doc .= sprintf('<td><div class="cellc square blank">&nbsp;</div></td>') . PHP_EOL;
               } else {
-                $dt_this_date = self::_strtodatetime(sprintf("%04d%02d%02d", $year, $month, $month_day));
+                $dt_this_date = YAICALHelper::strtodatetime(sprintf("%04d%02d%02d", $year, $month, $month_day));
                 $pos = $ical_spans->position($dt_this_date, $type);
                 $td_backgroud_image_style = '';
                 if ($type == "event") {
@@ -633,7 +608,7 @@ class YetAnotherWPICALCalendar_Parser {
     self::_init_log(self::$_my_log_directory);
     //----------
     self::$_content_src = $content;
-    $content = self::_purecontent($content);
+    $content = YAICALHelper::purecontent($content);
     $has_content = !empty($content);
     self::write_log("CONTENT='" . $content . "'");
     //
@@ -654,7 +629,7 @@ class YetAnotherWPICALCalendar_Parser {
     //
     //----------
     // Get ID.
-    $id = self::_getav($atts, 'id');
+    $id = YAICALHelper::getav($atts, 'id');
     //
     //----------
     // Get alignment.
@@ -747,7 +722,7 @@ class YetAnotherWPICALCalendar_Parser {
           if ($t_cache_file_diff < $cache_reload_timeout) {
             $has_reload = false;
           }
-          self::write_log(sprintf("T-CACHE-DIFF=%d HAS-RELOAD=%s", $t_cache_file_diff, self::_booltostr($has_reload)));
+          self::write_log(sprintf("T-CACHE-DIFF=%d HAS-RELOAD=%s", $t_cache_file_diff, YAICALHelper::booltostr($has_reload)));
         }
         // Load external resource.
         if ($has_reload) {
@@ -873,7 +848,7 @@ class YetAnotherWPICALCalendar_Parser {
               $from = $base_year;
               $to = $base_year + $offset;
               if ($from > $to) {
-                self::_swap_values($from, $to);
+                YAICALHelper::swap_values($from, $to);
               }
               for ($year = $from; $year <= $to; $year++) {
                 if (!in_array($year, $a_ical_years)) {
@@ -900,7 +875,7 @@ class YetAnotherWPICALCalendar_Parser {
               $from = $base_year1 + $offset1;
               $to = $base_year2 + $offset2;
               if ($from > $to) {
-                self::_swap_values($from, $to);
+                YAICALHelper::swap_values($from, $to);
               }
               for ($year = $from; $year <= $to; $year++) {
                 if (!in_array($year, $a_ical_years)) {
@@ -925,7 +900,7 @@ class YetAnotherWPICALCalendar_Parser {
               $from = $base_year;
               $to = $base_year + $offset;
               if ($from > $to) {
-                self::_swap_values($from, $to);
+                YAICALHelper::swap_values($from, $to);
               }
               for ($year = $from; $year <= $to; $year++) {
                 array_push($a_years, $year);
@@ -939,7 +914,7 @@ class YetAnotherWPICALCalendar_Parser {
               $from = $base_year + $offset1;
               $to = $base_year + $offset2;
               if ($from > $to) {
-                self::_swap_values($from, $to);
+                YAICALHelper::swap_values($from, $to);
               }
               for ($year = $from; $year <= $to; $year++) {
                 array_push($a_years, $year);
@@ -955,7 +930,7 @@ class YetAnotherWPICALCalendar_Parser {
             if (self::_set_year($matches[1], $from) and self::_set_year($matches[2], $to)) {
               $b_years_syntax_is_correct = true;
               if ($from > $to) {
-                self::_swap_values($from, $to);
+                YAICALHelper::swap_values($from, $to);
               }
               for ($year = $from; $year <= $to; $year++) {
                 array_push($a_years, $year);
@@ -1018,7 +993,7 @@ class YetAnotherWPICALCalendar_Parser {
                     $over_months = min([0, min($a_ical_year_months[$year]) + $offset]);
                   }
                   if ($from > $to) {
-                    self::_swap_values($from, $to);
+                    YAICALHelper::swap_values($from, $to);
                   }
                   $a_new_months = array();
                   for ($month = $from; $month <= $to; $month++) {
@@ -1049,7 +1024,7 @@ class YetAnotherWPICALCalendar_Parser {
                   $offset1 = intval($matches[2]);
                   $offset2 = intval($matches[3]);
                   if ($offset1 > $offset2) {
-                    self::_swap_values($offset1, $offset2);
+                    YAICALHelper::swap_values($offset1, $offset2);
                   }
                   $from = max([1, min($a_ical_year_months[$year]) + $offset1]);
                   $to = min([12, max($a_ical_year_months[$year]) + $offset2]);
@@ -1111,7 +1086,7 @@ class YetAnotherWPICALCalendar_Parser {
                   $from = $base_month;
                   $to = $base_month + $offset;
                   if ($from > $to) {
-                    self::_swap_values($from, $to);
+                    YAICALHelper::swap_values($from, $to);
                   }
                   $to = ($to < 1 ? 1 : $to);
                   $to = ($to > 12 ? 12 : $to);
@@ -1131,7 +1106,7 @@ class YetAnotherWPICALCalendar_Parser {
                   $from = $base_month + $offset1;
                   $to = $base_month + $offset2;
                   if ($from > $to) {
-                    self::_swap_values($from, $to);
+                    YAICALHelper::swap_values($from, $to);
                   }
                   $from = ($from < 1 ? 1 : $from);
                   $from = ($from > 12 ? 12 : $from);
@@ -1165,7 +1140,7 @@ class YetAnotherWPICALCalendar_Parser {
           if (preg_match("/^\s*((?i)NOW([+-])(?i)ICAL)(([+-])[1-9][0-9]*){0,1}\s*$/", $atts_months, $matches)) {
             $b_months_syntax_is_correct = true;
             /*
-            self::write_log(sprintf("NOW[+-]ICAL: ICAL-YEARS & ICAL-MONTHS: USE-ICAL-YEARS=%s", self::_booltostr($b_use_ical_years)));
+            self::write_log(sprintf("NOW[+-]ICAL: ICAL-YEARS & ICAL-MONTHS: USE-ICAL-YEARS=%s", YAICALHelper::booltostr($b_use_ical_years)));
             self::write_log($a_ical_years);
             self::write_log(sprintf("NOW[+-]ICAL: YEARS & MONTHS:"));
             self::write_log($a_years);
@@ -1253,7 +1228,7 @@ class YetAnotherWPICALCalendar_Parser {
               self::write_log(sprintf("OFFSET=%d", $offset));
               if ($offset > 0) {
                 $year = max($b_use_ical_years ? $a_ical_years : $a_years);
-                self::write_log(sprintf("OFFSET: MAX-YEAR=%d ICAL-MONTHS=%s", $year, self::_booltostr($b_use_ical_months)));
+                self::write_log(sprintf("OFFSET: MAX-YEAR=%d ICAL-MONTHS=%s", $year, YAICALHelper::booltostr($b_use_ical_months)));
                 $a_month_array_reference = ($b_use_ical_months ? $a_ical_year_months[$year] : $a_months);
                 $max_month = max($a_month_array_reference);
                 $over_months = max([0, $max_month + $offset - 12]);
@@ -1267,7 +1242,7 @@ class YetAnotherWPICALCalendar_Parser {
                 sort($a_month_array_reference, SORT_NUMERIC);
               } else {
                 $year = min($b_use_ical_years ? $a_ical_years : $a_years);
-                self::write_log(sprintf("OFFSET: MIN-YEAR=%d ICAL-MONTHS=%s", $year, self::_booltostr($b_use_ical_months)));
+                self::write_log(sprintf("OFFSET: MIN-YEAR=%d ICAL-MONTHS=%s", $year, YAICALHelper::booltostr($b_use_ical_months)));
                 $a_month_array_reference = ($b_use_ical_months ? $a_ical_year_months[$year] : $a_months);
                 $min_month = min($a_month_array_reference);
                 $over_months = min([0, $min_month + $offset]);
@@ -1319,26 +1294,26 @@ class YetAnotherWPICALCalendar_Parser {
     // Check for empty datasets:
     if ($b_use_ical_years) {
       if (empty($a_ical_years)) {
-        return self::_error(sprintf("No ICAL data found for YEAR definition. YEAR=\"%s\"", self::_getav($atts, 'year')));
+        return self::_error(sprintf("No ICAL data found for YEAR definition. YEAR=\"%s\"", YAICALHelper::getav($atts, 'year')));
       }
     } else {
       if (empty($a_years)) {
-        return self::_error(sprintf("No years found for YEAR definition. YEAR=\"%s\"", self::_getav($atts, 'year')));
+        return self::_error(sprintf("No years found for YEAR definition. YEAR=\"%s\"", YAICALHelper::getav($atts, 'year')));
       }
     }
     if ($b_use_ical_months) {
       if (empty($a_ical_year_months)) {
-        return self::_error(sprintf("No ICAL data found for MONTHS definition. MONTHS=\"%s\"", self::_getav($atts, 'months')));
+        return self::_error(sprintf("No ICAL data found for MONTHS definition. MONTHS=\"%s\"", YAICALHelper::getav($atts, 'months')));
       } else {
         foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
           if ((!array_key_exists($year, $a_ical_year_months)) or empty($a_ical_year_months[$year])) {
-            return self::_error(sprintf("No ICAL data found for this year. YEAR=\"%s\"", self::_getav($atts, 'year')));
+            return self::_error(sprintf("No ICAL data found for this year. YEAR=\"%s\"", YAICALHelper::getav($atts, 'year')));
           }
         }
       }
     } else {
       if (empty($a_months)) {
-        return self::_error(sprintf("No months found for MONTHS definition. MONTHS=\"%s\"", self::_getav($atts, 'months')));
+        return self::_error(sprintf("No months found for MONTHS definition. MONTHS=\"%s\"", YAICALHelper::getav($atts, 'months')));
       }
     }
     //
@@ -1377,7 +1352,7 @@ class YetAnotherWPICALCalendar_Parser {
     //
     //----------
     //
-    self::write_log(sprintf("B_USE_ICAL_YEARS=%s B_USE_ICAL_MONTHS=%s", self::_booltostr($b_use_ical_years), self::_booltostr($b_use_ical_months)));
+    self::write_log(sprintf("B_USE_ICAL_YEARS=%s B_USE_ICAL_MONTHS=%s", YAICALHelper::booltostr($b_use_ical_years), YAICALHelper::booltostr($b_use_ical_months)));
     if ($b_use_ical_years) {
       self::write_log($a_ical_years);
     } else {
@@ -1420,7 +1395,7 @@ class YetAnotherWPICALCalendar_Parser {
     self::_init_log(self::$_my_log_directory);
     //----------
     self::$_content_src = $content;
-    $content = self::_purecontent($content);
+    $content = YAICALHelper::purecontent($content);
     $has_content = !empty($content);
     self::write_log("CONTENT='" . $content . "'");
     //
@@ -1441,7 +1416,7 @@ class YetAnotherWPICALCalendar_Parser {
     //
     //----------
     // Get ID.
-    $id = self::_getav($atts, 'id');
+    $id = YAICALHelper::getav($atts, 'id');
     //
     //----------
     // Render calender.

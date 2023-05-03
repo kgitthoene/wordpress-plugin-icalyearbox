@@ -137,7 +137,7 @@ if (window.jQuery) {
                 method: 'POST'
               })
                 .done(function (data, status, jqXHR) {
-                  //console.log("[" + idx + ":LOAD DONE] ID='" + data.id + "'");
+                  //console.log("[" + idx + ":LOAD DONE] ID='" + data.id + "' DATA='"+JSON.stringify(data)+"'");
                   var b_is_ok = false;
                   if (status == 'success') {
                     let rc = data.status;
@@ -289,21 +289,20 @@ if (window.jQuery) {
 
         //----------
         // Create modal dialog:
-        _ga.modals['annotation'] = new tingle.modal({
+        _ga.modals['annotation'] = new tingle.modal({  // Tingle. SEE:https://tingle.robinparisi.com/
           footer: true,
           stickyFooter: false,
           closeMethods: ['overlay', 'button', 'escape'],
           closeLabel: "Close",
           cssClass: [],
-          onOpen: function () {
-            //console.log('modal open');
+          beforeOpen: function () {
             _ga.abort['annotation'] = false;
             _ga.save['annotation'] = false;
             $('#annotation-day').text(_ga.format_day(_ga.data['annotation'].day));
             $('#annotation-note').val(_ga.data['annotation'].note);
             $('#annotation-msg').css('display', 'none');
-            // Transfer data to form:
-            // TODO:$("#annotation-fname").val(_ga.data['annotation'].day);
+          },
+          onOpen: function () {
           },
           onClose: function () {
             //console.log('modal closed');
@@ -327,12 +326,12 @@ if (window.jQuery) {
         _ga.data['annotation'] = {};
         _ga.post_state['annotation'] = null;
         // set content
-        _ga.modals['annotation'].setContent('<div style="padding:0;">'
+        _ga.modals['annotation'].setContent('<div class="yetanotherwpicalcalendar-annotation-modal">'
           + '<div><strong style="border-bottom:1px dotted gray;">Notiz bearbeiten</strong></div>'
           + '<form action="#">'
           + '<div id="annotation-calendar-id" style="display:none;"></div>'
           + 'Vom <span id="annotation-day"></span>:<br />'
-          + '<textarea id="annotation-note" rows="5" cols="50"></textarea>'
+          + '<div class="grow-wrap"><textarea id="annotation-note" onInput="this.parentNode.dataset.replicatedValue = this.value"></textarea></div>'
           + '</form>'
           + '<div id="annotation-msg" style="display:none;><div class="loader"></div></div>'
           + '</div>');
