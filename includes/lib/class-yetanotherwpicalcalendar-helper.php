@@ -37,4 +37,40 @@ class YAICALHelper {
     $c = preg_replace('/<p>([^<]*?)<\/p>/i', "$1\n", $c);
     return trim($c);
   } // purecontent
-}  // YAICALHelper
+
+  public static function get_current_user_roles() {
+    if (is_user_logged_in()) {
+      $user = wp_get_current_user();
+      return (array) $user->roles;
+    }
+    return [];
+  } // get_current_user_roles
+
+  public static function is_access($access) {
+    $roles = self::get_current_user_roles();
+    $is_acc = false;
+    if ($access == '+') {
+      $is_acc = true;
+    } else {
+      if (!empty($roles)) {
+        if ($access == '*') {
+          $is_acc = true;
+        } else {
+          $roles_acc = explode(',', $access);
+          foreach ($roles as $role) {
+            foreach ($roles_acc as $role_acc) {
+              if ($role == trim($role_acc)) {
+                $is_acc = true;
+                break;
+              }
+            }
+            if ($is_acc) {
+              break;
+            }
+          }
+        }
+      }
+    }
+    return $is_acc;
+  } // is_access
+} // YAICALHelper

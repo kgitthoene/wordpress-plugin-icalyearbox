@@ -245,6 +245,7 @@ class YetAnotherWPICALCalendar {
     // Create AJAX POST handler action.
     self::write_log(sprintf("Register POST handler."));
     add_action('wp_ajax_yetanotherwpicalcalendar_add_annotation', array($this, 'handle_annotation_add'));
+    add_action('wp_ajax_nopriv_yetanotherwpicalcalendar_add_annotation', array($this, 'handle_annotation_add'));
     add_action('wp_ajax_yetanotherwpicalcalendar_get_annotations', array($this, 'handle_annotation_get_annotations'));
     add_action('wp_ajax_nopriv_yetanotherwpicalcalendar_get_annotations', array($this, 'handle_annotation_get_annotations'));
   } // __construct
@@ -269,6 +270,8 @@ class YetAnotherWPICALCalendar {
         'type' => 'event', // [ 'booking-split', 'booking', 'event' ]
         'display' => 'year', // [ 'month', 'year' ]
         'description' => 'none', // [ 'mix', 'description', 'summary', 'none' ] / Add description to event. TODO: Documentation.
+        'read' => '+', // Comma separated list of roles: E.g.: 'administrator,editor,author,contributor,subscriber' / Empty = No read access. '*' = Read access for all roles. '+' = Read access for everybody.
+        'write' => '*', // Comma separated list of roles: E.g.: 'administrator,editor,author,contributor,subscriber' / Empty = No write access. '*' = Write access for all roles. '+' = Write access for everybody.
       );
     }
     return self::$_default_yetanotherwpicalcalendar_params;
@@ -277,7 +280,9 @@ class YetAnotherWPICALCalendar {
   private static function default_yetanotherwpicalcalendar_annatation_params() {
     if (self::$_default_yetanotherwpicalcalendar_annatation_params === null) {
       self::$_default_yetanotherwpicalcalendar_annatation_params = array(
-        'id' => '', // ID of this calendar.
+        'id' => '', // ID of a calendar.
+        'read' => '+', // Comma separated list of roles: E.g.: 'administrator,editor,author,contributor,subscriber' / Empty = No read access. '*' = Read access for all roles. '+' = Read access for everybody.
+        'write' => '*', // Comma separated list of roles: E.g.: 'administrator,editor,author,contributor,subscriber' / Empty = No write access. '*' = Write access for all roles. '+' = Write access for everybody.
       );
     }
     return self::$_default_yetanotherwpicalcalendar_annatation_params;
@@ -520,10 +525,11 @@ class YetAnotherWPICALCalendar {
     //status_header(200);
     //request handlers should exit() when they complete their task
     self::write_log(sprintf("POST='%s'", json_encode($_POST)));
+    $pid = '';
     $id = '(unset)';
     $day = '(unset)';
     $is_all_keys_found = true;
-    foreach (['id', 'day'] as $key) {
+    foreach (['pid', 'id', 'day'] as $key) {
       if (!array_key_exists($key, $_POST)) {
         $is_all_keys_found = false;
         break;
@@ -567,20 +573,30 @@ class YetAnotherWPICALCalendar {
     //status_header(200);
     //request handlers should exit() when they complete their task
     $id = '';
+    $pid = '';
     foreach ($_POST as $key => $value) {
       self::write_log(sprintf("POST['%s']='%s'", $key, $value));
       if ($key == 'id') {
-        $id = $value;
+        $id = strval($value);
+      }
+      if ($key == 'pid') {
+        $pid = strval($value);
       }
     }
     $a_annotations = array();
     // TODO:Translation
     $doc = '';
     try {
-      //self::write_log(sprintf("handle_annotation_get_annotations: ID='%s' PASSWORD='%s' REQUIRED=%s POST-STATUS='%s'",
-      //  $post->ID, $post->post_password, YAICALHelper::booltostr(post_password_required()), get_post_status()));
-      $is_allowed_to_read = true; // ((!empty($post->post_password) and post_password_required()) or is_user_logged_in());
-      if ((!empty($id)) and $is_allowed_to_read) {
+      $a_annotation_rw = YetAnotherWPICALCalendar_Parser::get_annotation_rw($pid, $id);
+      self::write_log(sprintf("PID=%s ID='%s' R/W=%s/%s ROLES='%s'",
+        $pid,
+        $id,
+        YAICALHelper::booltostr($a_annotation_rw['read']),
+        YAICALHelper::booltostr($a_annotation_rw['write']),
+        implode(', ', YAICALHelper::get_current_user_roles())));
+      if ((!empty($id))
+        and (!empty($pid))
+        and $a_annotation_rw['read']) {
         if (is_null(self::$_db_annotations_store)) {
           self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
           self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
@@ -597,17 +613,18 @@ class YetAnotherWPICALCalendar {
           //
           //----------
           // Render annotations:
+          $is_write = $a_annotation_rw['write'];
           $doc = '<table><tbody>';
           foreach ($db_anno as $anno) {
             $doc .= '<tr>';
-            $wastebasket = is_user_logged_in()
-              ? sprintf('<td><img class="wastebasket" src="%s" onclick="yetanotherwpicalcalendar_del_annotation(\'%s\', \'%s\'); return false"></td>',
-                plugins_url('/assets/img/wastebasket.svg', self::$_my_plugin_directory . '/index.php'), esc_html($anno['id']), esc_html($anno['day']))
+            $wastebasket = $is_write
+              ? sprintf('<td><img class="wastebasket" src="%s" onclick="yetanotherwpicalcalendar_del_annotation(\'%s\', \'%s\', \'%s\'); return false"></td>',
+                plugins_url('/assets/img/wastebasket.svg', self::$_my_plugin_directory . '/index.php'), esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
               : '';
-            $click_to_edit = is_user_logged_in()
-              ? sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%s\'); return false"', esc_html($anno['id']), esc_html($anno['day']))
+            $click_to_edit = $is_write
+              ? sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%s\', \'%s\'); return false"', esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
               : '';
-            $click_to_edit_class = is_user_logged_in() ? ' class="pointer"' : '';
+            $click_to_edit_class = $is_write ? ' class="pointer"' : '';
             $dt = YAICALHelper::strtodatetime($anno['day']);
             $day_display = $dt->format("j.n.Y");
             $day_weekday = __($dt->format("D"));
@@ -620,6 +637,7 @@ class YetAnotherWPICALCalendar {
           }
           $doc .= '</tbody></table>';
         }
+
       } else {
         $doc = '<div style="border-left:10px solid red; padding:3px 6px 3px 6px; font-size:80%; line-height:14px;">Keine Leseerlaubnis für die Notizen!</div>';
       }

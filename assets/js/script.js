@@ -126,11 +126,12 @@ if (window.jQuery) {
         jQuery(function ($) {
           $(id_selector + ".yetanotherwpicalcalendar-annotation").each(function (idx) {
             let id = $(this).attr('id');
+            let pid = $(this).attr('pid');
             //console.log("Try to load annotation from ID='" + id + "'");
-            if (is_empty(id)) {
+            if (is_empty(id) || is_empty(pid)) {
               $(this).html('<div style="border-left:4px solid red;">&nbsp;No ID for annotations given!</div>');
             } else {
-              let obj = { action: 'yetanotherwpicalcalendar_get_annotations', id: id };
+              let obj = { action: 'yetanotherwpicalcalendar_get_annotations', id: id, pid: pid };
               $.ajax({
                 url: '/wp-admin/admin-ajax.php',
                 data: obj,
@@ -162,8 +163,8 @@ if (window.jQuery) {
         });
       }  // load_annotations
 
-      function annotate(id = '', day = '') {
-        //console.log(defaults.token + "::annotate ID='" + id + "' DAY='" + day + "'");
+      function annotate(pid = '', id = '', day = '') {
+        //console.log(defaults.token + "::annotate PID='" + pid + "' ID='" + id + "' DAY='" + day + "'");
         jQuery(function ($) {
           var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
           //console.log("GA ->:");
@@ -181,7 +182,7 @@ if (window.jQuery) {
             }
           }
           //
-          _ga.data['annotation'] = { id: id, day: day, note: note };
+          _ga.data['annotation'] = { pid: pid, id: id, day: day, note: note };
           _ga.post_state['annotation'] = null;
           modal.open();
           setTimeout(function () {
@@ -195,7 +196,7 @@ if (window.jQuery) {
         var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
         jQuery(function ($) {
           let data = _ga.data['annotation'];
-          let obj = { action: 'yetanotherwpicalcalendar_add_annotation', id: data.id, day: data.day, note: data.note };
+          let obj = { action: 'yetanotherwpicalcalendar_add_annotation', pid: data.pid, id: data.id, day: data.day, note: data.note };
           //
           //----------
           // Watch for result:
@@ -242,9 +243,10 @@ if (window.jQuery) {
         });
       }  // ajax_write_annotation
 
-      function delete_annotation(id, day) {
+      function delete_annotation(pid, id, day) {
         var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
         //console.log("[delete_annotation:ENTRY] ID='" + id + "' DAY='" + day + "'");
+        _ga.data['annotation'].pid = pid;
         _ga.data['annotation'].id = id;
         _ga.data['annotation'].day = day;
         _ga.data['annotation'].note = '';

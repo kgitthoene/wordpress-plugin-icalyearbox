@@ -38,11 +38,20 @@ class YetAnotherWPICALCalendar_Parser {
   private static $_my_plugin_directory = null;
   private static $_my_log_directory = null;
   private static $_my_cache_directory = null;
+  private static $_my_database_directory = null;
+
+  /**
+   * SleekDB Annotations Store Variables.
+   */
+  private static $_db_annotations_rw_store = null;
+  private static $_db_query_builder = null;
 
   private static $_cache_reload_timeout = 86400; // [s] -- 86400 = one day
 
   private static $_shortcut_src = '';
   private static $_content_src = '';
+
+  public static $annotation_access = [];
 
   /* ---------------------------------------------------------------------
    * Add log function.
@@ -62,6 +71,11 @@ class YetAnotherWPICALCalendar_Parser {
       self::$_my_cache_directory = self::$_my_plugin_directory . '/cache';
       if (!is_dir(self::$_my_cache_directory)) {
         mkdir(self::$_my_cache_directory);
+      }
+      // Create database directory.
+      self::$_my_database_directory = self::$_my_plugin_directory . '/db';
+      if (!is_dir(self::$_my_database_directory)) {
+        mkdir(self::$_my_database_directory, 0777, true);
       }
       self::$_directories_initialized = true;
     }
@@ -122,6 +136,47 @@ class YetAnotherWPICALCalendar_Parser {
       'Plugin YetAnotherWPICALCalendar::ERROR -- ' . esc_html($msg) . $src . '</div>';
     return $rv;
   } // _error
+
+  public static function set_annotation_rw($pid, $id, $is_read, $is_write) {
+    if ((!empty($pid)) and (!empty($id))) {
+      if (!self::$_directories_initialized) {
+        self::_init_directories();
+      }
+      if (is_null(self::$_db_annotations_rw_store)) {
+        self::$_db_annotations_rw_store = new \SleekDB\Store("annotation_rw", self::$_my_database_directory, ['timeout' => false]);
+        self::$_db_query_builder = self::$_db_annotations_rw_store->createQueryBuilder();
+      }
+      // Remove before save.
+      self::$_db_annotations_rw_store->deleteBy([['pid', '=', $pid], ['id', '=', $id]]);
+      self::$_db_annotations_rw_store->insert(['pid' => $pid, 'id' => $id, 'read' => ($is_read ? 1 : 0), 'write' => ($is_write ? 1 : 0)]);
+    }
+  } // set_annotation_rw
+
+  public static function get_annotation_rw($pid, $id) {
+    if ((!empty($pid)) and (!empty($id))) {
+      if (!self::$_directories_initialized) {
+        self::_init_directories();
+      }
+      if (is_null(self::$_db_annotations_rw_store)) {
+        self::$_db_annotations_rw_store = new \SleekDB\Store("annotation_rw", self::$_my_database_directory, ['timeout' => false]);
+        self::$_db_query_builder = self::$_db_annotations_rw_store->createQueryBuilder();
+      }
+      // Remove before save.
+      $db_anno_rw = self::$_db_query_builder
+        ->where([['pid', '=', $pid], 'AND', ['id', '=', $id]])
+        ->limit(1)
+        ->getQuery()
+        ->fetch();
+      self::write_log(sprintf("#FETCH=%d", count($db_anno_rw)));
+      if (count($db_anno_rw) == 1) {
+        foreach ($db_anno_rw[0] as $key => $value) {
+          self::write_log(sprintf("DB_ANNO_RW['%s'] = '%s'", $key, $value));
+        }
+        return ['read' => ($db_anno_rw[0]['read'] == '1'), 'write' => ($db_anno_rw[0]['write'] == '1')];
+      }
+    }
+    return ['read' => false, 'write' => false];
+  } // get_annotation_rw
 
   private static function _set_year($match, &$year) {
     if (strtolower($match) == "now") {
@@ -214,7 +269,7 @@ class YetAnotherWPICALCalendar_Parser {
    * @return  String
    * @since   1.0.0
    */
-  private static function _render_as_years($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
+  private static function _render_as_years($pid, $id, $a_acc, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
     $day_now = YAICALHelper::strtodatetime(sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     // Calc start week day and width for all years:
@@ -346,9 +401,9 @@ class YetAnotherWPICALCalendar_Parser {
             // If we have an calendar ID, then add an onClick-event.
             $onclick_for_day = '';
             $onclick_for_day_class = '';
-            if ((!empty($id)) and is_user_logged_in()) {
-              $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%04d%02d%02d\'); return false"',
-                esc_html($id), $year, $month, $month_day);
+            if ((!empty($id)) and $a_acc['write']) {
+              $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%s\', \'%04d%02d%02d\'); return false"',
+                esc_html($pid), esc_html($id), $year, $month, $month_day);
               $onclick_for_day_class = ' pointer';
             }
             //----------
@@ -384,7 +439,7 @@ class YetAnotherWPICALCalendar_Parser {
    * @return  String
    * @since   1.0.0
    */
-  private static function _render_as_months($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
+  private static function _render_as_months($pid, $id, $a_acc, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter) {
     $day_now = YAICALHelper::strtodatetime(sprintf("%04d%02d%02d", intval(date('Y')), intval(date('m')), intval(date('d'))));
     $doc = "";
     // Calc start week day and width for all years:
@@ -502,9 +557,9 @@ class YetAnotherWPICALCalendar_Parser {
                 // If we have an calendar ID, then add an onClick-event.
                 $onclick_for_day = '';
                 $onclick_for_day_class = '';
-                if ((!empty($id)) and is_user_logged_in()) {
-                  $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%04d%02d%02d\'); return false"',
-                    esc_html($id), $year, $month, $month_day);
+                if ((!empty($id)) and $a_acc['write']) {
+                  $onclick_for_day = sprintf(' onclick="yetanotherwpicalcalendar_annotate(\'%s\', \'%s\', \'%04d%02d%02d\'); return false"',
+                    esc_html($pid), esc_html($id), $year, $month, $month_day);
                   $onclick_for_day_class = ' pointer';
                 }
                 //----------
@@ -630,6 +685,8 @@ class YetAnotherWPICALCalendar_Parser {
     //----------
     // Get ID.
     $id = YAICALHelper::getav($atts, 'id');
+    // Get page/post ID.
+    $pid = strval(get_the_ID());
     //
     //----------
     // Get alignment.
@@ -643,6 +700,21 @@ class YetAnotherWPICALCalendar_Parser {
     //
     // Get description flag.
     $description = (in_array($atts['description'], [false, true]) ? $atts['description'] : false);
+    //
+    //----------
+    // Get read access.
+    $read_acc = $atts['read'];
+    //
+    //----------
+    // Get write access.
+    $write_acc = $atts['write'];
+    //
+    //----------
+    // Check, if we have read access.
+    $is_read_acc = YAICALHelper::is_access($read_acc);
+    // Check, if we have write access.
+    $is_write_acc = YAICALHelper::is_access($write_acc);
+    $a_acc = ['read' => $is_read_acc, 'write' => $is_write_acc];
     //
     //----------
     // Load ical(s).
@@ -1377,10 +1449,14 @@ class YetAnotherWPICALCalendar_Parser {
     //
     //----------
     // Render calender.
-    $doc = ($display == 'year'
-      ? self::_render_as_years($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
-      : self::_render_as_months($id, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
-    );
+    if ($a_acc['read']) {
+      $doc = ($display == 'year'
+        ? self::_render_as_years($pid, $id, $a_acc, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
+        : self::_render_as_months($pid, $id, $a_acc, $align, $type, $description, $b_use_ical_years, $b_use_ical_months, $a_years, $a_ical_years, $a_months, $a_ical_year_months, $ical_spans, $a_months_names, $a_months_abr, $a_wdays_first_chracter)
+      );
+    } else {
+      $doc = '<div style="border-left:10px solid red; padding:3px 6px 3px 6px; font-size:80%; line-height:14px;">Keine Leseerlaubnis für den Kalender!</div>';
+    }
     return $doc;
   } // parse
 
@@ -1415,15 +1491,38 @@ class YetAnotherWPICALCalendar_Parser {
     self::write_log(sprintf(""));
     //
     //----------
-    // Get ID.
+    // Get Calendar ID.
     $id = YAICALHelper::getav($atts, 'id');
+    // Get page/post ID.
+    $pid = strval(get_the_ID());
     //
-    //----------
-    // Render calender.
-    $doc = '';
-    if (!empty($id)) {
-      $id_modal = $id . '_modal';
-      $doc = sprintf('<div class="yetanotherwpicalcalendar-annotation" id="%s"><div class="loader"></div></div>', $id);
+    if ((!empty($id)) and (!empty($pid))) {
+      //
+      //----------
+      // Get read access.
+      $read_acc = $atts['read'];
+      //
+      //----------
+      // Get write access.
+      $write_acc = $atts['write'];
+      //
+      //----------
+      // Check, if we have read access.
+      $is_read_acc = YAICALHelper::is_access($read_acc);
+      // Check, if we have write access.
+      $is_write_acc = YAICALHelper::is_access($write_acc);
+      // Remeber it.
+      self::set_annotation_rw($pid, $id, $is_read_acc, $is_write_acc);
+      //
+      //----------
+      // Render calender.
+      self::write_log(sprintf("parse_annotation: PID=%s ID='%s' READ='%s' WRITE='%s' REQUIRED=%s POST-STATUS='%s'",
+        $pid, $id,
+        YAICALHelper::booltostr($is_read_acc),
+        YAICALHelper::booltostr($is_write_acc),
+        YAICALHelper::booltostr(post_password_required()), get_post_status()));
+      self::write_log(sprintf("parse_annotation: ROLES='%s'", implode(', ', YAICALHelper::get_current_user_roles())));
+      $doc = sprintf('<div class="yetanotherwpicalcalendar-annotation" id="%s" pid="%s"><div class="loader"></div></div>', $id, $pid);
     }
     return $doc;
   } // parse_annotation
