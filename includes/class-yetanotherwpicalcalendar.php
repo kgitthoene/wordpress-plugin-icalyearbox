@@ -14,6 +14,7 @@ if (!defined('ABSPATH')) {
 
 require_once 'class-yetanotherwpicalcalendar-logger.php';
 require_once 'lib/class-yetanotherwpicalcalendar-helper.php';
+require_once 'lib/UUID.php';
 require_once 'SleekDB/Store.php';
 
 
@@ -74,6 +75,8 @@ class YetAnotherWPICALCalendar {
    */
   private static $_db_annotations_store = null;
   private static $_db_query_builder = null;
+
+  public static $uuid = '';
 
   /**
    * Local instance of YetAnotherWPICALCalendar_Admin_API
@@ -248,6 +251,14 @@ class YetAnotherWPICALCalendar {
     add_action('wp_ajax_nopriv_yetanotherwpicalcalendar_add_annotation', array($this, 'handle_annotation_add'));
     add_action('wp_ajax_yetanotherwpicalcalendar_get_annotations', array($this, 'handle_annotation_get_annotations'));
     add_action('wp_ajax_nopriv_yetanotherwpicalcalendar_get_annotations', array($this, 'handle_annotation_get_annotations'));
+
+    // Set session cookie.
+    add_action('init', function () {
+      self::write_log(sprintf("get_or_set_session_cookie"));
+      $uuid = YAICALHelper::get_or_set_session_cookie('wordpress-yetanotherwpicalcalendar_seesion_cookie');
+      self::write_log(sprintf("UUID='%s'", $uuid));
+      self::$uuid = $uuid;
+    });
   } // __construct
 
   /**
@@ -505,7 +516,8 @@ class YetAnotherWPICALCalendar {
       $atts = shortcode_atts(self::default_yetanotherwpicalcalendar_params(), $atts);
     }
     self::write_log($atts);
-    $eval = YetAnotherWPICALCalendar_Parser::parse($atts, $content, $evaluate_stack, self::$token);
+    self::write_log(sprintf("UUID='%s'", self::$uuid));
+    $eval = YetAnotherWPICALCalendar_Parser::parse(self::$uuid, $atts, $content, $evaluate_stack, self::$token);
     return $eval;
   } // yetanotherwpicalcalendar_func
 
@@ -517,7 +529,8 @@ class YetAnotherWPICALCalendar {
       $atts = shortcode_atts(self::default_yetanotherwpicalcalendar_annatation_params(), $atts);
     }
     self::write_log($atts);
-    $eval = YetAnotherWPICALCalendar_Parser::parse_annotation($atts, $content, $evaluate_stack, self::$token);
+    self::write_log(sprintf("UUID='%s'", self::$uuid));
+    $eval = YetAnotherWPICALCalendar_Parser::parse_annotation(self::$uuid, $atts, $content, $evaluate_stack, self::$token);
     return $eval;
   } // yetanotherwpicalcalendar_annotation_func
 
@@ -586,8 +599,10 @@ class YetAnotherWPICALCalendar {
     $a_annotations = array();
     // TODO:Translation
     $doc = '';
+    self::write_log(sprintf("get_or_set_session_cookie"));
+    $uuid = (isset($_COOKIE['wordpress-yetanotherwpicalcalendar_seesion_cookie']) ? $_COOKIE['wordpress-yetanotherwpicalcalendar_seesion_cookie'] : '');
     try {
-      $a_annotation_rw = YetAnotherWPICALCalendar_Parser::get_annotation_rw($pid, $id);
+      $a_annotation_rw = YetAnotherWPICALCalendar_Parser::get_annotation_rw($pid, $id, $uuid);
       self::write_log(sprintf("PID=%s ID='%s' R/W=%s/%s ROLES='%s'",
         $pid,
         $id,

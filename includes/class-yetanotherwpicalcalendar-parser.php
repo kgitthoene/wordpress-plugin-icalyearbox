@@ -51,8 +51,6 @@ class YetAnotherWPICALCalendar_Parser {
   private static $_shortcut_src = '';
   private static $_content_src = '';
 
-  public static $annotation_access = [];
-
   /* ---------------------------------------------------------------------
    * Add log function.
    */
@@ -137,8 +135,8 @@ class YetAnotherWPICALCalendar_Parser {
     return $rv;
   } // _error
 
-  public static function set_annotation_rw($pid, $id, $is_read, $is_write) {
-    if ((!empty($pid)) and (!empty($id))) {
+  public static function set_annotation_rw($pid, $id, $uuid, $is_read, $is_write) {
+    if ((!empty($pid)) and (!empty($id)) and (!empty($uuid))) {
       if (!self::$_directories_initialized) {
         self::_init_directories();
       }
@@ -147,13 +145,14 @@ class YetAnotherWPICALCalendar_Parser {
         self::$_db_query_builder = self::$_db_annotations_rw_store->createQueryBuilder();
       }
       // Remove before save.
-      self::$_db_annotations_rw_store->deleteBy([['pid', '=', $pid], ['id', '=', $id]]);
-      self::$_db_annotations_rw_store->insert(['pid' => $pid, 'id' => $id, 'read' => ($is_read ? 1 : 0), 'write' => ($is_write ? 1 : 0)]);
+      $dt_now = new DateTime();
+      self::$_db_annotations_rw_store->deleteBy([['pid', '=', $pid], ['id', '=', $id], ['uuid', '=', $uuid]]);
+      self::$_db_annotations_rw_store->insert(['pid' => $pid, 'id' => $id, 'uuid' => $uuid, 'read' => ($is_read ? 1 : 0), 'write' => ($is_write ? 1 : 0), 'set' => $dt_now->format('c')]);
     }
   } // set_annotation_rw
 
-  public static function get_annotation_rw($pid, $id) {
-    if ((!empty($pid)) and (!empty($id))) {
+  public static function get_annotation_rw($pid, $id, $uuid) {
+    if ((!empty($pid)) and (!empty($id)) and (!empty($uuid))) {
       if (!self::$_directories_initialized) {
         self::_init_directories();
       }
@@ -163,7 +162,7 @@ class YetAnotherWPICALCalendar_Parser {
       }
       // Remove before save.
       $db_anno_rw = self::$_db_query_builder
-        ->where([['pid', '=', $pid], 'AND', ['id', '=', $id]])
+        ->where([['pid', '=', $pid], 'AND', ['id', '=', $id], 'AND', ['uuid', '=', $uuid]])
         ->limit(1)
         ->getQuery()
         ->fetch();
@@ -656,7 +655,7 @@ class YetAnotherWPICALCalendar_Parser {
    * @return  String
    * @since   1.0.0
    */
-  public static function parse($atts, $content, &$evaluate_stack = NULL, $token = 'yetanotherwpicalcalendar') {
+  public static function parse($uuid, $atts, $content, &$evaluate_stack = NULL, $token = 'yetanotherwpicalcalendar') {
     date_default_timezone_set("Europe/Berlin");
     //----------
     self::_init_directories();
@@ -1460,11 +1459,7 @@ class YetAnotherWPICALCalendar_Parser {
     return $doc;
   } // parse
 
-  public static function get_annotations() {
-    return array();
-  } // get_annotations
-
-  public static function parse_annotation($atts, $content, &$evaluate_stack = NULL, $token = 'yetanotherwpicalcalendar-annotation') {
+  public static function parse_annotation($uuid, $atts, $content, &$evaluate_stack = NULL, $token = 'yetanotherwpicalcalendar-annotation') {
     date_default_timezone_set("Europe/Berlin");
     //----------
     self::_init_directories();
@@ -1495,8 +1490,11 @@ class YetAnotherWPICALCalendar_Parser {
     $id = YAICALHelper::getav($atts, 'id');
     // Get page/post ID.
     $pid = strval(get_the_ID());
+    // Get session id.
+    self::write_log(sprintf("UUID='%s'", $uuid));
     //
-    if ((!empty($id)) and (!empty($pid))) {
+    $doc = '';
+    if ((!empty($id)) and (!empty($pid)) and (!empty($uuid))) {
       //
       //----------
       // Get read access.
@@ -1512,7 +1510,7 @@ class YetAnotherWPICALCalendar_Parser {
       // Check, if we have write access.
       $is_write_acc = YAICALHelper::is_access($write_acc);
       // Remeber it.
-      self::set_annotation_rw($pid, $id, $is_read_acc, $is_write_acc);
+      self::set_annotation_rw($pid, $id, $uuid, $is_read_acc, $is_write_acc);
       //
       //----------
       // Render calender.

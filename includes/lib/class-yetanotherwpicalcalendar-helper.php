@@ -73,4 +73,15 @@ class YAICALHelper {
     }
     return $is_acc;
   } // is_access
+
+  public static function get_or_set_session_cookie($name) {
+    if (!isset($_COOKIE[$name])) {
+      // UUID / SEE:https://gist.github.com/dahnielson/508447
+      $uuid = UUID::v4();
+      setcookie($name, $uuid, 0);
+      return $uuid;
+    } else {
+      return $_COOKIE[$name];
+    }
+  } // get_or_set_session_cookie
 } // YAICALHelper
