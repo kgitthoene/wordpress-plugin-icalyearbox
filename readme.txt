@@ -1,7 +1,7 @@
-# Yet Another WP ICAL Calendar - Create calendars with ICAL data.
+# Yet Another ICAL Calendar - Create calendars with ICAL data.
 Contributors: kgitthoene
 Author URI: https://github.com/kgitthoene/
-Plugin URI: https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/
+Plugin URI: https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/
 Tags: ics ical yearbox calendar year month booking
 Donate link: 
 Requires at least: 4.9.0
@@ -9,9 +9,11 @@ Tested up to: 6.2
 Stable tag: 6.2
 Requires PHP: 7.0
 License: X11
-License URI: https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/blob/master/LICENSE
+License URI: https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/blob/master/LICENSE
 
 You can create calendars, filled with in-page or external ICAL data, as month stripes (year overview) or as separate months.
+
+You can create an annotation for every day. Please see the [Full Documentation](https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/).
 
 ## Description
 
@@ -27,25 +29,25 @@ YetAnotherICALCalendar is used as a [Shortcode](https://wordpress.com/support/wo
 
 **Short, handy, Syntax**: `[yetanothericalcalendar OPTIONS]`
 
-Full documentation, all options, full examples: [https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar)
+Full documentation, all options, full examples: [https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar](https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar)
 
 ### Examples
 
 First example: Official holydays in North Rhine-Westphalia, Germany, 2023. \
 Month stripe style. Option: `display="year"`
 
-![First example with month stripes.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/master/readme/2023-feiertage-nrw.png)
+![First example with month stripes.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/master/readme/2023-feiertage-nrw.png)
 
 Second Example: Booking calendar with months. \
 Display months in a grid. Option: `display="month"` \
 Booking style, i.e. half days on first and last day of a period. Option: `type="booking"`
 
-![Second example with separate months.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/master/readme/booking-cal-month-grid.png)
+![Second example with separate months.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/master/readme/booking-cal-month-grid.png)
 
 ### Links
 
-* [Documentation](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/)
-* [Support forum/Report bugs](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/issues)
+* [Full Documentation](https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/)
+* [Support forum/Report bugs](https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/issues)
 
 ## Installation
 
@@ -71,18 +73,21 @@ Simply omit DTEND and DURATION.
 
 ## Screenshots
 
-1. ![First example with month stripes.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/master/readme/2023-feiertage-nrw.png)
-2. ![Second example with separate months.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/master/readme/booking-cal-month-grid.png)
+1. ![First example with month stripes.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/master/readme/2023-feiertage-nrw.png)
+2. ![Second example with separate months.](https://raw.githubusercontent.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/master/readme/booking-cal-month-grid.png)
 
 ## Changelog
 
-### 1.0
+### 1.9.0
+* Annotation release.
+
+### 1.0.0
 * Initial release.
 
 ## Used Software and Attribution
 
 The design was insprired by the [yearbox Plugin](https://www.dokuwiki.org/plugin:yearbox) for [DokuWiki](https://www.dokuwiki.org/).
-This plugin is based on [ytiurin/html5tooltipsjs](https://github.com/ytiurin/html5tooltipsjs) (Javascript / CSS Tooltips), [u01jmg3/ics-parser](https://github.com/u01jmg3/ics-parser) (ICS / ICAL Parser), [Idearia/php-logger](https://github.com/Idearia/php-logger) (Logging, Debugging).
+This plugin is based on [ytiurin/html5tooltipsjs](https://github.com/ytiurin/html5tooltipsjs) (Javascript / CSS Tooltips), [u01jmg3/ics-parser](https://github.com/u01jmg3/ics-parser) (ICS / ICAL Parser), [Idearia/php-logger](https://github.com/Idearia/php-logger) (Logging, Debugging), [SleekDB](https://sleekdb.github.io/) (NoSQL Database), [UUID](https://www.php.net/manual/en/function.uniqid.php#94959) (RFC 4211 COMPLIANT Universally Unique IDentifiers).
 
 ## License
 

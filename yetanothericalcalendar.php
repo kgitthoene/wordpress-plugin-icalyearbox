@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: YetAnotherICALCalendar
- * Version: 1.0.0
+ * Version: 1.9.0
  * Plugin URI: https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar
  * Description: Write shortcuts using other shortcodes.
  * Author: Kai Thoene

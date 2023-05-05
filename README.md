@@ -1,4 +1,4 @@
-# wordpress-plugin-yet-another-wp-ical-calendar
+# wordpress-plugin-yetanothericalcalendar
 
 This software is a plugin for [Wordpress](https://wordpress.org/).
 You can create calendars as year overview or as separate months.
@@ -110,15 +110,15 @@ Example: ```ical="https://www.ferienwiki.de/exports/feiertage/2023/de/nordrhein-
   * The keyword ```"now"``` for the current year.
   * The keyword ```"ical"``` for all years in the ICAL data.
   * The keyword ```"NUMBER"``` for the year represented by the number.
-  * The keyword ```"now+NUMBER``` for all years from the current year to the current year plus ```NUMBER``` years (inclusive).
-  * The keyword ```"now-NUMBER``` for all years from the current year minus ```NUMBER``` years (inclusive) to the current year.
-  * The keyword ```"now-NUMBER1+NUMBER2``` for all years from the current year minus ```NUMBER1``` years (inclusive) to the current year plus ```NUMBER2``` years (inclusive).
-  * The keyword ```"ical+NUMBER``` for all years in the ICAL data and ```NUMBER``` years after the ICAL data. (inclusive).
-  * The keyword ```"ical-NUMBER``` for all years in the ICAL data and ```NUMBER``` years before the ICAL data. (inclusive).
-  * The keyword ```"ical-NUMBER1+NUMBER2``` for the first year in the ICAL data minus ```NUMBER1``` years (inclusive) to the last ICAL year plus ```NUMBER2``` years (inclusive).
-  * The keyword ```"NUMBER+NUMBER1``` for the year represented by ```NUMBER``` plus ```NUMBER1``` years (inclusive).
-  * The keyword ```"NUMBER-NUMBER1``` for the year represented by ```NUMBER``` minus ```NUMBER1``` years (inclusive).
-  * The keyword ```"NUMBER-NUMBER1+NUMBER2``` for all years from the year represented by ```NUMBER``` minus ```NUMBER1``` years (inclusive) to the year represented by ```NUMBER``` plus ```NUMBER2``` years (inclusive).
+  * The keyword ```"now+NUMBER"``` for all years from the current year to the current year plus ```NUMBER``` years (inclusive).
+  * The keyword ```"now-NUMBER"``` for all years from the current year minus ```NUMBER``` years (inclusive) to the current year.
+  * The keyword ```"now-NUMBER1+NUMBER2"``` for all years from the current year minus ```NUMBER1``` years (inclusive) to the current year plus ```NUMBER2``` years (inclusive).
+  * The keyword ```"ical+NUMBER"``` for all years in the ICAL data and ```NUMBER``` years after the ICAL data. (inclusive).
+  * The keyword ```"ical-NUMBER"``` for all years in the ICAL data and ```NUMBER``` years before the ICAL data. (inclusive).
+  * The keyword ```"ical-NUMBER1+NUMBER2"``` for the first year in the ICAL data minus ```NUMBER1``` years (inclusive) to the last ICAL year plus ```NUMBER2``` years (inclusive).
+  * The keyword ```"NUMBER+NUMBER1"``` for the year represented by ```NUMBER``` plus ```NUMBER1``` years (inclusive).
+  * The keyword ```"NUMBER-NUMBER1"``` for the year represented by ```NUMBER``` minus ```NUMBER1``` years (inclusive).
+  * The keyword ```"NUMBER-NUMBER1+NUMBER2"``` for all years from the year represented by ```NUMBER``` minus ```NUMBER1``` years (inclusive) to the year represented by ```NUMBER``` plus ```NUMBER2``` years (inclusive).
   * A period of years: ```"FROM--TO"```. ```FROM``` and ```TO``` may be a year (number) or the keyword ```now```.
   * A list of comma separated years. You may include the keyword ```now```, for the current year, in this list.
 
@@ -140,14 +140,15 @@ Examples:
   * The keyword ```"now"``` for the current month.
   * The keyword ```"ical"``` for all months in the ICAL data.
   * The keyword ```"NUMBER"``` for the month repesented by the number.
-  * The keyword ```"now+NUMBER``` for all months from the current to the current month plus ```NUMBER``` months (inclusive).
-  * The keyword ```"now-NUMBER``` for all months from the current minus ```NUMBER``` months (inclusive).
-  * The keyword ```"now-NUMBER1+NUMBER2``` for all months from the current minus ```NUMBER1``` months (inclusive) to the current month plus ```NUMBER2``` months (inclusive).
-  * The keyword ```"ical+NUMBER``` for all months from earliest ICAL month to the last ICAL month plus ```NUMBER``` months (inclusive).
-  * The keyword ```"ical-NUMBER``` for all months from earliest ICAL month minus ```NUMBER``` months (inclusive) up to the latest ICAL month.
-  * The keyword ```"ical-NUMBER1+NUMBER2``` for all months from earliest ICAL month minus ```NUMBER1``` months (inclusive) (inclusive) up to the last ICAL month plus ```NUMBER2``` months (inclusive).
-  * The keyword ```"now+ical``` for all months from the current (inclusive) to the last month from the ICAL data (inclusive).
-  * The keyword ```"now-ical``` for the first month from the ICAL data (inclusive) up to the the current month (inclusive).
+  * The keyword ```"now+NUMBER"``` for all months from the current to the current month plus ```NUMBER``` months (inclusive).
+  * The keyword ```"now-NUMBER"``` for all months from the current minus ```NUMBER``` months (inclusive).
+  * The keyword ```"now-NUMBER1+NUMBER2"``` for all months from the current minus ```NUMBER1``` months (inclusive) to the current month plus ```NUMBER2``` months (inclusive).
+  * The keyword ```"ical+NUMBER"``` for all months from earliest ICAL month to the last ICAL month plus ```NUMBER``` months (inclusive).
+  * The keyword ```"ical-NUMBER"``` for all months from earliest ICAL month minus ```NUMBER``` months (inclusive) up to the latest ICAL month.
+  * The keyword ```"ical-NUMBER1+NUMBER2"``` for all months from earliest ICAL month minus ```NUMBER1``` months (inclusive) (inclusive) up to the last ICAL month plus ```NUMBER2``` months (inclusive).
+  * The keyword ```"now+ical"``` for all months from the current (inclusive) to the last month from the ICAL data (inclusive).
+  * The keyword ```"now-ical"``` for the first month from the ICAL data (inclusive) up to the the current month (inclusive).
+  * The keyword ```"now[+-]ical[+-]NUMBER"``` for all months from the current (inclusive) to the last (see: ```now+ical```) month or the first (see: ```now-ical```) month from the ICAL data (inclusive) plus or minus ```NUNBER``` of months (inclusive).
   * A list of comma separated months. You may include the keyword ```now```, for the current month, in this list.
 
 Default value: ```"all"```
@@ -166,6 +167,7 @@ Examples:
   * ```month="ical"```
   * ```month="ical-1+1"```
   * ```month="now+ical"```
+  * ```month="now+ical+9"```
 
 **<u>description</u>**: (string) Allowed values: ```"none"```, ```"description"```, ```"summary"``` and ```"mix"```.
 Default: ```"none"```
@@ -196,6 +198,96 @@ Default: ```"center"```
 
 Example: ```align="left"```
 
+**<u>read</u>**: (string) Allowed values: ```""```, ```"+"```, ```"*"``` and a comma separated list of roles: E.g. ```"administrator,editor,author,contributor,subscriber"```. Default: ```"+"```
+
+  * ```read=""``` Read access for nobody.
+  * ```read="+"``` Read access for everybody.
+  * ```read="*"``` Read access for logged in users.
+  * ```read="ROLE-LIST"``` Read access for logged in users with one of these roles.
+
+Example: ```read="administrator,editor"```
+
+**<u>write</u>**: (string) Allowed values: ```""```, ```"+"```, ```"*"``` and a comma separated list of roles: E.g. ```"administrator,editor,author,contributor,subscriber"```. Default: ```"*"```
+
+  * ```write=""``` Write access for nobody.
+  * ```write="+"``` Write access for everybody.
+  * ```write="*"``` Write access for logged in users.
+  * ```write="ROLE-LIST"``` Write access for logged in users with one of these roles.
+
+Example: ```write="administrator,editor"```
+
+Write access creates modal dialogs to make annotations for any shown day. Write access did NOT allow to change the calendar dates itself.
+Simply click on a day to create or edit an annotation.
+See also next chapter Annotations.
+
+**<u>id</u>**: (string) ```"LETTERS-AND-NUMBERS"```. Default value: NOT SET!
+
+Example: ```id="TheFunHouse"```
+
+The ID is used to bundle a calendar with annotations.
+
+
+## Annotations
+
+Annotations are memos for single days. Annotations are bundled with a specific calendar.
+
+Example:
+<hr>
+
+![Annotations](readme/annotations-calendar.png)
+
+Sourcecode in Wordpress:
+```
+Anmerkungen
+
+[yetanothericalcalendar-annotation id="TheFunHouse" read='*' write='administrator,editor,author']
+
+Belegungskalender
+
+[yetanothericalcalendar id="TheFunHouse" year="ical" months="now+ical+1" ical="PRIVATE-URL" type="booking-split" display="year" cache="1d" description="mix" read='*' write='administrator,editor,author']
+```
+
+<hr>
+
+### Syntax of Annotations
+
+**Syntax**: ```[yetanothericalcalendar-annotation OPTIONS]```
+
+#### Options
+
+**<u>id</u>**: (string) ```"LETTERS-AND-NUMBERS"```. Default value: NOT SET!
+
+Example: ```id="TheFunHouse"```
+
+The ID is used to bundle annotations with a calendar.
+
+*Be prepared!*
+The annotation shortcut and the calendar shotcut must have the same, page unique, ID! Without ID no annotations!
+
+**<u>read</u>**: (string) Allowed values: ```""```, ```"+"```, ```"*"``` and a comma separated list of roles: E.g. ```"administrator,editor,author,contributor,subscriber"```. Default: ```"+"```
+
+  * ```read=""``` Read access for nobody.
+  * ```read="+"``` Read access for everybody.
+  * ```read="*"``` Read access for logged in users.
+  * ```read="ROLE-LIST"``` Read access for logged in users with one of these roles.
+
+Example: ```read="administrator,editor"```
+
+**<u>write</u>**: (string) Allowed values: ```""```, ```"+"```, ```"*"``` and a comma separated list of roles: E.g. ```"administrator,editor,author,contributor,subscriber"```. Default: ```"*"```
+
+  * ```write=""``` Write access for nobody.
+  * ```write="+"``` Write access for everybody.
+  * ```write="*"``` Write access for logged in users.
+  * ```write="ROLE-LIST"``` Write access for logged in users with one of these roles.
+
+Example: ```write="administrator,editor"```
+
+Write access creates a small wastebasket in front of an annotation. See annotation example. Click the wastebasket to remove the annotation.
+
+##### Recommendation
+
+Use the same read and write options for the calendar and the annotations shortcut.
+
 ## Installation
 
 Install the plugin using the **Plugin Manager** or download the ZIP-file below, which points to latest version of the plugin.
@@ -204,7 +296,7 @@ See also: [How to Install a WordPress Plugin - Step by Step for Beginners](https
 
 ### Manual Installation
 
-Download: [https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/zipball/master/](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar/zipball/master/)
+Download: [https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/zipball/master/](https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/zipball/master/)
 
 Extract the zip file and rename the extracted folder to ```yetanothericalcalendar```.
 Place this folder in ```WORDPRESS-SERVER-ROOT/wp-content/plugins/```
@@ -216,7 +308,7 @@ Please refer to [https://wordpress.com/support/plugins/install-a-plugin/](https:
 ## Used Software and Attribution
 
 The design was insprired by the [yearbox Plugin](https://www.dokuwiki.org/plugin:yearbox) for [DokuWiki](https://www.dokuwiki.org/).
-This plugin is based on [ytiurin/html5tooltipsjs](https://github.com/ytiurin/html5tooltipsjs) (Javascript / CSS Tooltips), [u01jmg3/ics-parser](https://github.com/u01jmg3/ics-parser) (ICS / ICAL Parser), [Idearia/php-logger](https://github.com/Idearia/php-logger) (Logging, Debugging).
+This plugin is based on [ytiurin/html5tooltipsjs](https://github.com/ytiurin/html5tooltipsjs) (Javascript / CSS Tooltips), [u01jmg3/ics-parser](https://github.com/u01jmg3/ics-parser) (ICS / ICAL Parser), [Idearia/php-logger](https://github.com/Idearia/php-logger) (Logging, Debugging), [SleekDB](https://sleekdb.github.io/) (NoSQL Database), [UUID](https://www.php.net/manual/en/function.uniqid.php#94959) (RFC 4211 COMPLIANT Universally Unique IDentifiers).
 
 ## License
 
