@@ -62,7 +62,7 @@ require_once 'includes/lib/class-yetanothericalcalendar-taxonomy.php';
  * @return object YetAnotherICALCalendar
  */
 function YetAnotherICALCalendar() {
-  $instance = YetAnotherICALCalendar::instance(__FILE__, '1.0.0');
+  $instance = YetAnotherICALCalendar::instance(__FILE__, '1.9.0');
   /*
   TODO: Add settings, if useful.
   if ( is_null( $instance->settings ) ) {
