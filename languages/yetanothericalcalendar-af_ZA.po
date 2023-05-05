@@ -1,0 +1,72 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: yetanothericalcalendar\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-05-05 16:27:04 +0200\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Kai Thoene <k.git.thoene@gmx.de>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: .\n"
+
+msgid "Monday"
+msgstr "Maandag"
+
+msgid "Tuesday"
+msgstr "Dinsdag"
+
+msgid "Wednesday"
+msgstr "Woensdag"
+
+msgid "Thursday"
+msgstr "Donderdag"
+
+msgid "Friday"
+msgstr "Vrydag"
+
+msgid "Saturday"
+msgstr "Saterdag"
+
+msgid "Sunday"
+msgstr "Sondag"
+
+msgid "MONTH-January"
+msgstr "Januarie"
+
+msgid "MONTH-February"
+msgstr "Februarie"
+
+msgid "MONTH-March"
+msgstr "Maart"
+
+msgid "MONTH-April"
+msgstr "April"
+
+msgid "MONTH-May"
+msgstr "Mei"
+
+msgid "MONTH-June"
+msgstr "Junie"
+
+msgid "MONTH-July"
+msgstr "Julie"
+
+msgid "MONTH-August"
+msgstr "Augustus"
+
+msgid "MONTH-September"
+msgstr "September"
+
+msgid "MONTH-October"
+msgstr "Oktober"
+
+msgid "MONTH-November"
+msgstr "November"
+
+msgid "MONTH-December"
+msgstr "Desember"
+

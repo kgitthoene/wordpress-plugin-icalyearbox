@@ -1,5 +1,5 @@
 /**
- * Wordpress Plugin YetAnotherWPICALCalendar (Javascript Component)
+ * Wordpress Plugin YetAnotherICALCalendar (Javascript Component)
  *
  * @license MIT https://en.wikipedia.org/wiki/MIT_License
  * @author  Kai Thoene <k.git.thoene@gmx.net>

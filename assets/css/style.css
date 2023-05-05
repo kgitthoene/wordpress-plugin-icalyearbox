@@ -1,25 +1,25 @@
 /**
- * Wordpress Plugin YetAnotherWPICALCalendar (LESS/CSS Component)
+ * Wordpress Plugin YetAnotherICALCalendar (LESS/CSS Component)
  *
  * @license MIT https://en.wikipedia.org/wiki/MIT_License
  * @author  Kai Thoene <k.git.thoene@gmx.net>
  */
-.yetanotherwpicalcalendar {
+.yetanothericalcalendar {
   padding: 5px;
   overflow-x: auto;
   font-size: 12px;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   line-height: normal;
 }
-.yetanotherwpicalcalendar div.mo-column {
+.yetanothericalcalendar div.mo-column {
   display: flex;
 }
-.yetanotherwpicalcalendar.mo-grid {
+.yetanothericalcalendar.mo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
   grid-column-gap: 5px;
 }
-.yetanotherwpicalcalendar table {
+.yetanothericalcalendar table {
   border-width: 1px;
   border-spacing: 2px;
   border-style: solid solid solid solid;
@@ -29,43 +29,43 @@
   margin: 0 auto;
   box-sizing: unset;
 }
-.yetanotherwpicalcalendar table.yr-table {
+.yetanothericalcalendar table.yr-table {
   /* Placeholder for a table containing a year. */
 }
-.yetanotherwpicalcalendar table.mo-table {
+.yetanothericalcalendar table.mo-table {
   margin-bottom: 5px;
 }
-.yetanotherwpicalcalendar table.left {
+.yetanothericalcalendar table.left {
   float: left;
 }
-.yetanotherwpicalcalendar table.right {
+.yetanothericalcalendar table.right {
   float: right;
 }
-.yetanotherwpicalcalendar table tr {
+.yetanothericalcalendar table tr {
   box-sizing: unset;
 }
-.yetanotherwpicalcalendar table tr.yr-header {
+.yetanothericalcalendar table tr.yr-header {
   border-bottom: 2px solid #BFBFBF;
 }
-.yetanotherwpicalcalendar table tr.mo-header {
+.yetanothericalcalendar table tr.mo-header {
   border-bottom: 2px solid #BFBFBF;
 }
-.yetanotherwpicalcalendar table tr.blank,
-.yetanotherwpicalcalendar table tr.blank td {
+.yetanothericalcalendar table tr.blank,
+.yetanothericalcalendar table tr.blank td {
   border: 0;
   background: none;
 }
-.yetanotherwpicalcalendar table th {
+.yetanothericalcalendar table th {
   border: 1px solid #BFBFBF;
   height: 100%;
   padding: 0;
   text-align: center;
   box-sizing: unset;
 }
-.yetanotherwpicalcalendar table th.wday {
+.yetanothericalcalendar table th.wday {
   width: 16px;
 }
-.yetanotherwpicalcalendar table th .cellc {
+.yetanothericalcalendar table th .cellc {
   background-color: #F0F5F7;
   width: 100%;
   height: 18px;
@@ -77,20 +77,20 @@
   margin: 0;
   box-sizing: unset;
 }
-.yetanotherwpicalcalendar table th .wkend {
+.yetanothericalcalendar table th .wkend {
   background-color: #D6DBEA;
 }
-.yetanotherwpicalcalendar table th .alt {
+.yetanothericalcalendar table th .alt {
   background-color: #D6DBEA;
 }
-.yetanotherwpicalcalendar table th .plain {
+.yetanothericalcalendar table th .plain {
   background: none;
 }
-.yetanotherwpicalcalendar table th .cellc .yr-span {
+.yetanothericalcalendar table th .cellc .yr-span {
   margin-left: 6px;
   margin-right: 6px;
 }
-.yetanotherwpicalcalendar table td {
+.yetanothericalcalendar table td {
   width: 18px;
   height: 18px;
   position: relative;
@@ -104,17 +104,17 @@
       }
       */
 }
-.yetanotherwpicalcalendar table td:after {
+.yetanothericalcalendar table td:after {
   content: '';
   display: block;
   margin-top: 100%;
 }
-.yetanotherwpicalcalendar table td.hidden {
+.yetanothericalcalendar table td.hidden {
   background-color: transparent;
   border: 1px solid transparent;
   visibility: hidden;
 }
-.yetanotherwpicalcalendar table td .cellc {
+.yetanothericalcalendar table td .cellc {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -127,36 +127,36 @@
   box-sizing: unset;
   color: #00000080 !important;
 }
-.yetanotherwpicalcalendar table td .cellc:after,
-.yetanotherwpicalcalendar table td .cellc:before {
+.yetanothericalcalendar table td .cellc:after,
+.yetanothericalcalendar table td .cellc:before {
   box-sizing: unset;
 }
-.yetanotherwpicalcalendar table td .wkend {
+.yetanothericalcalendar table td .wkend {
   background-color: #EAF0F0;
 }
-.yetanotherwpicalcalendar table td .blank {
+.yetanothericalcalendar table td .blank {
   background-color: #CDD2E2;
 }
-.yetanotherwpicalcalendar table td .today {
+.yetanothericalcalendar table td .today {
   background-color: #ffea70;
 }
-.yetanotherwpicalcalendar table a.link {
+.yetanothericalcalendar table a.link {
   border-bottom: 0 !important;
   /*color: #00000080 !important;*/
   text-decoration: none;
   box-sizing: unset;
 }
-.yetanotherwpicalcalendar .pointer {
+.yetanothericalcalendar .pointer {
   cursor: pointer;
 }
-.yetanotherwpicalcalendar .yetanotherwpicalcalendar-tooltip {
+.yetanothericalcalendar .yetanothericalcalendar-tooltip {
   cursor: pointer;
   border-bottom: 1px dotted black;
 }
-.yetanotherwpicalcalendar-annotation {
+.yetanothericalcalendar-annotation {
   /* Safari */
 }
-.yetanotherwpicalcalendar-annotation .loader {
+.yetanothericalcalendar-annotation .loader {
   border: 4px solid #f3f3f3;
   border-radius: 50%;
   border-top: 4px solid #3498db;
@@ -182,38 +182,38 @@
     transform: rotate(360deg);
   }
 }
-.yetanotherwpicalcalendar-annotation table {
+.yetanothericalcalendar-annotation table {
   border-width: 0px;
   border-collapse: collapse;
   margin: 0;
   box-sizing: unset;
   border: none;
 }
-.yetanotherwpicalcalendar-annotation table tr {
+.yetanothericalcalendar-annotation table tr {
   border-bottom: 1px dotted #ccc;
 }
-.yetanotherwpicalcalendar-annotation table tr th,
-.yetanotherwpicalcalendar-annotation table tr td {
+.yetanothericalcalendar-annotation table tr th,
+.yetanothericalcalendar-annotation table tr td {
   padding: 0 0.2em 0 0.2em;
 }
-.yetanotherwpicalcalendar-annotation img.wastebasket {
+.yetanothericalcalendar-annotation img.wastebasket {
   cursor: pointer;
   width: 1em;
   height: 1em;
 }
-.yetanotherwpicalcalendar-annotation .pointer {
+.yetanothericalcalendar-annotation .pointer {
   cursor: pointer;
 }
-.yetanotherwpicalcalendar-annotation-modal {
+.yetanothericalcalendar-annotation-modal {
   padding: 0;
 }
-.yetanotherwpicalcalendar-annotation-modal .grow-wrap {
+.yetanothericalcalendar-annotation-modal .grow-wrap {
   /* Grow Wrap. SEE:https://codepen.io/chriscoyier/pen/XWKEVLy */
   /* easy way to plop the elements on top of each other and have them both sized based on the tallest one's height */
   display: grid;
   height: 10.2em;
 }
-.yetanotherwpicalcalendar-annotation-modal .grow-wrap::after {
+.yetanothericalcalendar-annotation-modal .grow-wrap::after {
   /* Note the weird space! Needed to preventy jumpy behavior */
   content: attr(data-replicated-value) " ";
   /* This is how textarea text behaves */
@@ -221,7 +221,7 @@
   /* Hidden from view, clicks, and screen readers */
   visibility: hidden;
 }
-.yetanotherwpicalcalendar-annotation-modal .grow-wrap > textarea {
+.yetanothericalcalendar-annotation-modal .grow-wrap > textarea {
   /* You could leave this, but after a user resizes, then it ruins the auto sizing */
   resize: none;
   /* Firefox shows scrollbar on growth, you can hide like this. */
@@ -230,8 +230,8 @@
   width: none;
   margin: none;
 }
-.yetanotherwpicalcalendar-annotation-modal .grow-wrap > textarea,
-.yetanotherwpicalcalendar-annotation-modal .grow-wrap::after {
+.yetanothericalcalendar-annotation-modal .grow-wrap > textarea,
+.yetanothericalcalendar-annotation-modal .grow-wrap::after {
   /* Identical styling required!! */
   padding: 0.5rem;
   font: inherit;
@@ -250,7 +250,7 @@
   max-width: 200px;
   /*font-weight: bold;*/
 }
-.yetanotherwpicalcalendar-reset-this {
+.yetanothericalcalendar-reset-this {
   animation: none;
   animation-delay: 0;
   animation-direction: normal;

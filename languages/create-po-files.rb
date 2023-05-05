@@ -376,7 +376,7 @@ It.debug "CONFIG=#{It.pp_s($g_config)}"
 # START HERE!
 #-------------
 #
-token = 'yetanotherwpicalcalendar'
+token = 'yetanothericalcalendar'
 nr_codes = 0
 h_country_codes = {}
 CSV.foreach(File.join("src", "country-codes.csv"), headers: true, col_sep: ";") do |row|

@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: yetanotherwpicalcalendar\n"
+"Project-Id-Version: yetanothericalcalendar\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-04-29 19:00:09 +0200\n"
 "PO-Revision-Date: \n"

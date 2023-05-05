@@ -19,13 +19,13 @@ This software is a plugin for [WordPress](https://wordpress.org/).
 You can create calendars as year overview or as separate months.
 These calendars are filled with in-page or external ICAL data.
 
-YetAnotherWPICALCalendar is used as a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
+YetAnotherICALCalendar is used as a [Shortcode](https://wordpress.com/support/wordpress-editor/blocks/shortcode-block/) in your Wordpress content:
 
-**Full Syntax**: `[yetanotherwpicalcalendar OPTIONS]ICAL-DATA[/yetanotherwpicalcalendar]`
+**Full Syntax**: `[yetanothericalcalendar OPTIONS]ICAL-DATA[/yetanothericalcalendar]`
 
-`ICAL-DATA` may be empty: `[yetanotherwpicalcalendar OPTIONS][/yetanotherwpicalcalendar]`
+`ICAL-DATA` may be empty: `[yetanothericalcalendar OPTIONS][/yetanothericalcalendar]`
 
-**Short, handy, Syntax**: `[yetanotherwpicalcalendar OPTIONS]`
+**Short, handy, Syntax**: `[yetanothericalcalendar OPTIONS]`
 
 Full documentation, all options, full examples: [https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar](https://github.com/kgitthoene/wordpress-plugin-yet-another-wp-ical-calendar)
 
@@ -49,7 +49,7 @@ Booking style, i.e. half days on first and last day of a period. Option: `type="
 
 ## Installation
 
-1. Extract the zipped file and upload the folder `yetanotherwpicalcalendar` to to `/wp-content/plugins/` directory.
+1. Extract the zipped file and upload the folder `yetanothericalcalendar` to to `/wp-content/plugins/` directory.
 1. Activate the plugin through the `Plugins` menu in WordPress.
 
 ## Frequently Asked Questions

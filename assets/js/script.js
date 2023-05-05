@@ -1,5 +1,5 @@
 /**
- * Wordpress Plugin YetAnotherWPICALCalendar (Javascript Component)
+ * Wordpress Plugin YetAnotherICALCalendar (Javascript Component)
  *
  * @license MIT https://en.wikipedia.org/wiki/MIT_License
  * @author  Kai Thoene <k.git.thoene@gmx.net>
@@ -8,8 +8,8 @@ if (window.jQuery) {
   //
   //----------
   // Storage for Annotations.
-  if (typeof globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')] === 'undefined') {
-    globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')] = (function () {
+  if (typeof globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')] === 'undefined') {
+    globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')] = (function () {
       var modals = {};
       var data = {};
       var post_state = {};
@@ -39,12 +39,12 @@ if (window.jQuery) {
   //
   //----------
   // Storage for Calendar Stuff.
-  if (typeof globalThis[Symbol.for('yetanotherwpicalcalendar_storage')] === 'undefined') {
-    globalThis[Symbol.for('yetanotherwpicalcalendar_storage')] = (function () {
+  if (typeof globalThis[Symbol.for('yetanothericalcalendar_storage')] === 'undefined') {
+    globalThis[Symbol.for('yetanothericalcalendar_storage')] = (function () {
       var defaults = {
         'debug': false, // false = no debug on console
         'is_enabled': true,
-        'token': 'yetanotherwpicalcalendar'
+        'token': 'yetanothericalcalendar'
       };
       var resize_timeout = null;
       var AJAX = {
@@ -122,16 +122,16 @@ if (window.jQuery) {
       //----------
       // Load Annotations from Database:
       function load_annotations(id_selector = "") {
-        var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+        var _ga = globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')];
         jQuery(function ($) {
-          $(id_selector + ".yetanotherwpicalcalendar-annotation").each(function (idx) {
+          $(id_selector + ".yetanothericalcalendar-annotation").each(function (idx) {
             let id = $(this).attr('id');
             let pid = $(this).attr('pid');
             //console.log("Try to load annotation from ID='" + id + "'");
             if (is_empty(id) || is_empty(pid)) {
               $(this).html('<div style="border-left:4px solid red;">&nbsp;No ID for annotations given!</div>');
             } else {
-              let obj = { action: 'yetanotherwpicalcalendar_get_annotations', id: id, pid: pid };
+              let obj = { action: 'yetanothericalcalendar_get_annotations', id: id, pid: pid };
               $.ajax({
                 url: '/wp-admin/admin-ajax.php',
                 data: obj,
@@ -154,8 +154,8 @@ if (window.jQuery) {
                 .fail(function (jqXHR, status, error_thrown) {
                   let id = $(this).attr('id');
                   $(this).html('<div style="unicode-bidi:embed; font-family:monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">'
-                    + 'Plugin YetAnotherWPICALCalendar::ERROR -- Cannot get annotations! STATUS="' + status + '" ERROR="' + error_thrown + '"'
-                    + '<br />[yetanotherwpicalcalendar-annotation id="' + id + '"]'
+                    + 'Plugin YetAnotherICALCalendar::ERROR -- Cannot get annotations! STATUS="' + status + '" ERROR="' + error_thrown + '"'
+                    + '<br />[yetanothericalcalendar-annotation id="' + id + '"]'
                     + '"</div>');
                 }.bind(this));
             }
@@ -166,7 +166,7 @@ if (window.jQuery) {
       function annotate(pid = '', id = '', day = '') {
         //console.log(defaults.token + "::annotate PID='" + pid + "' ID='" + id + "' DAY='" + day + "'");
         jQuery(function ($) {
-          var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+          var _ga = globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')];
           //console.log("GA ->:");
           //console.log(_ga);
           modal = _ga.modals['annotation'];
@@ -193,10 +193,10 @@ if (window.jQuery) {
       } // annotate
 
       function ajax_write_annotation() {
-        var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+        var _ga = globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')];
         jQuery(function ($) {
           let data = _ga.data['annotation'];
-          let obj = { action: 'yetanotherwpicalcalendar_add_annotation', pid: data.pid, id: data.id, day: data.day, note: data.note };
+          let obj = { action: 'yetanothericalcalendar_add_annotation', pid: data.pid, id: data.id, day: data.day, note: data.note };
           //
           //----------
           // Watch for result:
@@ -208,8 +208,8 @@ if (window.jQuery) {
                 case 1:
                   clearInterval(resultInterval);
                   $("#" + this.id + "-cal-msg").html('<div style="unicode-bidi:embed; font-family:monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">'
-                    + 'Plugin YetAnotherWPICALCalendar::ERROR -- Cannot write annotation! DAY="' + this.day + '"'
-                    + '<br />[yetanotherwpicalcalendar-annotation id="' + this.id + '"]'
+                    + 'Plugin YetAnotherICALCalendar::ERROR -- Cannot write annotation! DAY="' + this.day + '"'
+                    + '<br />[yetanothericalcalendar-annotation id="' + this.id + '"]'
                     + '"</div>');
                   $("#" + this.id + "-cal-msg").css('display', 'block');
                   break;
@@ -244,7 +244,7 @@ if (window.jQuery) {
       }  // ajax_write_annotation
 
       function delete_annotation(pid, id, day) {
-        var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+        var _ga = globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')];
         //console.log("[delete_annotation:ENTRY] ID='" + id + "' DAY='" + day + "'");
         _ga.data['annotation'].pid = pid;
         _ga.data['annotation'].id = id;
@@ -274,12 +274,12 @@ if (window.jQuery) {
 
   addEventListener("DOMContentLoaded", (event) => {
     (function ($) {
-      var _g = globalThis[Symbol.for('yetanotherwpicalcalendar_storage')];
-      var _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+      var _g = globalThis[Symbol.for('yetanothericalcalendar_storage')];
+      var _ga = globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')];
       if (_g.defaults.is_enabled) {
 
-        yetanotherwpicalcalendar_annotate = _g.annotate;
-        yetanotherwpicalcalendar_del_annotation = _g.delete_annotation
+        yetanothericalcalendar_annotate = _g.annotate;
+        yetanothericalcalendar_del_annotation = _g.delete_annotation
 
         $(window).resize(function () {
           if (_g.resize_timeout != null) { clearTimeout(_g.resize_timeout); }
@@ -328,7 +328,7 @@ if (window.jQuery) {
         _ga.data['annotation'] = {};
         _ga.post_state['annotation'] = null;
         // set content
-        _ga.modals['annotation'].setContent('<div class="yetanotherwpicalcalendar-annotation-modal">'
+        _ga.modals['annotation'].setContent('<div class="yetanothericalcalendar-annotation-modal">'
           + '<div><strong style="border-bottom:1px dotted gray;">Notiz bearbeiten</strong></div>'
           + '<form action="#">'
           + '<div id="annotation-calendar-id" style="display:none;"></div>'
@@ -338,14 +338,14 @@ if (window.jQuery) {
           + '<div id="annotation-msg" style="display:none;><div class="loader"></div></div>'
           + '</div>');
         _ga.modals['annotation'].addFooterBtn('Speichern', 'tingle-btn tingle-btn--primary tingle-btn--pull-right', function () {
-          _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+          _ga = globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')];
           $('#annotation-msg').css('display', 'block');
           // here goes some logic
           _ga.save['annotation'] = true;
           _ga.modals['annotation'].close();
         });
         _ga.modals['annotation'].addFooterBtn('Abbruch', 'tingle-btn tingle-btn--pull-right', function () {
-          _ga = globalThis[Symbol.for('yetanotherwpicalcalendar_annotation_storage')];
+          _ga = globalThis[Symbol.for('yetanothericalcalendar_annotation_storage')];
           // here goes some logic
           _ga.abort['annotation'] = true;
           _ga.modals['annotation'].close();
@@ -355,5 +355,5 @@ if (window.jQuery) {
     })(jQuery);
   });
 } else {
-  console.error("plugin:yetanotherwpicalcalendar:ERROR: jQuery is undefined!");
+  console.error("plugin:yetanothericalcalendar:ERROR: jQuery is undefined!");
 }
