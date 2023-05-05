@@ -353,16 +353,7 @@ class YetAnotherICALCalendar {
   public function enqueue_styles() {
     wp_register_style(self::$token . '-frontend', esc_url($this->assets_url) . 'css/frontend.min.css', array(), $this->_version);
     wp_enqueue_style(self::$token . '-frontend');
-    /*
-    // SEE:https://picturepan2.github.io/spectre/getting-started/installation.html
-    wp_register_style(self::$token . '-spectre', esc_url($this->assets_url) . 'css/spectre.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-spectre');
-    wp_register_style(self::$token . '-spectre-exp', esc_url($this->assets_url) . 'css/spectre-exp.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-spectre-exp');
-    wp_register_style(self::$token . '-spectre-icons', esc_url($this->assets_url) . 'css/spectre-icons.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-spectre-icons');
-    */
-    // SEE:https://github.com/AddMoreScripts/hystModal
+    // SEE:https://tingle.robinparisi.com/
     wp_register_style(self::$token . '-tingle', esc_url($this->assets_url) . 'css/tingle.min.css', array(), $this->_version);
     wp_enqueue_style(self::$token . '-tingle');
     wp_register_style(self::$token . '-style', esc_url($this->assets_url) . 'css/style.min.css', array(), $this->_version);
