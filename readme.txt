@@ -84,6 +84,14 @@ Simply omit DTEND and DURATION.
 ### 1.0.0
 * Initial release.
 
+## Cookies
+
+To ensure communication with the AJAX interface of this plugin, which has unprivileged ports, we use a session cookie to identify a browser session.
+The name of this cookie is: ```wordpress-yetanothericalcalendar_seesion_cookie```.
+It will be deleted when the browser is closed.
+
+The reading and writing rights for annotations and calendars are thus implemented.
+
 ## Used Software and Attribution
 
 The design was insprired by the [yearbox Plugin](https://www.dokuwiki.org/plugin:yearbox) for [DokuWiki](https://www.dokuwiki.org/).
