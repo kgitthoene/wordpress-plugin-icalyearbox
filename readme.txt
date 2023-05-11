@@ -6,7 +6,7 @@ Tags: ics ical yearbox calendar year month booking
 Donate link: 
 Requires at least: 4.9.0
 Tested up to: 6.2
-Stable tag: 6.2
+Stable tag: 1.9.0
 Requires PHP: 7.0
 License: X11
 License URI: https://github.com/kgitthoene/wordpress-plugin-yetanothericalcalendar/blob/master/LICENSE

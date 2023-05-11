@@ -22,25 +22,6 @@ require_once 'class-yetanothericalcalendar-datespans.php';
  */
 class YetAnotherICALCalendar_Parser {
   /**
-   * The debug trigger.
-   *
-   * @var     object
-   * @access  private
-   * @since   1.0.0
-   */
-  private static $_enable_debugging = true; // false = Log only error messages.
-  private static $_log_initialized = false;
-  private static $_log_class = null;
-
-  private static $_directories_initialized = false;
-  public static $token = 'yetanothericalcalendar';
-  public static $token_annotation = 'yetanothericalcalendar-annotation';
-  private static $_my_plugin_directory = null;
-  private static $_my_log_directory = null;
-  private static $_my_cache_directory = null;
-  private static $_my_database_directory = null;
-
-  /**
    * SleekDB Annotations Store Variables.
    */
   private static $_db_annotations_rw_store = null;
@@ -52,72 +33,6 @@ class YetAnotherICALCalendar_Parser {
   private static $_shortcut_src = '';
   private static $_content_src = '';
 
-  /* ---------------------------------------------------------------------
-   * Add log function.
-   */
-  private static function _init_directories() {
-    if (!self::$_directories_initialized) {
-      self::$_my_plugin_directory = WP_PLUGIN_DIR . '/' . self::$token;
-      if (!is_dir(self::$_my_plugin_directory)) {
-        mkdir(self::$_my_plugin_directory, 0777, true);
-      }
-      // Create logging directory.
-      self::$_my_log_directory = self::$_my_plugin_directory . '/log';
-      if (!is_dir(self::$_my_log_directory)) {
-        mkdir(self::$_my_log_directory, 0777, true);
-      }
-      // Create cache directory.
-      self::$_my_cache_directory = self::$_my_plugin_directory . '/cache';
-      if (!is_dir(self::$_my_cache_directory)) {
-        mkdir(self::$_my_cache_directory);
-      }
-      // Create database directory.
-      self::$_my_database_directory = self::$_my_plugin_directory . '/db';
-      if (!is_dir(self::$_my_database_directory)) {
-        mkdir(self::$_my_database_directory, 0777, true);
-      }
-      self::$_directories_initialized = true;
-    }
-  } // _init_directories
-
-  private static function _init_log() {
-    if (!self::$_log_initialized) {
-      if (!self::$_directories_initialized) {
-        self::_init_directories();
-      }
-      if (class_exists('YetAnotherICALCalendar_Logger')) {
-        self::$_log_class = 'YetAnotherICALCalendar_Logger';
-        self::$_log_class::$log_level = 'debug';
-        self::$_log_class::$write_log = true;
-        self::$_log_class::$log_dir = self::$_my_log_directory;
-        self::$_log_class::$log_file_name = self::$token;
-        self::$_log_class::$log_file_extension = 'log';
-        self::$_log_class::$print_log = false;
-      }
-      self::$_log_initialized = true;
-    }
-  } // _init_log
-
-  public static function write_log($log = NULL, $is_error = false, $bn = '', $func = '', $line = -1) {
-    if (self::$_enable_debugging or $is_error) {
-      self::_init_directories();
-      self::_init_log();
-      $bn = (empty($bn) ? basename(debug_backtrace()[1]['file']) : $bn);
-      $func = (empty($func) ? debug_backtrace()[1]['function'] : $func);
-      $line = ($line == -1 ? intval(debug_backtrace()[0]['line']) : $line);
-      $msg = sprintf('[%s:%d:%s] %s', $bn, $line, $func, ((is_array($log) || is_object($log)) ? print_r($log, true) : $log));
-      if (is_null(self::$_log_class)) {
-        error_log($msg . PHP_EOL);
-      } else {
-        if ($is_error) {
-          self::$_log_class::error($msg);
-        } else {
-          self::$_log_class::debug($msg);
-        }
-      }
-    }
-  } // write_log
-
   /**
    * Render an error message as output (HTML).
    *
@@ -126,7 +41,7 @@ class YetAnotherICALCalendar_Parser {
    * @since   1.0.0
    */
   private static function _error($msg) {
-    self::write_log($msg, true, basename(debug_backtrace()[1]['file']), debug_backtrace()[1]['function'], intval(debug_backtrace()[0]['line']));
+    YAICALHelper::write_log($msg, true, basename(debug_backtrace()[1]['file']), debug_backtrace()[1]['function'], intval(debug_backtrace()[0]['line']));
     $src = '';
     if (!empty(self::$_shortcut_src)) {
       $src = '<br />' . self::$_shortcut_src;
@@ -136,11 +51,8 @@ class YetAnotherICALCalendar_Parser {
 
   private static function _clean_annotation_rw() {
     $nr_deletes = 0;
-    if (!self::$_directories_initialized) {
-      self::_init_directories();
-    }
     if (is_null(self::$_db_annotations_rw_store)) {
-      self::$_db_annotations_rw_store = new \SleekDB\Store("annotation_rw", self::$_my_database_directory, ['timeout' => false]);
+      self::$_db_annotations_rw_store = new \SleekDB\Store("annotation_rw", YAICALHelper::get_my_database_directory(), ['timeout' => false]);
     }
     // Fetch data.
     $db_anno_rw = self::$_db_annotations_rw_store->createQueryBuilder()
@@ -152,7 +64,6 @@ class YetAnotherICALCalendar_Parser {
       $dt_now = new DateTime();
       $dt_set = DateTime::createFromFormat('Y-m-d?H:i:sT', $row['set']); // 2023-05-05T15:37:08+02:00
       $delta = YAICALHelper::datetime_delta($dt_set, $dt_now);
-      self::write_log(sprintf("Compare dates. D1=%s D2=%s DELTA=%d =?= %d", $dt_now->format('c'), $dt_set->format('c'), $delta, self::$_session_removal_timeout));
       if($delta > self::$_session_removal_timeout) {
         array_push($a_removeal_list, $row['_id']);
       }
@@ -167,11 +78,8 @@ class YetAnotherICALCalendar_Parser {
 
   public static function set_annotation_rw($pid, $id, $uuid, $is_read, $is_write) {
     if ((!empty($pid)) and (!empty($id)) and (!empty($uuid))) {
-      if (!self::$_directories_initialized) {
-        self::_init_directories();
-      }
       if (is_null(self::$_db_annotations_rw_store)) {
-        self::$_db_annotations_rw_store = new \SleekDB\Store("annotation_rw", self::$_my_database_directory, ['timeout' => false]);
+        self::$_db_annotations_rw_store = new \SleekDB\Store("annotation_rw", YAICALHelper::get_my_database_directory(), ['timeout' => false]);
       }
       // Remove before save.
       $dt_now = new DateTime();
@@ -184,11 +92,8 @@ class YetAnotherICALCalendar_Parser {
 
   public static function get_annotation_rw($pid, $id, $uuid) {
     if ((!empty($pid)) and (!empty($id)) and (!empty($uuid))) {
-      if (!self::$_directories_initialized) {
-        self::_init_directories();
-      }
       if (is_null(self::$_db_annotations_rw_store)) {
-        self::$_db_annotations_rw_store = new \SleekDB\Store("annotation_rw", self::$_my_database_directory, ['timeout' => false]);
+        self::$_db_annotations_rw_store = new \SleekDB\Store("annotation_rw", YAICALHelper::get_my_database_directory(), ['timeout' => false]);
       }
       // Fetch data.
       $db_anno_rw = self::$_db_annotations_rw_store->createQueryBuilder()
@@ -196,10 +101,10 @@ class YetAnotherICALCalendar_Parser {
         ->limit(1)
         ->getQuery()
         ->fetch();
-      self::write_log(sprintf("#FETCH=%d", count($db_anno_rw)));
+      YAICALHelper::write_log(sprintf("#FETCH=%d", count($db_anno_rw)));
       if (count($db_anno_rw) == 1) {
         foreach ($db_anno_rw[0] as $key => $value) {
-          self::write_log(sprintf("DB_ANNO_RW['%s'] = '%s'", $key, $value));
+          YAICALHelper::write_log(sprintf("DB_ANNO_RW['%s'] = '%s'", $key, $value));
         }
         self::_clean_annotation_rw();
         return ['read' => ($db_anno_rw[0]['read'] == '1'), 'write' => ($db_anno_rw[0]['write'] == '1')];
@@ -262,7 +167,7 @@ class YetAnotherICALCalendar_Parser {
           $b_exclude_dtend = false;
         }
         if (empty($dt_start) or empty($dt_end)) {
-          self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' DTEND='%s'", strval($dt_start), strval($dt_end)));
+          YAICALHelper::write_log(sprintf("WRONG VEVENT! DTSTART='%s' DTEND='%s'", strval($dt_start), strval($dt_end)));
         } else {
           array_push($a_ical_events, array('EVENT' => $ical_event, 'DTSTART' => $dt_start, 'DTEND' => $dt_end));
           switch ($description) {
@@ -285,10 +190,10 @@ class YetAnotherICALCalendar_Parser {
           }
           $span = new YetAnotherICALCalendar_Datespan($from, $to, $dt_description);
           $ical_spans->add($span);
-          //self::write_log(sprintf("[%s] FROM=%s TO=%s SPAN='%s'", $ical_event_key, $from->format('c'), $to->format('c'), $span->inspect()));
+          //YAICALHelper::write_log(sprintf("[%s] FROM=%s TO=%s SPAN='%s'", $ical_event_key, $from->format('c'), $to->format('c'), $span->inspect()));
         }
       } else {
-        self::write_log(sprintf("WRONG VEVENT! DTSTART='%s' EMPTY OR WRONG FORMAT!", strval($dt_start)));
+        YAICALHelper::write_log(sprintf("WRONG VEVENT! DTSTART='%s' EMPTY OR WRONG FORMAT!", strval($dt_start)));
       }
     }
   } // _add_ical_events_to_ical_spans
@@ -326,8 +231,8 @@ class YetAnotherICALCalendar_Parser {
     $approximated_table_width_in_pixels = 50 + 19 * $calendar_width;
     //
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
-      //self::write_log(sprintf("RENDER YEAR=%d TYPE='%s'", $year, $type));
-      //self::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, self::$_my_plugin_directory));
+      //YAICALHelper::write_log(sprintf("RENDER YEAR=%d TYPE='%s'", $year, $type));
+      //YAICALHelper::write_log(sprintf("%04d: STARTWDAY=%d WIDTH=%d DIR='%s'", $year, $calendar_starts_with_wday, $calendar_width, YAICALHelper::get_my_plugin_directory()));
       //
       $doc .= sprintf('<div class="yetanothericalcalendar-reset-this"><div class="yetanothericalcalendar" id="%s" year="%d"><div id="%s-cal-msg" style=display:none;"></div><table class="yr-table%s" width="%dpx"><tbody>',
         $id, $id, $year, ($align == '' ? '' : (' ' . $align)), $approximated_table_width_in_pixels) . PHP_EOL;
@@ -355,7 +260,7 @@ class YetAnotherICALCalendar_Parser {
         $doc .= sprintf('<tr><th><div class="cellc frow%s"><span class="mo-span">%s</span></div></th>',
           (($nr_month_counter % 2) == 1 ? ' alt' : ''),
           __($a_months_abr[$month - 1], 'yetanothericalcalendar')) . PHP_EOL;
-        //self::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
+        //YAICALHelper::write_log(sprintf("%04d%02d: CALSTARTWDAY=%d MONTHSTARTWDAY=%d", $year, $month, $calendar_starts_with_wday, $month_starts_with_wday));
         for ($i = 0; $i < $calendar_width; $i++) {
           $wday = (($calendar_starts_with_wday + $i) % 7);
           $wday = ($wday == 0 ? 7 : $wday);
@@ -363,21 +268,21 @@ class YetAnotherICALCalendar_Parser {
           if (($month_day >= 1) and ($month_day <= $nr_mdays)) {
             $dt_this_date = YAICALHelper::strtodatetime(sprintf("%04d%02d%02d", $year, $month, $month_day));
             $pos = $ical_spans->position($dt_this_date, $type);
-            //self::write_log(sprintf("%04d%02d%02d: DATE='%s' POS=%d", $year, $month, $month_day, $dt_this_date->format('c'), $pos));
+            //YAICALHelper::write_log(sprintf("%04d%02d%02d: DATE='%s' POS=%d", $year, $month, $month_day, $dt_this_date->format('c'), $pos));
             $td_backgroud_image_style = '';
             if ($type == "event") {
               switch ($pos) {
                 case YetAnotherICALCalendar_Datespans::IS_START:
-                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                   break;
                 case YetAnotherICALCalendar_Datespans::IS_END:
-                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                   break;
                 case YetAnotherICALCalendar_Datespans::IS_IN_SPAN:
-                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                   break;
                 case YetAnotherICALCalendar_Datespans::IS_SPLIT:
-                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                   break;
                 case YetAnotherICALCalendar_Datespans::IS_FREE:
                   break;
@@ -385,17 +290,17 @@ class YetAnotherICALCalendar_Parser {
             } else {
               switch ($pos) {
                 case YetAnotherICALCalendar_Datespans::IS_START:
-                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/start-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/start-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                   break;
                 case YetAnotherICALCalendar_Datespans::IS_END:
-                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/end-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/end-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                   break;
                 case YetAnotherICALCalendar_Datespans::IS_IN_SPAN:
-                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                   break;
                 case YetAnotherICALCalendar_Datespans::IS_SPLIT:
-                  //self::write_log(sprintf("SPLIT: %04d%02d%02d", $year, $month, $month_day));
-                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/split-background.svg', self::$_my_plugin_directory . '/index.php'));
+                  //YAICALHelper::write_log(sprintf("SPLIT: %04d%02d%02d", $year, $month, $month_day));
+                  $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/split-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                   break;
                 case YetAnotherICALCalendar_Datespans::IS_FREE:
                   break;
@@ -403,7 +308,7 @@ class YetAnotherICALCalendar_Parser {
             }
             /*
             if ($month_day == 1) {
-            self::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
+            YAICALHelper::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
             }
             */
             $a_wday_classes = array();
@@ -489,8 +394,8 @@ class YetAnotherICALCalendar_Parser {
     //
     $doc .= sprintf('<div class="yetanothericalcalendar-reset-this"><div id="%s-cal-msg" style=display:none;"></div><div id="%s" class="yetanothericalcalendar mo-grid">', $id, $id) . PHP_EOL;
     foreach (($b_use_ical_years ? $a_ical_years : $a_years) as $year) {
-      self::write_log(sprintf("RENDER AS MONTHS YEAR=%d", $year));
-      self::write_log(sprintf("%04d: WIDTH=%d HEIGHT=%d DIR='%s' DESCRIPTION=%s", $year, 7, $calendar_height, self::$_my_plugin_directory, YAICALHelper::booltostr($description)));
+      YAICALHelper::write_log(sprintf("RENDER AS MONTHS YEAR=%d", $year));
+      YAICALHelper::write_log(sprintf("%04d: WIDTH=%d HEIGHT=%d DIR='%s' DESCRIPTION=%s", $year, 7, $calendar_height, YAICALHelper::get_my_plugin_directory(), YAICALHelper::booltostr($description)));
       $nr_month_counter = 0;
       foreach (($b_use_ical_months ? $a_ical_year_months[$year] : $a_months) as $month) {
         //
@@ -534,13 +439,13 @@ class YetAnotherICALCalendar_Parser {
                 if ($type == "event") {
                   switch ($pos) {
                     case YetAnotherICALCalendar_Datespans::IS_START:
-                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                       break;
                     case YetAnotherICALCalendar_Datespans::IS_END:
-                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                       break;
                     case YetAnotherICALCalendar_Datespans::IS_IN_SPAN:
-                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                       break;
                     case YetAnotherICALCalendar_Datespans::IS_FREE:
                       break;
@@ -548,24 +453,24 @@ class YetAnotherICALCalendar_Parser {
                 } else {
                   switch ($pos) {
                     case YetAnotherICALCalendar_Datespans::IS_START:
-                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/start-background.svg', self::$_my_plugin_directory . '/index.php'));
+                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/start-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                       break;
                     case YetAnotherICALCalendar_Datespans::IS_END:
-                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/end-background.svg', self::$_my_plugin_directory . '/index.php'));
+                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/end-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                       break;
                     case YetAnotherICALCalendar_Datespans::IS_IN_SPAN:
-                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', self::$_my_plugin_directory . '/index.php'));
+                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/occupied-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                       break;
                     case YetAnotherICALCalendar_Datespans::IS_SPLIT:
-                      self::write_log(sprintf("SPLIT! DATE='%s'", $dt_this_date->format('c')));
-                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/split-background.svg', self::$_my_plugin_directory . '/index.php'));
+                      YAICALHelper::write_log(sprintf("SPLIT! DATE='%s'", $dt_this_date->format('c')));
+                      $td_backgroud_image_style = sprintf(' style="background-image: url(%s); background-size: cover; background-repeat: no-repeat;"', plugins_url('/assets/img/split-background.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'));
                       break;
                     case YetAnotherICALCalendar_Datespans::IS_FREE:
                       break;
                   }
                 }
                 if ($month_day == 1) {
-                  self::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
+                  YAICALHelper::write_log(sprintf("%04d%02d01: WDAY=%d", $year, $month, $wday));
                 }
                 $a_wday_classes = array();
                 if ($wday >= 6) {
@@ -626,7 +531,7 @@ class YetAnotherICALCalendar_Parser {
     $year,
     &$a_years,
     $b_use_ical_months, &$a_ical_year_months, &$a_months) {
-    self::write_log(sprintf("_add_month: MONTH=%d YEAR=%d", $month, $year));
+    YAICALHelper::write_log(sprintf("_add_month: MONTH=%d YEAR=%d", $month, $year));
     // Add year.
     if (!array_search($year, $a_years)) {
       array_push($a_years, $year);
@@ -687,19 +592,17 @@ class YetAnotherICALCalendar_Parser {
    * @since   1.0.0
    */
   public static function parse($uuid, $atts, $content, &$evaluate_stack = NULL, $token = 'yetanothericalcalendar') {
-    date_default_timezone_set("Europe/Berlin");
     //----------
-    self::_init_directories();
-    self::_init_log(self::$_my_log_directory);
+    YAICALHelper::init();
     //----------
     self::$_content_src = $content;
     $content = YAICALHelper::purecontent($content);
     $has_content = !empty($content);
-    self::write_log("CONTENT='" . $content . "'");
+    YAICALHelper::write_log("CONTENT='" . $content . "'");
     //
     //----------
     // Construct original shortcut source code.
-    $shortcut_src = '[' . self::$token;
+    $shortcut_src = '[' . YAICALHelper::get_token();
     $a_atts_keys = array_keys($atts);
     foreach ($a_atts_keys as $key) {
       $shortcut_src .= ' ' . $key . '="' . $atts[$key] . '"';
@@ -707,10 +610,10 @@ class YetAnotherICALCalendar_Parser {
     $shortcut_src .= ']';
     if (!empty($content)) {
       $shortcut_src .= "<br />" . self::$_content_src;
-      $shortcut_src .= '[/' . self::$token . ']';
+      $shortcut_src .= '[/' . YAICALHelper::get_token() . ']';
     }
     self::$_shortcut_src = $shortcut_src;
-    self::write_log(sprintf(""));
+    YAICALHelper::write_log(sprintf(""));
     //
     //----------
     // Get ID.
@@ -762,7 +665,7 @@ class YetAnotherICALCalendar_Parser {
     if (array_key_exists('cache', $atts)) {
       $atts_cache = trim($atts['cache']);
       if (preg_match("/^([1-9]\d*)((?i)[hdmy])$/", $atts_cache, $matches)) {
-        //self::write_log(sprintf("CACHE-MATCHES=%d", count($matches)));
+        //YAICALHelper::write_log(sprintf("CACHE-MATCHES=%d", count($matches)));
         if (count($matches) == 3) {
           $multiplier = intval($matches[1]);
           $time_period = 86400;
@@ -787,17 +690,17 @@ class YetAnotherICALCalendar_Parser {
         }
       }
     }
-    self::write_log(sprintf("CAHCE-RELOAD-TIMEOUT=%d", $cache_reload_timeout));
+    YAICALHelper::write_log(sprintf("CAHCE-RELOAD-TIMEOUT=%d", $cache_reload_timeout));
     //
     //----------
     // Get ical urls:
     $a_ical_urls = array();
     if (array_key_exists('ical', $atts)) {
       $atts_ical = trim($atts['ical']);
-      self::write_log(sprintf("PARAM ICAL='%s'", $atts_ical));
+      YAICALHelper::write_log(sprintf("PARAM ICAL='%s'", $atts_ical));
       if (preg_match("/^(\S+(\s+))*(\S+)$/", $atts_ical, $matches)) {
-        //self::write_log(sprintf("ICAL-URL-MATCHES=%d", count($matches)));
-        //self::write_log($matches);
+        //YAICALHelper::write_log(sprintf("ICAL-URL-MATCHES=%d", count($matches)));
+        //YAICALHelper::write_log($matches);
         if (count($matches) == 4) {
           $ical_list_string = preg_replace('/\s+/', ' ', $matches[0]);
           $a_ical_url_list = explode(' ', $ical_list_string);
@@ -814,8 +717,8 @@ class YetAnotherICALCalendar_Parser {
     // Fetch ical urls:
     foreach ($a_ical_urls as $ical_url) {
       $file_id = hash("sha256", $ical_url);
-      self::write_log(sprintf("URL='%s' HASH='%s'", $ical_url, $file_id));
-      $cache_fn = self::$_my_cache_directory . '/' . $file_id;
+      YAICALHelper::write_log(sprintf("URL='%s' HASH='%s'", $ical_url, $file_id));
+      $cache_fn = YAICALHelper::get_my_cache_directory() . '/' . $file_id;
       try {
         $has_reload = true;
         if (file_exists($cache_fn)) {
@@ -824,7 +727,7 @@ class YetAnotherICALCalendar_Parser {
           if ($t_cache_file_diff < $cache_reload_timeout) {
             $has_reload = false;
           }
-          self::write_log(sprintf("T-CACHE-DIFF=%d HAS-RELOAD=%s", $t_cache_file_diff, YAICALHelper::booltostr($has_reload)));
+          YAICALHelper::write_log(sprintf("T-CACHE-DIFF=%d HAS-RELOAD=%s", $t_cache_file_diff, YAICALHelper::booltostr($has_reload)));
         }
         // Load external resource.
         if ($has_reload) {
@@ -832,7 +735,7 @@ class YetAnotherICALCalendar_Parser {
 
           if (is_array($response) && (!is_wp_error($response))) {
             $response_code = intval(wp_remote_retrieve_response_code($response));
-            self::write_log(sprintf("HTTP-RESPONSE-CODE=%d", $response_code));
+            YAICALHelper::write_log(sprintf("HTTP-RESPONSE-CODE=%d", $response_code));
             if ($response_code == 200) {
               // Write to cahce:
               $my_cache_file = fopen($cache_fn, "w");
@@ -854,14 +757,14 @@ class YetAnotherICALCalendar_Parser {
             'defaultWeekStart' => 'MO',
             'skipRecurrence' => false,
             'defaultSpan' => 5));
-          self::write_log(sprintf("ICAL-SIZE=%d", $ical->eventCount));
+          YAICALHelper::write_log(sprintf("ICAL-SIZE=%d", $ical->eventCount));
           if ($ical->eventCount > 0) {
             self::_add_ical_events_to_ical_spans($ical_url, $description, $ical->events(), $a_ical_events, $ical_spans);
           }
         }
       } catch (Exception $e) {
         $msg = sprintf("ERROR='%s'", strval($e));
-        self::write_log($msg);
+        YAICALHelper::write_log($msg);
         return self::_error($msg);
       }
     }
@@ -876,7 +779,7 @@ class YetAnotherICALCalendar_Parser {
         'defaultWeekStart' => 'MO',
         'skipRecurrence' => false,
         'defaultSpan' => 5));
-      self::write_log(sprintf("CONTENT-ICAL-SIZE=%d", $ical->eventCount));
+      YAICALHelper::write_log(sprintf("CONTENT-ICAL-SIZE=%d", $ical->eventCount));
       if ($ical->eventCount > 0) {
         self::_add_ical_events_to_ical_spans('', $description, $ical->events(), $a_ical_events, $ical_spans);
       }
@@ -889,7 +792,7 @@ class YetAnotherICALCalendar_Parser {
       $dt_start = $a_ical_event['DTSTART'];
       $dt_end = $a_ical_event['DTEND'];
       // Collect ical spans:
-      //self::write_log(sprintf("[%s] GET YEARS/MONTHS ICAL-DTSTART='%s' DTEND='%s'", $ical_event_key, $dt_start, $dt_end));
+      //YAICALHelper::write_log(sprintf("[%s] GET YEARS/MONTHS ICAL-DTSTART='%s' DTEND='%s'", $ical_event_key, $dt_start, $dt_end));
       foreach ([$dt_start, $dt_end] as $dt) {
         if (preg_match("/^(\d{4})(\d{2})(\d{2})/", $dt, $matches)) {
           if (count($matches) == 4) {
@@ -924,13 +827,13 @@ class YetAnotherICALCalendar_Parser {
     // Collect all years.
     $b_years_syntax_is_correct = false;
     $a_years = array();
-    //self::write_log($atts);
+    //YAICALHelper::write_log($atts);
     if (array_key_exists('year', $atts)) {
       $atts_year = trim($atts['year']);
-      //self::write_log(sprintf("PARAM YEAR='%s'", $atts_year));
+      //YAICALHelper::write_log(sprintf("PARAM YEAR='%s'", $atts_year));
       if (preg_match("/^((?i)NOW|(?i)ICAL|[1-9][0-9]*)(\+[1-9][0-9]*){0,1}(-[1-9][0-9]*){0,1}$/", $atts_year, $matches)
         or preg_match("/^((?i)NOW|(?i)ICAL|[1-9][0-9]*)(\-[1-9][0-9]*){0,1}(\+[1-9][0-9]*){0,1}$/", $atts_year, $matches)) {
-        //self::write_log($matches);
+        //YAICALHelper::write_log($matches);
         if (strtolower($matches[1]) == 'ical') {
           $b_use_ical_years = true;
           switch (count($matches)) {
@@ -1064,16 +967,16 @@ class YetAnotherICALCalendar_Parser {
     // Collect all months.
     $b_months_syntax_is_correct = false;
     $a_months = array();
-    //self::write_log($atts);
+    //YAICALHelper::write_log($atts);
     if (array_key_exists('months', $atts)) {
       $atts_months = trim($atts['months']);
-      self::write_log(sprintf("PARAM MONTHS='%s'", $atts_months));
+      YAICALHelper::write_log(sprintf("PARAM MONTHS='%s'", $atts_months));
       if (preg_match("/^((?i)NOW|(?i)ALL|(?i)ICAL|[1-9][0-9]*)(\+[1-9][0-9]*){0,1}(-[1-9][0-9]*){0,1}$/", $atts_months, $matches)
         or preg_match("/^((?i)NOW|(?i)ALL|(?i)ICAL|[1-9][0-9]*)(\-[1-9][0-9]*){0,1}(\+[1-9][0-9]*){0,1}$/", $atts_months, $matches)) {
         if (strtolower($matches[1]) == 'ical') {
           $b_months_syntax_is_correct = true;
           $b_use_ical_months = true;
-          //self::write_log($matches);
+          //YAICALHelper::write_log($matches);
           switch (count($matches)) {
             case 2:
               // ICAL months, do nothing these are set.
@@ -1166,7 +1069,7 @@ class YetAnotherICALCalendar_Parser {
               break;
           }
         } else {
-          //self::write_log($matches);
+          //YAICALHelper::write_log($matches);
           if (self::_set_month($matches[1], $base_month)) {
             switch (count($matches)) {
               case 2:
@@ -1225,8 +1128,8 @@ class YetAnotherICALCalendar_Parser {
       } else {
         // list of months = a,b,c[...]
         if (preg_match("/^((?i)NOW|[\d,\s]+)+$/", $atts_months, $matches)) {
-          //self::write_log("LIST OF MONTHS");
-          //self::write_log($matches);
+          //YAICALHelper::write_log("LIST OF MONTHS");
+          //YAICALHelper::write_log($matches);
           if (count($matches) == 2) {
             $b_months_syntax_is_correct = true;
             $months_list_string = preg_replace('/\s+/', '', $matches[0]);
@@ -1242,19 +1145,19 @@ class YetAnotherICALCalendar_Parser {
           if (preg_match("/^\s*((?i)NOW([+-])(?i)ICAL)(([+-])[1-9][0-9]*){0,1}\s*$/", $atts_months, $matches)) {
             $b_months_syntax_is_correct = true;
             /*
-            self::write_log(sprintf("NOW[+-]ICAL: ICAL-YEARS & ICAL-MONTHS: USE-ICAL-YEARS=%s", YAICALHelper::booltostr($b_use_ical_years)));
-            self::write_log($a_ical_years);
-            self::write_log(sprintf("NOW[+-]ICAL: YEARS & MONTHS:"));
-            self::write_log($a_years);
-            self::write_log($matches);
+            YAICALHelper::write_log(sprintf("NOW[+-]ICAL: ICAL-YEARS & ICAL-MONTHS: USE-ICAL-YEARS=%s", YAICALHelper::booltostr($b_use_ical_years)));
+            YAICALHelper::write_log($a_ical_years);
+            YAICALHelper::write_log(sprintf("NOW[+-]ICAL: YEARS & MONTHS:"));
+            YAICALHelper::write_log($a_years);
+            YAICALHelper::write_log($matches);
             */
             $operator = $matches[2];
             $year_now = intval(date('Y'));
             $month_now = intval(date('m'));
             $operator2 = '+';
             $offset = 0;
-            self::write_log("NOW+ICAL:");
-            self::write_log($matches);
+            YAICALHelper::write_log("NOW+ICAL:");
+            YAICALHelper::write_log($matches);
             if (count($matches) == 5) {
               $operator2 = $matches[4];
               $offset = intval($matches[3]);
@@ -1310,14 +1213,14 @@ class YetAnotherICALCalendar_Parser {
               while (($key = array_pop($a_keys_to_remove)) != null) {
                 unset($a_ical_years[$key]);
               }
-              self::write_log($a_ical_years);
+              YAICALHelper::write_log($a_ical_years);
               // Remove all months not in years.
               if ($b_use_ical_months) {
                 $a_years_to_remove = [];
                 foreach ($a_ical_year_months as $year => $months) {
                   if (!in_array($year, $a_ical_years)) {
                     array_push($a_years_to_remove, $year);
-                    self::write_log(sprintf("YEARTOREMOVE=%s", $year));
+                    YAICALHelper::write_log(sprintf("YEARTOREMOVE=%s", $year));
                   }
                 }
                 foreach ($a_years_to_remove as $year) {
@@ -1327,15 +1230,15 @@ class YetAnotherICALCalendar_Parser {
             }
             // Add extra months:
             if ($offset != 0) {
-              self::write_log(sprintf("OFFSET=%d", $offset));
+              YAICALHelper::write_log(sprintf("OFFSET=%d", $offset));
               if ($offset > 0) {
                 $year = max($b_use_ical_years ? $a_ical_years : $a_years);
-                self::write_log(sprintf("OFFSET: MAX-YEAR=%d ICAL-MONTHS=%s", $year, YAICALHelper::booltostr($b_use_ical_months)));
+                YAICALHelper::write_log(sprintf("OFFSET: MAX-YEAR=%d ICAL-MONTHS=%s", $year, YAICALHelper::booltostr($b_use_ical_months)));
                 $a_month_array_reference = ($b_use_ical_months ? $a_ical_year_months[$year] : $a_months);
                 $max_month = max($a_month_array_reference);
                 $over_months = max([0, $max_month + $offset - 12]);
                 $to = min([12, $max_month + $offset]);
-                self::write_log(sprintf("OFFSET: OVER-MONTHS=%d MAX-MONTH=%d TO=%d", $over_months, $max_month, $to));
+                YAICALHelper::write_log(sprintf("OFFSET: OVER-MONTHS=%d MAX-MONTH=%d TO=%d", $over_months, $max_month, $to));
                 for ($m = $max_month + 1; $m <= $to; $m++) {
                   if (!in_array($m, $a_month_array_reference)) {
                     array_push($a_month_array_reference, $m);
@@ -1344,12 +1247,12 @@ class YetAnotherICALCalendar_Parser {
                 sort($a_month_array_reference, SORT_NUMERIC);
               } else {
                 $year = min($b_use_ical_years ? $a_ical_years : $a_years);
-                self::write_log(sprintf("OFFSET: MIN-YEAR=%d ICAL-MONTHS=%s", $year, YAICALHelper::booltostr($b_use_ical_months)));
+                YAICALHelper::write_log(sprintf("OFFSET: MIN-YEAR=%d ICAL-MONTHS=%s", $year, YAICALHelper::booltostr($b_use_ical_months)));
                 $a_month_array_reference = ($b_use_ical_months ? $a_ical_year_months[$year] : $a_months);
                 $min_month = min($a_month_array_reference);
                 $over_months = min([0, $min_month + $offset]);
                 $from = max([1, $min_month + $offset]);
-                self::write_log(sprintf("OFFSET: OVER-MONTHS=%d MIN-MONTH=%d FROM=%d", $over_months, $min_month, $from));
+                YAICALHelper::write_log(sprintf("OFFSET: OVER-MONTHS=%d MIN-MONTH=%d FROM=%d", $over_months, $min_month, $from));
                 for ($m = $from; $m < $min_month; $m++) {
                   if (!in_array($m, $a_month_array_reference)) {
                     array_push($a_month_array_reference, $m);
@@ -1454,16 +1357,16 @@ class YetAnotherICALCalendar_Parser {
     //
     //----------
     //
-    self::write_log(sprintf("B_USE_ICAL_YEARS=%s B_USE_ICAL_MONTHS=%s", YAICALHelper::booltostr($b_use_ical_years), YAICALHelper::booltostr($b_use_ical_months)));
+    YAICALHelper::write_log(sprintf("B_USE_ICAL_YEARS=%s B_USE_ICAL_MONTHS=%s", YAICALHelper::booltostr($b_use_ical_years), YAICALHelper::booltostr($b_use_ical_months)));
     if ($b_use_ical_years) {
-      self::write_log($a_ical_years);
+      YAICALHelper::write_log($a_ical_years);
     } else {
-      self::write_log($a_years);
+      YAICALHelper::write_log($a_years);
     }
     if ($b_use_ical_months) {
-      self::write_log($a_ical_year_months);
+      YAICALHelper::write_log($a_ical_year_months);
     } else {
-      self::write_log($a_months);
+      YAICALHelper::write_log($a_months);
     }
     //
     //----------
@@ -1475,7 +1378,7 @@ class YetAnotherICALCalendar_Parser {
     foreach ($a_wdays as $wday) {
       array_push($a_wdays_first_chracter, mb_substr(__($wday, 'yetanothericalcalendar'), 0, 1));
     }
-    //self::write_log($a_wdays_first_chracter);
+    //YAICALHelper::write_log($a_wdays_first_chracter);
     //
     //----------
     // Render calender.
@@ -1491,19 +1394,17 @@ class YetAnotherICALCalendar_Parser {
   } // parse
 
   public static function parse_annotation($uuid, $atts, $content, &$evaluate_stack = NULL, $token = 'yetanothericalcalendar-annotation') {
-    date_default_timezone_set("Europe/Berlin");
     //----------
-    self::_init_directories();
-    self::_init_log(self::$_my_log_directory);
+    YAICALHelper::init();
     //----------
     self::$_content_src = $content;
     $content = YAICALHelper::purecontent($content);
     $has_content = !empty($content);
-    self::write_log("CONTENT='" . $content . "'");
+    YAICALHelper::write_log("CONTENT='" . $content . "'");
     //
     //----------
     // Construct original shortcut source code.
-    $shortcut_src = '[' . self::$token_annotation;
+    $shortcut_src = '[' . YAICALHelper::get_token_annotation();
     $a_atts_keys = array_keys($atts);
     foreach ($a_atts_keys as $key) {
       $shortcut_src .= ' ' . $key . '="' . $atts[$key] . '"';
@@ -1511,10 +1412,10 @@ class YetAnotherICALCalendar_Parser {
     $shortcut_src .= ']';
     if (!empty($content)) {
       $shortcut_src .= "<br />" . self::$_content_src;
-      $shortcut_src .= '[/' . self::$token_annotation . ']';
+      $shortcut_src .= '[/' . YAICALHelper::get_token_annotation() . ']';
     }
     self::$_shortcut_src = $shortcut_src;
-    self::write_log(sprintf(""));
+    YAICALHelper::write_log(sprintf(""));
     //
     //----------
     // Get Calendar ID.
@@ -1522,7 +1423,7 @@ class YetAnotherICALCalendar_Parser {
     // Get page/post ID.
     $pid = strval(get_the_ID());
     // Get session id.
-    self::write_log(sprintf("UUID='%s'", $uuid));
+    YAICALHelper::write_log(sprintf("UUID='%s'", $uuid));
     //
     $doc = '';
     if ((!empty($id)) and (!empty($pid)) and (!empty($uuid))) {
@@ -1545,12 +1446,12 @@ class YetAnotherICALCalendar_Parser {
       //
       //----------
       // Render calender.
-      self::write_log(sprintf("parse_annotation: PID=%s ID='%s' READ='%s' WRITE='%s' REQUIRED=%s POST-STATUS='%s'",
+      YAICALHelper::write_log(sprintf("parse_annotation: PID=%s ID='%s' READ='%s' WRITE='%s' REQUIRED=%s POST-STATUS='%s'",
         $pid, $id,
         YAICALHelper::booltostr($is_read_acc),
         YAICALHelper::booltostr($is_write_acc),
         YAICALHelper::booltostr(post_password_required()), get_post_status()));
-      self::write_log(sprintf("parse_annotation: ROLES='%s'", implode(', ', YAICALHelper::get_current_user_roles())));
+      YAICALHelper::write_log(sprintf("parse_annotation: ROLES='%s'", implode(', ', YAICALHelper::get_current_user_roles())));
       $doc = sprintf('<div class="yetanothericalcalendar-annotation" id="%s" pid="%s"><div class="loader"></div></div>', $id, $pid);
     }
     return $doc;

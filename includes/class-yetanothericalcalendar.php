@@ -51,24 +51,7 @@ class YetAnotherICALCalendar {
    * @since   1.0.0
    */
   private static $_default_yetanothericalcalendar_params = null;
-  private static $_default_yetanothericalcalendar_annatation_params = null;
-
-  /**
-   * The debug trigger.
-   *
-   * @var     object
-   * @access  private
-   * @since   1.0.0
-   */
-  private static $_enable_debugging = true;
-  private static $_log_initialized = false;
-  private static $_log_class = null;
-
-  private static $_directories_initialized = false;
-  public static $token = 'yetanothericalcalendar';
-  private static $_my_plugin_directory = null;
-  private static $_my_log_directory = null;
-  private static $_my_database_directory = null;
+  private static $_default_yetanothericalcalendar_annotation_params = null;
 
   /**
    * SleekDB Annotations Store Variables.
@@ -148,67 +131,6 @@ class YetAnotherICALCalendar {
    */
   public $script_suffix;
 
-  /* ---------------------------------------------------------------------
-   * Add log function.
-   */
-  private static function _init_directories() {
-    if (!self::$_directories_initialized) {
-      self::$_my_plugin_directory = WP_PLUGIN_DIR . '/' . self::$token;
-      if (!is_dir(self::$_my_plugin_directory)) {
-        mkdir(self::$_my_plugin_directory, 0777, true);
-      }
-      // Create logging directory.
-      self::$_my_log_directory = self::$_my_plugin_directory . '/log';
-      if (!is_dir(self::$_my_log_directory)) {
-        mkdir(self::$_my_log_directory, 0777, true);
-      }
-      // Create database directory.
-      self::$_my_database_directory = self::$_my_plugin_directory . '/db';
-      if (!is_dir(self::$_my_database_directory)) {
-        mkdir(self::$_my_database_directory, 0777, true);
-      }
-      self::$_directories_initialized = true;
-    }
-  } // _init_directories
-
-  private static function _init_log() {
-    if (!self::$_log_initialized) {
-      if (!self::$_directories_initialized) {
-        self::_init_directories();
-      }
-      if (class_exists('YetAnotherICALCalendar_Logger')) {
-        self::$_log_class = 'YetAnotherICALCalendar_Logger';
-        self::$_log_class::$log_level = 'debug';
-        self::$_log_class::$write_log = true;
-        self::$_log_class::$log_dir = self::$_my_log_directory;
-        self::$_log_class::$log_file_name = self::$token;
-        self::$_log_class::$log_file_extension = 'log';
-        self::$_log_class::$print_log = false;
-      }
-      self::$_log_initialized = true;
-    }
-  } // _init_log
-
-  public static function write_log($log = NULL, $is_error = false, $bn = '', $func = '', $line = -1) {
-    if (self::$_enable_debugging or $is_error) {
-      self::_init_directories();
-      self::_init_log();
-      $bn = (empty($bn) ? basename(debug_backtrace()[1]['file']) : $bn);
-      $func = (empty($func) ? debug_backtrace()[1]['function'] : $func);
-      $line = ($line == -1 ? intval(debug_backtrace()[0]['line']) : $line);
-      $msg = sprintf('[%s:%d:%s] %s', $bn, $line, $func, ((is_array($log) || is_object($log)) ? print_r($log, true) : $log));
-      if (is_null(self::$_log_class)) {
-        error_log($msg . PHP_EOL);
-      } else {
-        if ($is_error) {
-          self::$_log_class::error($msg);
-        } else {
-          self::$_log_class::debug($msg);
-        }
-      }
-    }
-  } // write_log
-
   /**
    * Constructor funtion.
    *
@@ -246,7 +168,7 @@ class YetAnotherICALCalendar {
     add_action('init', array($this, 'load_localisation'), 0);
 
     // Create AJAX POST handler action.
-    self::write_log(sprintf("Register POST handler."));
+    YAICALHelper::write_log(sprintf("Register POST handler."));
     add_action('wp_ajax_yetanothericalcalendar_add_annotation', array($this, 'handle_annotation_add'));
     add_action('wp_ajax_nopriv_yetanothericalcalendar_add_annotation', array($this, 'handle_annotation_add'));
     add_action('wp_ajax_yetanothericalcalendar_get_annotations', array($this, 'handle_annotation_get_annotations'));
@@ -254,9 +176,9 @@ class YetAnotherICALCalendar {
 
     // Set session cookie.
     add_action('init', function () {
-      self::write_log(sprintf("get_or_set_session_cookie"));
+      YAICALHelper::write_log(sprintf("get_or_set_session_cookie"));
       $uuid = YAICALHelper::get_or_set_session_cookie('wordpress-yetanothericalcalendar_seesion_cookie');
-      self::write_log(sprintf("UUID='%s'", $uuid));
+      YAICALHelper::write_log(sprintf("UUID='%s'", $uuid));
       self::$uuid = $uuid;
     });
   } // __construct
@@ -289,14 +211,14 @@ class YetAnotherICALCalendar {
   } // default_yetanothericalcalendar_params
 
   private static function default_yetanothericalcalendar_annatation_params() {
-    if (self::$_default_yetanothericalcalendar_annatation_params === null) {
-      self::$_default_yetanothericalcalendar_annatation_params = array(
+    if (self::$_default_yetanothericalcalendar_annotation_params === null) {
+      self::$_default_yetanothericalcalendar_annotation_params = array(
         'id' => '', // ID of a calendar.
         'read' => '+', // Comma separated list of roles: E.g.: 'administrator,editor,author,contributor,subscriber' / Empty = No read access. '*' = Read access for all roles. '+' = Read access for everybody.
         'write' => '*', // Comma separated list of roles: E.g.: 'administrator,editor,author,contributor,subscriber' / Empty = No write access. '*' = Write access for all roles. '+' = Write access for everybody.
       );
     }
-    return self::$_default_yetanothericalcalendar_annatation_params;
+    return self::$_default_yetanothericalcalendar_annotation_params;
   } // default_yetanothericalcalendar_annatation_params
 
   /**
@@ -351,13 +273,13 @@ class YetAnotherICALCalendar {
    * @since   1.0.0
    */
   public function enqueue_styles() {
-    wp_register_style(self::$token . '-frontend', esc_url($this->assets_url) . 'css/frontend.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-frontend');
+    wp_register_style(YAICALHelper::get_token() . '-frontend', esc_url($this->assets_url) . 'css/frontend.min.css', array(), $this->_version);
+    wp_enqueue_style(YAICALHelper::get_token() . '-frontend');
     // SEE:https://tingle.robinparisi.com/
-    wp_register_style(self::$token . '-tingle', esc_url($this->assets_url) . 'css/tingle.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-tingle');
-    wp_register_style(self::$token . '-style', esc_url($this->assets_url) . 'css/style.min.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-style');
+    wp_register_style(YAICALHelper::get_token() . '-tingle', esc_url($this->assets_url) . 'css/tingle.min.css', array(), $this->_version);
+    wp_enqueue_style(YAICALHelper::get_token() . '-tingle');
+    wp_register_style(YAICALHelper::get_token() . '-style', esc_url($this->assets_url) . 'css/style.min.css', array(), $this->_version);
+    wp_enqueue_style(YAICALHelper::get_token() . '-style');
   } // enqueue_styles
 
   /**
@@ -368,14 +290,14 @@ class YetAnotherICALCalendar {
    * @since   1.0.0
    */
   public function enqueue_scripts() {
-    wp_register_script(self::$token . '-frontend', esc_url($this->assets_url) . 'js/frontend' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
-    wp_enqueue_script(self::$token . '-frontend');
-    wp_register_script(self::$token . '-html5tooltips', esc_url($this->assets_url) . 'js/html5tooltips.1.7.3' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
-    wp_enqueue_script(self::$token . '-html5tooltips');
-    wp_register_script(self::$token . '-tingle', esc_url($this->assets_url) . 'js/tingle' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
-    wp_enqueue_script(self::$token . '-tingle');
-    wp_register_script(self::$token . '-script', esc_url($this->assets_url) . 'js/script' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
-    wp_enqueue_script(self::$token . '-script');
+    wp_register_script(YAICALHelper::get_token() . '-frontend', esc_url($this->assets_url) . 'js/frontend' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(YAICALHelper::get_token() . '-frontend');
+    wp_register_script(YAICALHelper::get_token() . '-html5tooltips', esc_url($this->assets_url) . 'js/html5tooltips.1.7.3' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(YAICALHelper::get_token() . '-html5tooltips');
+    wp_register_script(YAICALHelper::get_token() . '-tingle', esc_url($this->assets_url) . 'js/tingle' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(YAICALHelper::get_token() . '-tingle');
+    wp_register_script(YAICALHelper::get_token() . '-script', esc_url($this->assets_url) . 'js/script' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(YAICALHelper::get_token() . '-script');
   } // enqueue_scripts
 
   /**
@@ -386,8 +308,8 @@ class YetAnotherICALCalendar {
    * @return void
    */
   public function admin_enqueue_styles($hook = '') {
-    wp_register_style(self::$token . '-admin', esc_url($this->assets_url) . 'css/admin.css', array(), $this->_version);
-    wp_enqueue_style(self::$token . '-admin');
+    wp_register_style(YAICALHelper::get_token() . '-admin', esc_url($this->assets_url) . 'css/admin.css', array(), $this->_version);
+    wp_enqueue_style(YAICALHelper::get_token() . '-admin');
   } // admin_enqueue_styles
 
   /**
@@ -401,8 +323,8 @@ class YetAnotherICALCalendar {
    * @since   1.0.0
    */
   public function admin_enqueue_scripts($hook = '') {
-    wp_register_script(self::$token . '-admin', esc_url($this->assets_url) . 'js/admin' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
-    wp_enqueue_script(self::$token . '-admin');
+    wp_register_script(YAICALHelper::get_token() . '-admin', esc_url($this->assets_url) . 'js/admin' . $this->script_suffix . '.js', array('jquery'), $this->_version, true);
+    wp_enqueue_script(YAICALHelper::get_token() . '-admin');
   } // admin_enqueue_scripts
 
   /**
@@ -489,7 +411,7 @@ class YetAnotherICALCalendar {
    * @since   1.0.0
    */
   private function _log_version_number() { //phpcs:ignore
-    update_option(self::$token . '_version', $this->_version);
+    update_option(YAICALHelper::get_token() . '_version', $this->_version);
   } // _log_version_number
 
   /**
@@ -500,28 +422,24 @@ class YetAnotherICALCalendar {
    * @since   1.0.0
    */
   public static function yetanothericalcalendar_func($atts = array(), $content = null) {
-    self::_init_directories();
-    self::_init_log();
     //----------    
     if (function_exists('shortcode_atts')) {
       $atts = shortcode_atts(self::default_yetanothericalcalendar_params(), $atts);
     }
-    self::write_log($atts);
-    self::write_log(sprintf("UUID='%s'", self::$uuid));
-    $eval = YetAnotherICALCalendar_Parser::parse(self::$uuid, $atts, $content, $evaluate_stack, self::$token);
+    YAICALHelper::write_log($atts);
+    YAICALHelper::write_log(sprintf("UUID='%s'", self::$uuid));
+    $eval = YetAnotherICALCalendar_Parser::parse(self::$uuid, $atts, $content, $evaluate_stack, YAICALHelper::get_token());
     return $eval;
   } // yetanothericalcalendar_func
 
   public static function yetanothericalcalendar_annotation_func($atts = array(), $content = null) {
-    self::_init_directories();
-    self::_init_log();
     //----------    
     if (function_exists('shortcode_atts')) {
       $atts = shortcode_atts(self::default_yetanothericalcalendar_annatation_params(), $atts);
     }
-    self::write_log($atts);
-    self::write_log(sprintf("UUID='%s'", self::$uuid));
-    $eval = YetAnotherICALCalendar_Parser::parse_annotation(self::$uuid, $atts, $content, $evaluate_stack, self::$token);
+    YAICALHelper::write_log($atts);
+    YAICALHelper::write_log(sprintf("UUID='%s'", self::$uuid));
+    $eval = YetAnotherICALCalendar_Parser::parse_annotation(self::$uuid, $atts, $content, $evaluate_stack, YAICALHelper::get_token());
     return $eval;
   } // yetanothericalcalendar_annotation_func
 
@@ -531,7 +449,7 @@ class YetAnotherICALCalendar {
     foreach ($_POST as $key => $value) {
       $key = sanitize_text_field(strval($key));
       $value = sanitize_text_field(strval($value));
-      self::write_log(sprintf("POST[%s]='%s'", $key, $value));
+      YAICALHelper::write_log(sprintf("POST[%s]='%s'", $key, $value));
     }
     $pid = '';
     $id = '(unset)';
@@ -543,26 +461,33 @@ class YetAnotherICALCalendar {
         break;
       } else {
         $value = sanitize_text_field(strval($_POST[$key]));
-        self::write_log(sprintf("POST['%s']='%s'", $key, $value));
+        YAICALHelper::write_log(sprintf("POST['%s']='%s'", $key, $value));
         if (empty($_POST[$key])) {
-          self::write_log(sprintf("POST['%s']='%s' IS EMPTY!", $key, $value));
+          YAICALHelper::write_log(sprintf("POST['%s']='%s' IS EMPTY!", $key, $value));
           $is_all_keys_found = false;
           break;
         }
       }
     }
     if ($is_all_keys_found) {
+      $pid = sanitize_text_field($_POST['pid']);
+      $id = sanitize_text_field($_POST['id']);
+      $day = sanitize_text_field($_POST['day']);
       $uuid = YAICALHelper::get_session_cookie('wordpress-yetanothericalcalendar_seesion_cookie');
       if (!empty($uuid)) {
         try {
           $a_annotation_rw = YetAnotherICALCalendar_Parser::get_annotation_rw($pid, $id, $uuid);
+          YAICALHelper::write_log(sprintf("UUID=%s PID=%s ID='%s' R/W=%s/%s ROLES='%s'",
+            $uuid,
+            $pid,
+            $id,
+            YAICALHelper::booltostr($a_annotation_rw['read']),
+            YAICALHelper::booltostr($a_annotation_rw['write']),
+            implode(', ', YAICALHelper::get_current_user_roles())));
           if ($a_annotation_rw['write']) {
-            $pid = sanitize_text_field($_POST['pid']);
-            $id = sanitize_text_field($_POST['id']);
-            $day = sanitize_text_field($_POST['day']);
-            $note = array_key_exists('note', $_POST) ? sanitize_text_field($_POST['note']) : '';
+            $note = array_key_exists('note', $_POST) ? sanitize_textarea_field($_POST['note']) : '';
             if (is_null(self::$_db_annotations_store)) {
-              self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
+              self::$_db_annotations_store = new \SleekDB\Store("annotations", YAICALHelper::get_my_database_directory());
               self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
             }
             // Remove before save.
@@ -576,7 +501,7 @@ class YetAnotherICALCalendar {
             wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => 'No write permission!']);
           }
         } catch (Exception $e) {
-          self::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
+          YAICALHelper::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
           wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => esc_html($e->getMessage())]);
         }
       } else {
@@ -597,7 +522,7 @@ class YetAnotherICALCalendar {
     foreach ($_POST as $key => $value) {
       $key = sanitize_text_field(strval($key));
       $value = sanitize_text_field(strval($value));
-      self::write_log(sprintf("POST['%s']='%s'", $key, $value));
+      YAICALHelper::write_log(sprintf("POST['%s']='%s'", $key, $value));
       if ($key == 'id') {
         $id = $value;
       }
@@ -612,7 +537,7 @@ class YetAnotherICALCalendar {
       if (!empty($id) and !empty($pid)) {
         try {
           $a_annotation_rw = YetAnotherICALCalendar_Parser::get_annotation_rw($pid, $id, $uuid);
-          self::write_log(sprintf("PID=%s ID='%s' R/W=%s/%s ROLES='%s'",
+          YAICALHelper::write_log(sprintf("PID=%s ID='%s' R/W=%s/%s ROLES='%s'",
             $pid,
             $id,
             YAICALHelper::booltostr($a_annotation_rw['read']),
@@ -620,7 +545,7 @@ class YetAnotherICALCalendar {
             implode(', ', YAICALHelper::get_current_user_roles())));
           if ($a_annotation_rw['read']) {
             if (is_null(self::$_db_annotations_store)) {
-              self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
+              self::$_db_annotations_store = new \SleekDB\Store("annotations", YAICALHelper::get_my_database_directory());
               self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
             }
             $db_anno = self::$_db_query_builder
@@ -641,7 +566,7 @@ class YetAnotherICALCalendar {
                 $doc .= '<tr>';
                 $wastebasket = $is_write
                   ? sprintf('<td><img class="wastebasket" src="%s" onclick="yetanothericalcalendar_del_annotation(\'%s\', \'%s\', \'%s\'); return false"></td>',
-                    plugins_url('/assets/img/wastebasket.svg', self::$_my_plugin_directory . '/index.php'), esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
+                    plugins_url('/assets/img/wastebasket.svg', YAICALHelper::get_my_plugin_directory() . '/index.php'), esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
                   : '';
                 $click_to_edit = $is_write
                   ? sprintf(' onclick="yetanothericalcalendar_annotate(\'%s\', \'%s\', \'%s\'); return false"', esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
@@ -664,7 +589,7 @@ class YetAnotherICALCalendar {
           }
           wp_send_json(['status' => 'OK', 'id' => $id, 'annotations' => $a_annotations, 'doc' => $doc]);
         } catch (Exception $e) {
-          self::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
+          YAICALHelper::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
           wp_send_json(['status' => 'FAIL',
             'id' => $id,
             'annotations' => $a_annotations,

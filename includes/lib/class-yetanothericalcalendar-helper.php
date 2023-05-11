@@ -13,6 +13,114 @@ if (!defined('ABSPATH')) {
 
 
 class YAICALHelper {
+  /**
+   * The debug trigger.
+   */
+  private static $_enable_debugging = true; // false = Log only error messages.
+  private static $_log_initialized = false;
+  private static $_log_class = null;
+
+  private static $_directories_initialized = false;
+  public static $token = 'yetanothericalcalendar';
+  public static $token_annotation = 'yetanothericalcalendar-annotation';
+  private static $_my_plugin_directory = null;
+  private static $_my_log_directory = null;
+  private static $_my_cache_directory = null;
+  private static $_my_database_directory = null;
+
+  /* ---------------------------------------------------------------------
+   * Add log function.
+   */
+  private static function _init_directories() {
+    if (!self::$_directories_initialized) {
+      self::$_my_plugin_directory = WP_PLUGIN_DIR . '/' . self::$token;
+      if (!is_dir(self::$_my_plugin_directory)) {
+        mkdir(self::$_my_plugin_directory, 0777, true);
+      }
+      // Create logging directory.
+      self::$_my_log_directory = self::$_my_plugin_directory . '/log';
+      if (!is_dir(self::$_my_log_directory)) {
+        mkdir(self::$_my_log_directory, 0777, true);
+      }
+      // Create cache directory.
+      self::$_my_cache_directory = self::$_my_plugin_directory . '/cache';
+      if (!is_dir(self::$_my_cache_directory)) {
+        mkdir(self::$_my_cache_directory);
+      }
+      // Create database directory.
+      self::$_my_database_directory = self::$_my_plugin_directory . '/db';
+      if (!is_dir(self::$_my_database_directory)) {
+        mkdir(self::$_my_database_directory, 0777, true);
+      }
+      self::$_directories_initialized = true;
+    }
+  } // _init_directories
+
+  private static function _init_log() {
+    if (!self::$_log_initialized) {
+      if (!self::$_directories_initialized) {
+        self::_init_directories();
+      }
+      if (class_exists('YetAnotherICALCalendar_Logger')) {
+        self::$_log_class = 'YetAnotherICALCalendar_Logger';
+        self::$_log_class::$log_level = 'debug';
+        self::$_log_class::$write_log = true;
+        self::$_log_class::$log_dir = self::$_my_log_directory;
+        self::$_log_class::$log_file_name = self::$token;
+        self::$_log_class::$log_file_extension = 'log';
+        self::$_log_class::$print_log = false;
+      }
+      self::$_log_initialized = true;
+    }
+  } // _init_log
+
+  public static function init() {
+    self::_init_directories();
+    self::_init_log();
+  } // init
+
+  public static function get_my_plugin_directory() {
+    self::init();
+    return self::$_my_plugin_directory;
+  } // get_my_plugin_directory
+
+  public static function get_my_cache_directory() {
+    self::init();
+    return self::$_my_cache_directory;
+  } // get_my_cache_directory
+
+  public static function get_my_database_directory() {
+    self::init();
+    return self::$_my_database_directory;
+  } // get_my_database_directory
+
+  public static function write_log($log = NULL, $is_error = false, $bn = '', $func = '', $line = -1) {
+    if (self::$_enable_debugging or $is_error) {
+      self::init();
+      $bn = (empty($bn) ? basename(debug_backtrace()[1]['file']) : $bn);
+      $func = (empty($func) ? debug_backtrace()[1]['function'] : $func);
+      $line = ($line == -1 ? intval(debug_backtrace()[0]['line']) : $line);
+      $msg = sprintf('[%s:%d:%s] %s', $bn, $line, $func, ((is_array($log) || is_object($log)) ? print_r($log, true) : $log));
+      if (is_null(self::$_log_class)) {
+        error_log($msg . PHP_EOL);
+      } else {
+        if ($is_error) {
+          self::$_log_class::error($msg);
+        } else {
+          self::$_log_class::debug($msg);
+        }
+      }
+    }
+  } // write_log
+
+  public static function get_token() {
+    return self::$token;
+  } // get_token
+
+  public static function get_token_annotation() {
+    return self::$token_annotation;
+  } // get_token_annotation
+
   public static function swap_values(&$x, &$y) {
     $tmp = $x;
     $x = $y;
@@ -108,6 +216,6 @@ class YAICALHelper {
 
   public static function get_html_error_msg($msg) {
     return '<div style="unicode-bidi: embed; font-family: monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">' .
-    'Plugin YetAnotherICALCalendar::ERROR -- ' . esc_html($msg) . '</div>';
+      'Plugin YetAnotherICALCalendar::ERROR -- ' . esc_html($msg) . '</div>';
   }
 } // YAICALHelper

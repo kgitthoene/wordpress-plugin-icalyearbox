@@ -395,7 +395,7 @@ class YetAnotherICALCalendar_Settings {
    */
   public function settings_section($section) {
     $html = '<p> ' . $this->settings[$section['id']]['description'] . '</p>' . "\n";
-    echo $html; //phpcs:ignore
+    echo esc_html($html); //phpcs:ignore
   }
 
   /**
@@ -465,7 +465,7 @@ class YetAnotherICALCalendar_Settings {
     $html .= '</form>' . "\n";
     $html .= '</div>' . "\n";
 
-    echo $html; //phpcs:ignore
+    echo esc_html($html); //phpcs:ignore
   }
 
   /**

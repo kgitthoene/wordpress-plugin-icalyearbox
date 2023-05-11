@@ -15,14 +15,12 @@ if (!defined('ABSPATH')) {
 /**
  * Admin API class.
  */
-class YetAnotherICALCalendar_Admin_API
-{
+class YetAnotherICALCalendar_Admin_API {
 
   /**
    * Constructor function
    */
-  public function __construct()
-  {
+  public function __construct() {
     add_action('save_post', array($this, 'save_meta_boxes'), 10, 1);
   }
 
@@ -34,8 +32,7 @@ class YetAnotherICALCalendar_Admin_API
    * @param  boolean $echo  Whether to echo the field HTML or return it.
    * @return string
    */
-  public function display_field($data = array(), $post = null, $echo = true)
-  {
+  public function display_field($data = array(), $post = null, $echo = true) {
 
     // Get field info.
     if (isset($data['field'])) {
@@ -56,7 +53,7 @@ class YetAnotherICALCalendar_Admin_API
 
       // Get saved field data.
       $option_name .= $field['id'];
-      $option       = get_post_meta($post->ID, $field['id'], true);
+      $option = get_post_meta($post->ID, $field['id'], true);
 
       // Get data to display in field.
       if (isset($option)) {
@@ -66,7 +63,7 @@ class YetAnotherICALCalendar_Admin_API
 
       // Get saved option.
       $option_name .= $field['id'];
-      $option       = get_option($option_name);
+      $option = get_option($option_name);
 
       // Get data to display in field.
       if (isset($option)) {
@@ -179,11 +176,12 @@ class YetAnotherICALCalendar_Admin_API
 
       case 'color':
         //phpcs:disable
-?><div class="color-picker" style="position:relative;">
+        ?>
+        <div class="color-picker" style="position:relative;">
           <input type="text" name="<?php esc_attr_e($option_name); ?>" class="color" value="<?php esc_attr_e($data); ?>" />
           <div style="position:absolute;background:#FFF;z-index:99;border-radius:100%;" class="colorpicker"></div>
         </div>
-<?php
+        <?php
         //phpcs:enable
         break;
 
@@ -197,34 +195,26 @@ class YetAnotherICALCalendar_Admin_API
         );
         break;
     }
-
     switch ($field['type']) {
-
       case 'checkbox_multi':
       case 'radio':
       case 'select_multi':
         $html .= '<br/><span class="description">' . $field['description'] . '</span>';
         break;
-
       default:
         if (!$post) {
           $html .= '<label for="' . esc_attr($field['id']) . '">' . "\n";
         }
-
         $html .= '<span class="description">' . $field['description'] . '</span>' . "\n";
-
         if (!$post) {
           $html .= '</label>' . "\n";
         }
         break;
     }
-
     if (!$echo) {
       return $html;
     }
-
-    echo $html; //phpcs:ignore
-
+    echo esc_html($html); //phpcs:ignore
   }
 
   /**
@@ -234,8 +224,7 @@ class YetAnotherICALCalendar_Admin_API
    * @param  string $type Type of field to validate.
    * @return string       Validated value
    */
-  public function validate_field($data = '', $type = 'text')
-  {
+  public function validate_field($data = '', $type = 'text') {
 
     switch ($type) {
       case 'text':
@@ -263,8 +252,7 @@ class YetAnotherICALCalendar_Admin_API
    * @param array  $callback_args Any axtra arguments that will be passed to the display function for this metabox.
    * @return void
    */
-  public function add_meta_box($id = '', $title = '', $post_types = array(), $context = 'advanced', $priority = 'default', $callback_args = null)
-  {
+  public function add_meta_box($id = '', $title = '', $post_types = array(), $context = 'advanced', $priority = 'default', $callback_args = null) {
 
     // Get post type(s).
     if (!is_array($post_types)) {
@@ -284,8 +272,7 @@ class YetAnotherICALCalendar_Admin_API
    * @param  array  $args Arguments unique to this metabox.
    * @return void
    */
-  public function meta_box_content($post, $args)
-  {
+  public function meta_box_content($post, $args) {
 
     $fields = apply_filters($post->post_type . '_custom_fields', array(), $post->post_type);
 
@@ -320,8 +307,7 @@ class YetAnotherICALCalendar_Admin_API
    * @param  object $post  Post object.
    * @return void
    */
-  public function display_meta_box_field($field = array(), $post = null)
-  {
+  public function display_meta_box_field($field = array(), $post = null) {
 
     if (!is_array($field) || 0 === count($field)) {
       return;
@@ -329,7 +315,7 @@ class YetAnotherICALCalendar_Admin_API
 
     $field = '<p class="form-field"><label for="' . $field['id'] . '">' . $field['label'] . '</label>' . $this->display_field($field, $post, false) . '</p>' . "\n";
 
-    echo $field; //phpcs:ignore
+    echo esc_html($field); //phpcs:ignore
   }
 
   /**
@@ -338,8 +324,7 @@ class YetAnotherICALCalendar_Admin_API
    * @param  integer $post_id Post ID.
    * @return void
    */
-  public function save_meta_boxes($post_id = 0)
-  {
+  public function save_meta_boxes($post_id = 0) {
 
     if (!$post_id) {
       return;
