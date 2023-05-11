@@ -40,8 +40,8 @@ class YAICALHelper {
 
   public static function datetime_delta($dt1, $dt2) { // Seconds.
     if (is_a($dt1, 'DateTime') and is_a($dt2, 'DateTime')) {
-      $i = $dt2->diff($dt1);
-      return ($i->format('%r%a') * 86400 + $i->h * 3600 + $i->m * 60 + $i->s);
+      $i = $dt1->diff($dt2, true);
+      return (intval($i->format('%r%a')) * 86400 + $i->h * 3600 + $i->m * 60 + $i->s);
     } else {
       throw new ErrorException("Parameters must be type DateTime!", 0, E_ERROR, __FILE__, __LINE__);
     }
@@ -84,13 +84,30 @@ class YAICALHelper {
   } // is_access
 
   public static function get_or_set_session_cookie($name) {
-    if (!isset($_COOKIE[$name])) {
-      // UUID / SEE:https://gist.github.com/dahnielson/508447
-      $uuid = UUID::v4();
-      setcookie($name, $uuid, 0);
-      return $uuid;
+    if (isset($_COOKIE[$name])) {
+      return sanitize_key($_COOKIE[$name]);
     } else {
-      return $_COOKIE[$name];
+      try {
+        // UUID / SEE:https://gist.github.com/dahnielson/508447
+        $uuid = UUID::v4();
+        setcookie($name, $uuid, 0);
+        return $uuid;
+      } catch (Exception $e) {
+        return null;
+      }
     }
   } // get_or_set_session_cookie
+
+  public static function get_session_cookie($name) {
+    if (isset($_COOKIE[$name])) {
+      return sanitize_key($_COOKIE[$name]);
+    } else {
+      return null;
+    }
+  } // get_or_set_session_cookie
+
+  public static function get_html_error_msg($msg) {
+    return '<div style="unicode-bidi: embed; font-family: monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">' .
+    'Plugin YetAnotherICALCalendar::ERROR -- ' . esc_html($msg) . '</div>';
+  }
 } // YAICALHelper

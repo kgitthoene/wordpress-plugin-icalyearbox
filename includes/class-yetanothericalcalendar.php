@@ -528,7 +528,11 @@ class YetAnotherICALCalendar {
   public static function handle_annotation_add() {
     //status_header(200);
     //request handlers should exit() when they complete their task
-    self::write_log(sprintf("POST='%s'", json_encode($_POST)));
+    foreach ($_POST as $key => $value) {
+      $key = sanitize_text_field(strval($key));
+      $value = sanitize_text_field(strval($value));
+      self::write_log(sprintf("POST[%s]='%s'", $key, $value));
+    }
     $pid = '';
     $id = '(unset)';
     $day = '(unset)';
@@ -538,36 +542,48 @@ class YetAnotherICALCalendar {
         $is_all_keys_found = false;
         break;
       } else {
-        self::write_log(sprintf("POST['%s']='%s'", $key, $_POST[$key]));
+        $value = sanitize_text_field(strval($_POST[$key]));
+        self::write_log(sprintf("POST['%s']='%s'", $key, $value));
         if (empty($_POST[$key])) {
-          self::write_log(sprintf("POST['%s']='%s' IS EMPTY!", $key, $_POST[$key]));
+          self::write_log(sprintf("POST['%s']='%s' IS EMPTY!", $key, $value));
           $is_all_keys_found = false;
           break;
         }
       }
     }
     if ($is_all_keys_found) {
-      try {
-        $id = $_POST['id'];
-        $day = $_POST['day'];
-        $note = array_key_exists('note', $_POST) ? $_POST['note'] : '';
-        if (is_null(self::$_db_annotations_store)) {
-          self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
-          self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
+      $uuid = YAICALHelper::get_session_cookie('wordpress-yetanothericalcalendar_seesion_cookie');
+      if (!empty($uuid)) {
+        try {
+          $a_annotation_rw = YetAnotherICALCalendar_Parser::get_annotation_rw($pid, $id, $uuid);
+          if ($a_annotation_rw['write']) {
+            $pid = sanitize_text_field($_POST['pid']);
+            $id = sanitize_text_field($_POST['id']);
+            $day = sanitize_text_field($_POST['day']);
+            $note = array_key_exists('note', $_POST) ? sanitize_text_field($_POST['note']) : '';
+            if (is_null(self::$_db_annotations_store)) {
+              self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
+              self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
+            }
+            // Remove before save.
+            self::$_db_annotations_store->deleteBy([['id', '=', $id], ['day', '=', $day]]);
+            if (!empty($note)) {
+              // Save if not empty.
+              self::$_db_annotations_store->insert(['id' => $id, 'day' => $day, 'note' => $note]);
+            }
+            wp_send_json(['status' => 'OK', 'id' => $id, 'day' => $day]);
+          } else {
+            wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => 'No write permission!']);
+          }
+        } catch (Exception $e) {
+          self::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
+          wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => esc_html($e->getMessage())]);
         }
-        // Remove before save.
-        self::$_db_annotations_store->deleteBy([['id', '=', $id], ['day', '=', $day]]);
-        if (!empty($note)) {
-          // Save if not empty.
-          self::$_db_annotations_store->insert(['id' => $id, 'day' => $day, 'note' => $note]);
-        }
-        wp_send_json(['status' => 'OK', 'id' => $id, 'day' => $day]);
-      } catch (Exception $e) {
-        self::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
-        wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => $e->getMessage()]);
+      } else {
+        wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => 'Session cookie not set!']);
       }
     } else {
-      wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => 'Missing keys!']);
+      wp_send_json(['status' => 'FAIL', 'id' => $id, 'day' => $day, 'error' => 'Invalid request parameter!']);
     }
     //----------
     wp_die();
@@ -576,85 +592,95 @@ class YetAnotherICALCalendar {
   public static function handle_annotation_get_annotations() {
     //status_header(200);
     //request handlers should exit() when they complete their task
-    $id = '';
-    $pid = '';
+    $id = null;
+    $pid = null;
     foreach ($_POST as $key => $value) {
+      $key = sanitize_text_field(strval($key));
+      $value = sanitize_text_field(strval($value));
       self::write_log(sprintf("POST['%s']='%s'", $key, $value));
       if ($key == 'id') {
-        $id = strval($value);
+        $id = $value;
       }
       if ($key == 'pid') {
-        $pid = strval($value);
+        $pid = $value;
       }
     }
     $a_annotations = array();
-    // TODO:Translation
     $doc = '';
-    self::write_log(sprintf("get_or_set_session_cookie"));
-    $uuid = (isset($_COOKIE['wordpress-yetanothericalcalendar_seesion_cookie']) ? $_COOKIE['wordpress-yetanothericalcalendar_seesion_cookie'] : '');
-    try {
-      $a_annotation_rw = YetAnotherICALCalendar_Parser::get_annotation_rw($pid, $id, $uuid);
-      self::write_log(sprintf("PID=%s ID='%s' R/W=%s/%s ROLES='%s'",
-        $pid,
-        $id,
-        YAICALHelper::booltostr($a_annotation_rw['read']),
-        YAICALHelper::booltostr($a_annotation_rw['write']),
-        implode(', ', YAICALHelper::get_current_user_roles())));
-      if ((!empty($id))
-        and (!empty($pid))
-        and $a_annotation_rw['read']) {
-        if (is_null(self::$_db_annotations_store)) {
-          self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
-          self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
-        }
-        $db_anno = self::$_db_query_builder
-          ->where(['id', '=', $id])
-          ->orderBy(['day' => 'asc'])
-          ->getQuery()
-          ->fetch();
-        $a_annotations = $db_anno;
-        if (empty($a_annotations)) {
-          $doc = '<div style="border-left:10px solid rgb(0,212,255); padding:3px 6px 3px 6px; font-size:80%; line-height:14px;">Für den Kalender mit ID="' . $id . '" wurden keine Anmerkungen gefunden.</div>';
-        } else {
-          //
-          //----------
-          // Render annotations:
-          $is_write = $a_annotation_rw['write'];
-          $doc = '<table><tbody>';
-          foreach ($db_anno as $anno) {
-            $doc .= '<tr>';
-            $wastebasket = $is_write
-              ? sprintf('<td><img class="wastebasket" src="%s" onclick="yetanothericalcalendar_del_annotation(\'%s\', \'%s\', \'%s\'); return false"></td>',
-                plugins_url('/assets/img/wastebasket.svg', self::$_my_plugin_directory . '/index.php'), esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
-              : '';
-            $click_to_edit = $is_write
-              ? sprintf(' onclick="yetanothericalcalendar_annotate(\'%s\', \'%s\', \'%s\'); return false"', esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
-              : '';
-            $click_to_edit_class = $is_write ? ' class="pointer"' : '';
-            $dt = YAICALHelper::strtodatetime($anno['day']);
-            $day_display = $dt->format("j.n.Y");
-            $day_weekday = __($dt->format("D"));
-            $doc .= sprintf('%s<td style="text-align:right;"%s%s>%s.</td><td style="text-align:right;"%s%s>%s:</td><td%s%s>%s</td>',
-              $wastebasket,
-              $click_to_edit_class, $click_to_edit, $day_weekday,
-              $click_to_edit_class, $click_to_edit, $day_display,
-              $click_to_edit_class, $click_to_edit, esc_html(str_replace("\n", ' / ', trim($anno['note']))));
-            $doc .= '</tr>';
+    $uuid = YAICALHelper::get_session_cookie('wordpress-yetanothericalcalendar_seesion_cookie');
+    if (!empty($uuid)) {
+      if (!empty($id) and !empty($pid)) {
+        try {
+          $a_annotation_rw = YetAnotherICALCalendar_Parser::get_annotation_rw($pid, $id, $uuid);
+          self::write_log(sprintf("PID=%s ID='%s' R/W=%s/%s ROLES='%s'",
+            $pid,
+            $id,
+            YAICALHelper::booltostr($a_annotation_rw['read']),
+            YAICALHelper::booltostr($a_annotation_rw['write']),
+            implode(', ', YAICALHelper::get_current_user_roles())));
+          if ($a_annotation_rw['read']) {
+            if (is_null(self::$_db_annotations_store)) {
+              self::$_db_annotations_store = new \SleekDB\Store("annotations", self::$_my_database_directory);
+              self::$_db_query_builder = self::$_db_annotations_store->createQueryBuilder();
+            }
+            $db_anno = self::$_db_query_builder
+              ->where(['id', '=', $id])
+              ->orderBy(['day' => 'asc'])
+              ->getQuery()
+              ->fetch();
+            $a_annotations = $db_anno;
+            if (empty($a_annotations)) {
+              $doc = '<div style="border-left:10px solid rgb(0,212,255); padding:3px 6px 3px 6px; font-size:80%; line-height:14px;">Für den Kalender mit ID="' . $id . '" wurden keine Anmerkungen gefunden.</div>';
+            } else {
+              //
+              //----------
+              // Render annotations:
+              $is_write = $a_annotation_rw['write'];
+              $doc = '<table><tbody>';
+              foreach ($db_anno as $anno) {
+                $doc .= '<tr>';
+                $wastebasket = $is_write
+                  ? sprintf('<td><img class="wastebasket" src="%s" onclick="yetanothericalcalendar_del_annotation(\'%s\', \'%s\', \'%s\'); return false"></td>',
+                    plugins_url('/assets/img/wastebasket.svg', self::$_my_plugin_directory . '/index.php'), esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
+                  : '';
+                $click_to_edit = $is_write
+                  ? sprintf(' onclick="yetanothericalcalendar_annotate(\'%s\', \'%s\', \'%s\'); return false"', esc_html($pid), esc_html($anno['id']), esc_html($anno['day']))
+                  : '';
+                $click_to_edit_class = $is_write ? ' class="pointer"' : '';
+                $dt = YAICALHelper::strtodatetime($anno['day']);
+                $day_display = $dt->format("j.n.Y");
+                $day_weekday = __($dt->format("D"));
+                $doc .= sprintf('%s<td style="text-align:right;"%s%s>%s.</td><td style="text-align:right;"%s%s>%s:</td><td%s%s>%s</td>',
+                  $wastebasket,
+                  $click_to_edit_class, $click_to_edit, $day_weekday,
+                  $click_to_edit_class, $click_to_edit, $day_display,
+                  $click_to_edit_class, $click_to_edit, esc_html(str_replace("\n", ' / ', trim($anno['note']))));
+                $doc .= '</tr>';
+              }
+              $doc .= '</tbody></table>';
+            }
+          } else {
+            $doc = '<div style="border-left:10px solid red; padding:3px 6px 3px 6px; font-size:80%; line-height:14px;">Keine Leseerlaubnis für die Notizen!</div>';
           }
-          $doc .= '</tbody></table>';
+          wp_send_json(['status' => 'OK', 'id' => $id, 'annotations' => $a_annotations, 'doc' => $doc]);
+        } catch (Exception $e) {
+          self::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
+          wp_send_json(['status' => 'FAIL',
+            'id' => $id,
+            'annotations' => $a_annotations,
+            'doc' => YAICALHelper::get_html_error_msg($e->getMessage())]);
         }
-
       } else {
-        $doc = '<div style="border-left:10px solid red; padding:3px 6px 3px 6px; font-size:80%; line-height:14px;">Keine Leseerlaubnis für die Notizen!</div>';
+        wp_send_json(['status' => 'FAIL',
+          'id' => '',
+          'annotations' => $a_annotations,
+          'doc' => YAICALHelper::get_html_error_msg('Invalid request parameter!')]);
       }
-      wp_send_json(['status' => 'OK', 'id' => $id, 'annotations' => $a_annotations, 'doc' => $doc]);
-    } catch (Exception $e) {
-      self::write_log(sprintf("EXCEPTION='%s'", $e->getMessage()));
-      wp_send_json(array('status' => 'FAIL',
-        'id' => $id,
+    } else {
+      wp_send_json(['status' => 'FAIL',
+        'id' => (empty($id) ? '' : $id),
         'annotations' => $a_annotations,
-        'doc' => $e->getMessage(),
-        'error' => $e->getMessage()));
+        'doc' => YAICALHelper::get_html_error_msg('Session cookie not set!')]);
     }
     //----------
     wp_die();

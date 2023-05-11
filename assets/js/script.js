@@ -147,9 +147,9 @@ if (window.jQuery) {
                   if (b_is_ok) {
                     let id = data.id;
                     let a_an = data.annotations;
-                    $(this).html(data.doc);
                     _ga.annotations[id] = a_an;
                   }
+                  $(this).html(data.doc);
                 }.bind(this))
                 .fail(function (jqXHR, status, error_thrown) {
                   let id = $(this).attr('id');

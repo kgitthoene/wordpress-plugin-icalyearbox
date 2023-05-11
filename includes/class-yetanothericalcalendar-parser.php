@@ -131,9 +131,7 @@ class YetAnotherICALCalendar_Parser {
     if (!empty(self::$_shortcut_src)) {
       $src = '<br />' . self::$_shortcut_src;
     }
-    $rv = '<div style="unicode-bidi: embed; font-family: monospace; font-size:12px; font-weight:normal; color:black; background-color:#FFAA4D; border-left:12px solid red; padding:3px 6px 3px 6px;">' .
-      'Plugin YetAnotherICALCalendar::ERROR -- ' . esc_html($msg) . $src . '</div>';
-    return $rv;
+    return YAICALHelper::get_html_error_msg($msg . $src);
   } // _error
 
   private static function _clean_annotation_rw() {
@@ -154,6 +152,7 @@ class YetAnotherICALCalendar_Parser {
       $dt_now = new DateTime();
       $dt_set = DateTime::createFromFormat('Y-m-d?H:i:sT', $row['set']); // 2023-05-05T15:37:08+02:00
       $delta = YAICALHelper::datetime_delta($dt_set, $dt_now);
+      self::write_log(sprintf("Compare dates. D1=%s D2=%s DELTA=%d =?= %d", $dt_now->format('c'), $dt_set->format('c'), $delta, self::$_session_removal_timeout));
       if($delta > self::$_session_removal_timeout) {
         array_push($a_removeal_list, $row['_id']);
       }
